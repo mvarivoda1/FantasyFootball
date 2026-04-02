@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -ExecutionPolicy Bypass -Command '$input | Add-Content -Path \"C:\\Users\\marij_fr08pcq\\source\\repos\\FantasyFootball\\.github\\hooks\\agent_log.txt\"'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -ExecutionPolicy Bypass -Command '$input | Add-Content -Path \"C:\\Users\\marij_fr08pcq\\source\\repos\\FantasyFootball\\.github\\hooks\\agent_log.txt\"'"
+          }
+        ]
+      }
+    ]
+  }
+}
