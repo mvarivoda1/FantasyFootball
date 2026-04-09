@@ -1458,3 +1458,12 @@
     "tool_use_id":  "toolu_01R1Z28iDWhay1En4kAHmn7D"
 }
 
+{
+    "session_id":  "c9e54a1a-5fa7-4e93-82d4-698c87496f83",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\c9e54a1a-5fa7-4e93-82d4-698c87496f83.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "hook_event_name":  "UserPromptSubmit",
+    "prompt":  "test msg"
+}
+

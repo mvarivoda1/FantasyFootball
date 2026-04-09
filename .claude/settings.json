@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -ExecutionPolicy Bypass -File \"C:\\Users\\marij_fr08pcq\\source\\repos\\FantasyFootball\\.github\\hooks\\log_hook.ps1\""
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"C:\\Users\\marijan.varivoda\\source\\FantasyFootball\\.github\\hooks\\log_hook.ps1\""
           }
         ]
       }
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -ExecutionPolicy Bypass -File \"C:\\Users\\marij_fr08pcq\\source\\repos\\FantasyFootball\\.github\\hooks\\log_hook.ps1\""
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"C:\\Users\\marijan.varivoda\\source\\FantasyFootball\\.github\\hooks\\log_hook.ps1\""
           }
         ]
       }
