@@ -1,0 +1,54 @@
+@model List<FantasyTeam>
+@{
+    ViewData["Title"] = "Fantasy Teams";
+}
+
+<h1 class="ff-page-title"><i class="bi bi-shield-fill"></i> Fantasy Teams</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="ff-empty">
+        <div class="ff-empty__icon"><i class="bi bi-shield"></i></div>
+        <div class="ff-empty__text">No teams found.</div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var team in Model)
+        {
+            <div class="col-lg-4 col-md-6 col-12">
+                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@team.Id" style="text-decoration:none; color:inherit;">
+                    <div class="ff-card">
+                        <div class="ff-card__title">@team.Name</div>
+                        <div class="ff-card__subtitle">
+                            <i class="bi bi-person-fill"></i> @team.OwnerName
+                        </div>
+                        <div class="ff-card__meta">
+                            @if (team.League != null)
+                            {
+                                <span class="ff-card__meta-item">
+                                    <i class="bi bi-diagram-3"></i>
+                                    <span class="ff-card__value">@team.League.Name</span>
+                                </span>
+                            }
+                            <span class="ff-card__meta-item">
+                                <i class="bi bi-cash-stack"></i>
+                                <span class="ff-card__value">€@team.Budget.ToString("N0")</span>
+                            </span>
+                        </div>
+                        <div class="ff-card__footer">
+                            <div>
+                                <div class="ff-card__points">@team.TotalPoints</div>
+                                <div class="ff-card__points-label">Total Points</div>
+                            </div>
+                            <span class="ff-btn ff-btn--outline ff-btn--sm">
+                                View <i class="bi bi-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}

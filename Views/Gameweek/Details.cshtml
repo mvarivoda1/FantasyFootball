@@ -1,0 +1,133 @@
+@model Gameweek
+@{
+    ViewData["Title"] = $"Gameweek {Model.WeekNumber}";
+}
+
+<!-- Breadcrumb -->
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="Gameweek" asp-action="Index">Gameweeks</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Gameweek @Model.WeekNumber</li>
+</ul>
+
+<!-- Hero -->
+<div class="ff-hero ff-animate-in">
+    <h1 class="ff-hero__title">
+        <i class="bi bi-calendar-event-fill" style="color: var(--ff-accent);"></i>
+        Gameweek @Model.WeekNumber
+    </h1>
+    <p class="ff-hero__subtitle">
+        @Model.StartDate.ToString("dd MMM yyyy") &ndash; @Model.EndDate.ToString("dd MMM yyyy")
+    </p>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="ff-stat-card">
+            <div class="ff-stat-card__icon"><i class="bi bi-people-fill"></i></div>
+            <div class="ff-stat-card__value">@(Model.Performances?.Count ?? 0)</div>
+            <div class="ff-stat-card__label">Performances</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="ff-stat-card">
+            <div class="ff-stat-card__icon"><i class="bi bi-bullseye"></i></div>
+            <div class="ff-stat-card__value">@(Model.Performances?.Sum(p => p.Goals) ?? 0)</div>
+            <div class="ff-stat-card__label">Total Goals</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="ff-stat-card">
+            <div class="ff-stat-card__icon"><i class="bi bi-hand-thumbs-up-fill"></i></div>
+            <div class="ff-stat-card__value">@(Model.Performances?.Sum(p => p.Assists) ?? 0)</div>
+            <div class="ff-stat-card__label">Total Assists</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="ff-stat-card">
+            <div class="ff-stat-card__icon"><i class="bi bi-star-fill"></i></div>
+            <div class="ff-stat-card__value">@(Model.Performances?.Sum(p => p.PointsEarned) ?? 0)</div>
+            <div class="ff-stat-card__label">Total Points</div>
+        </div>
+    </div>
+</div>
+
+<!-- Performances Table -->
+<h2 class="ff-section-title"><i class="bi bi-list-stars"></i> Performances</h2>
+@if (Model.Performances != null && Model.Performances.Any())
+{
+    <div class="ff-table-responsive">
+        <table class="ff-table">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Opponent</th>
+                    <th>Goals</th>
+                    <th>Assists</th>
+                    <th>Clean Sheet</th>
+                    <th>YC</th>
+                    <th>RC</th>
+                    <th>Minutes</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var perf in Model.Performances)
+                {
+                    <tr>
+                        <td>
+                            <a asp-controller="Player" asp-action="Details" asp-route-id="@perf.Player.Id">
+                                @perf.Player.FullName
+                            </a>
+                        </td>
+                        <td>@perf.Opponent</td>
+                        <td>@perf.Goals</td>
+                        <td>@perf.Assists</td>
+                        <td>
+                            @if (perf.CleanSheet)
+                            {
+                                <i class="bi bi-check-circle-fill ff-bool--true"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-x-circle-fill ff-bool--false"></i>
+                            }
+                        </td>
+                        <td>
+                            @if (perf.YellowCards > 0)
+                            {
+                                <span style="color: var(--ff-status-pending);">@perf.YellowCards</span>
+                            }
+                            else
+                            {
+                                <span class="ff-text-muted">0</span>
+                            }
+                        </td>
+                        <td>
+                            @if (perf.RedCards > 0)
+                            {
+                                <span style="color: var(--ff-status-rejected);">@perf.RedCards</span>
+                            }
+                            else
+                            {
+                                <span class="ff-text-muted">0</span>
+                            }
+                        </td>
+                        <td>@perf.MinutesPlayed'</td>
+                        <td><strong class="ff-text-accent">@perf.PointsEarned</strong></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="ff-empty">
+        <div class="ff-empty__icon"><i class="bi bi-list-stars"></i></div>
+        <div class="ff-empty__text">No performances recorded for this gameweek.</div>
+    </div>
+}

@@ -1,0 +1,138 @@
+@model League
+@{
+    ViewData["Title"] = Model.Name;
+    var sortedTeams = Model.Teams.OrderByDescending(t => t.TotalPoints).ToList();
+}
+
+<!-- Breadcrumb -->
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="League" asp-action="Index">Leagues</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">@Model.Name</li>
+</ul>
+
+<!-- Hero -->
+<div class="ff-hero ff-animate-in">
+    <h1 class="ff-hero__title">@Model.Name</h1>
+    <p class="ff-hero__subtitle">
+        <i class="bi bi-calendar3"></i> Season @Model.Season
+        &nbsp;&bull;&nbsp;
+        <i class="bi bi-shield"></i> @Model.Teams.Count / @Model.MaxTeams Teams
+    </p>
+    @if (!string.IsNullOrEmpty(Model.Description))
+    {
+        <p class="ff-text-muted mt-2 mb-0">@Model.Description</p>
+    }
+</div>
+
+<!-- Standings -->
+<h2 class="ff-section-title"><i class="bi bi-bar-chart-fill"></i> Standings</h2>
+@if (sortedTeams.Any())
+{
+    <div class="ff-table-responsive mb-5">
+        <table class="ff-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Team</th>
+                    <th>Owner</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int rank = 1; }
+                @foreach (var team in sortedTeams)
+                {
+                    <tr>
+                        <td class="ff-table__rank">@rank</td>
+                        <td>
+                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@team.Id">
+                                @team.Name
+                            </a>
+                        </td>
+                        <td>@team.OwnerName</td>
+                        <td><strong class="ff-text-accent">@team.TotalPoints</strong></td>
+                    </tr>
+                    rank++;
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="ff-empty mb-5">
+        <div class="ff-empty__icon"><i class="bi bi-shield"></i></div>
+        <div class="ff-empty__text">No teams in this league yet.</div>
+    </div>
+}
+
+<!-- Transfers -->
+<h2 class="ff-section-title"><i class="bi bi-arrow-left-right"></i> Transfers</h2>
+@if (Model.Transfers != null && Model.Transfers.Any())
+{
+    <div class="ff-table-responsive">
+        <table class="ff-table">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Price</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transfer in Model.Transfers)
+                {
+                    string statusClass = transfer.Status switch
+                    {
+                        TransferStatus.Accepted => "ff-badge--accepted",
+                        TransferStatus.Pending => "ff-badge--pending",
+                        TransferStatus.Rejected => "ff-badge--rejected",
+                        TransferStatus.Cancelled => "ff-badge--cancelled",
+                        _ => "ff-badge--pending"
+                    };
+
+                    <tr>
+                        <td>
+                            <a asp-controller="Player" asp-action="Details" asp-route-id="@transfer.Player.Id">
+                                @transfer.Player.FullName
+                            </a>
+                        </td>
+                        <td>
+                            @if (transfer.FromTeam != null)
+                            {
+                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.FromTeam.Id">
+                                    @transfer.FromTeam.Name
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="ff-text-muted">Free Agent</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.ToTeam.Id">
+                                @transfer.ToTeam.Name
+                            </a>
+                        </td>
+                        <td>€@transfer.Price.ToString("N0")</td>
+                        <td>@transfer.TransferDate.ToString("dd MMM yyyy")</td>
+                        <td><span class="ff-badge @statusClass">@transfer.Status</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="ff-empty">
+        <div class="ff-empty__icon"><i class="bi bi-arrow-left-right"></i></div>
+        <div class="ff-empty__text">No transfers recorded in this league.</div>
+    </div>
+}

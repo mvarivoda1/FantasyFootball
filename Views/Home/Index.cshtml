@@ -1,8 +1,202 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Dashboard";
+
+    var topPlayers = ViewBag.TopPlayers as List<Player> ?? new List<Player>();
+    var leagues = ViewBag.Leagues as List<League> ?? new List<League>();
+    var topTeams = ViewBag.Teams as List<FantasyTeam> ?? new List<FantasyTeam>();
+    var latestGameweek = ViewBag.LatestGameweek as Gameweek;
+    int totalPlayers = ViewBag.TotalPlayers ?? 0;
+    int totalTeams = ViewBag.TotalTeams ?? 0;
+    int totalLeagues = ViewBag.TotalLeagues ?? 0;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Hero -->
+<div class="ff-hero text-center ff-animate-in">
+    <h1 class="ff-hero__title">
+        <i class="bi bi-trophy-fill" style="color: var(--fpl-green);"></i>
+        Fantasy Football <span class="ff-hero__accent">2025/26</span>
+    </h1>
+    <p class="ff-hero__subtitle">
+        Build your dream squad, compete in leagues, and climb the rankings.
+        Track player performances, manage transfers, and dominate your fantasy league.
+    </p>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="ff-stat-card ff-animate-in">
+            <div class="ff-stat-card__icon"><i class="bi bi-people-fill"></i></div>
+            <div class="ff-stat-card__value">@totalPlayers</div>
+            <div class="ff-stat-card__label">Total Players</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="ff-stat-card ff-animate-in">
+            <div class="ff-stat-card__icon"><i class="bi bi-shield-fill"></i></div>
+            <div class="ff-stat-card__value">@totalTeams</div>
+            <div class="ff-stat-card__label">Total Teams</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="ff-stat-card ff-animate-in">
+            <div class="ff-stat-card__icon"><i class="bi bi-diagram-3-fill"></i></div>
+            <div class="ff-stat-card__value">@totalLeagues</div>
+            <div class="ff-stat-card__label">Total Leagues</div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Players -->
+@if (topPlayers.Any())
+{
+    <h2 class="ff-section-title"><i class="bi bi-star-fill"></i> Top 5 Players</h2>
+    <div class="ff-table-responsive mb-5">
+        <table class="ff-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Player</th>
+                    <th>Club</th>
+                    <th>Position</th>
+                    <th>Goals</th>
+                    <th>Assists</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int playerRank = 1; }
+                @foreach (var player in topPlayers)
+                {
+                    <tr>
+                        <td class="ff-table__rank">@playerRank</td>
+                        <td>
+                            <a asp-controller="Player" asp-action="Details" asp-route-id="@player.Id">
+                                @player.FullName
+                            </a>
+                        </td>
+                        <td>@player.Club</td>
+                        <td>
+                            <span class="ff-badge ff-badge--@player.Position.ToString().ToLower().Substring(0, 3)">
+                                @player.Position
+                            </span>
+                        </td>
+                        <td>@player.Goals</td>
+                        <td>@player.Assists</td>
+                        <td><strong class="ff-text-accent">@player.TotalPoints</strong></td>
+                    </tr>
+                    playerRank++;
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<!-- Top Teams -->
+@if (topTeams.Any())
+{
+    <h2 class="ff-section-title"><i class="bi bi-shield-fill-check"></i> Top 5 Teams</h2>
+    <div class="ff-table-responsive mb-5">
+        <table class="ff-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Team</th>
+                    <th>Owner</th>
+                    <th>Budget</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int teamRank = 1; }
+                @foreach (var team in topTeams)
+                {
+                    <tr>
+                        <td class="ff-table__rank">@teamRank</td>
+                        <td>
+                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@team.Id">
+                                @team.Name
+                            </a>
+                        </td>
+                        <td>@team.OwnerName</td>
+                        <td>€@team.Budget.ToString("N0")</td>
+                        <td><strong class="ff-text-accent">@team.TotalPoints</strong></td>
+                    </tr>
+                    teamRank++;
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<!-- Latest Gameweek -->
+@if (latestGameweek != null)
+{
+    <h2 class="ff-section-title"><i class="bi bi-calendar-event-fill"></i> Latest Gameweek (@latestGameweek.WeekNumber)</h2>
+    <div class="ff-table-responsive mb-5">
+        <table class="ff-table">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Opponent</th>
+                    <th>Goals</th>
+                    <th>Assists</th>
+                    <th>Minutes</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var perf in latestGameweek.Performances)
+                {
+                    <tr>
+                        <td>
+                            <a asp-controller="Player" asp-action="Details" asp-route-id="@perf.Player.Id">
+                                @perf.Player.FullName
+                            </a>
+                        </td>
+                        <td>@perf.Opponent</td>
+                        <td>@perf.Goals</td>
+                        <td>@perf.Assists</td>
+                        <td>@perf.MinutesPlayed'</td>
+                        <td><strong class="ff-text-accent">@perf.PointsEarned</strong></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<!-- Quick Links -->
+<h2 class="ff-section-title"><i class="bi bi-lightning-fill"></i> Quick Links</h2>
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-sm-6">
+        <a asp-controller="Player" asp-action="Index" class="ff-quick-link">
+            <span class="ff-quick-link__icon"><i class="bi bi-people-fill"></i></span>
+            <span class="ff-quick-link__text">Browse All Players</span>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a asp-controller="FantasyTeam" asp-action="Index" class="ff-quick-link">
+            <span class="ff-quick-link__icon"><i class="bi bi-shield-fill"></i></span>
+            <span class="ff-quick-link__text">View All Teams</span>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a asp-controller="League" asp-action="Index" class="ff-quick-link">
+            <span class="ff-quick-link__icon"><i class="bi bi-diagram-3-fill"></i></span>
+            <span class="ff-quick-link__text">Explore Leagues</span>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a asp-controller="Gameweek" asp-action="Index" class="ff-quick-link">
+            <span class="ff-quick-link__icon"><i class="bi bi-calendar-week-fill"></i></span>
+            <span class="ff-quick-link__text">Gameweek Results</span>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a asp-controller="Transfer" asp-action="Index" class="ff-quick-link">
+            <span class="ff-quick-link__icon"><i class="bi bi-arrow-left-right"></i></span>
+            <span class="ff-quick-link__text">Transfer Activity</span>
+        </a>
+    </div>
 </div>

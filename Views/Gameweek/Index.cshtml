@@ -1,0 +1,55 @@
+@model List<Gameweek>
+@{
+    ViewData["Title"] = "Gameweeks";
+}
+
+<h1 class="ff-page-title"><i class="bi bi-calendar-week-fill"></i> Gameweeks</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="ff-empty">
+        <div class="ff-empty__icon"><i class="bi bi-calendar-week"></i></div>
+        <div class="ff-empty__text">No gameweeks found.</div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var gw in Model)
+        {
+            int totalGoals = gw.Performances?.Sum(p => p.Goals) ?? 0;
+            int perfCount = gw.Performances?.Count ?? 0;
+
+            <div class="col-lg-4 col-md-6 col-12">
+                <a asp-controller="Gameweek" asp-action="Details" asp-route-id="@gw.Id" style="text-decoration:none; color:inherit;">
+                    <div class="ff-card">
+                        <div class="ff-card__title">
+                            <i class="bi bi-calendar-event ff-text-accent"></i> Gameweek @gw.WeekNumber
+                        </div>
+                        <div class="ff-card__subtitle">
+                            @gw.StartDate.ToString("dd MMM") &ndash; @gw.EndDate.ToString("dd MMM yyyy")
+                        </div>
+                        <div class="ff-card__meta">
+                            <span class="ff-card__meta-item">
+                                <i class="bi bi-bullseye"></i>
+                                <span class="ff-card__value">@totalGoals</span> Goals
+                            </span>
+                            <span class="ff-card__meta-item">
+                                <i class="bi bi-people"></i>
+                                <span class="ff-card__value">@perfCount</span> Performances
+                            </span>
+                        </div>
+                        <div class="ff-card__footer">
+                            <span class="ff-text-muted ff-text-sm">
+                                @gw.StartDate.ToString("ddd") &ndash; @gw.EndDate.ToString("ddd")
+                            </span>
+                            <span class="ff-btn ff-btn--outline ff-btn--sm">
+                                View <i class="bi bi-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}

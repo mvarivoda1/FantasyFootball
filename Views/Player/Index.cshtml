@@ -1,0 +1,67 @@
+@model List<Player>
+@{
+    ViewData["Title"] = "Players";
+}
+
+<h1 class="ff-page-title"><i class="bi bi-people-fill"></i> Players</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="ff-empty">
+        <div class="ff-empty__icon"><i class="bi bi-people"></i></div>
+        <div class="ff-empty__text">No players found.</div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var player in Model)
+        {
+            string badgeClass = player.Position switch
+            {
+                Position.Goalkeeper => "ff-badge--gk",
+                Position.Defender => "ff-badge--def",
+                Position.Midfielder => "ff-badge--mid",
+                Position.Forward => "ff-badge--fwd",
+                _ => "ff-badge--mid"
+            };
+
+            <div class="col-lg-4 col-md-6 col-12">
+                <a asp-controller="Player" asp-action="Details" asp-route-id="@player.Id" style="text-decoration:none; color:inherit;">
+                    <div class="ff-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="ff-card__title">@player.FullName</div>
+                            <span class="ff-badge @badgeClass">@player.Position</span>
+                        </div>
+                        <div class="ff-card__subtitle">
+                            <i class="bi bi-building"></i> @player.Club
+                        </div>
+                        <div class="ff-card__meta">
+                            <span class="ff-card__meta-item">
+                                <i class="bi bi-bullseye"></i>
+                                <span class="ff-card__value">@player.Goals</span> Goals
+                            </span>
+                            <span class="ff-card__meta-item">
+                                <i class="bi bi-hand-thumbs-up"></i>
+                                <span class="ff-card__value">@player.Assists</span> Assists
+                            </span>
+                            <span class="ff-card__meta-item">
+                                <i class="bi bi-cash-stack"></i>
+                                <span class="ff-card__value">€@player.MarketValue.ToString("N0")</span>
+                            </span>
+                        </div>
+                        <div class="ff-card__footer">
+                            <div>
+                                <div class="ff-card__points">@player.TotalPoints</div>
+                                <div class="ff-card__points-label">Total Points</div>
+                            </div>
+                            <span class="ff-btn ff-btn--outline ff-btn--sm">
+                                View <i class="bi bi-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}

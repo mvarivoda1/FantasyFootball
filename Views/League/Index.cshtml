@@ -1,0 +1,50 @@
+@model List<League>
+@{
+    ViewData["Title"] = "Leagues";
+}
+
+<h1 class="ff-page-title"><i class="bi bi-diagram-3-fill"></i> Leagues</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="ff-empty">
+        <div class="ff-empty__icon"><i class="bi bi-diagram-3"></i></div>
+        <div class="ff-empty__text">No leagues found.</div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var league in Model)
+        {
+            <div class="col-lg-4 col-md-6 col-12">
+                <a asp-controller="League" asp-action="Details" asp-route-id="@league.Id" style="text-decoration:none; color:inherit;">
+                    <div class="ff-card">
+                        <div class="ff-card__title">@league.Name</div>
+                        <div class="ff-card__subtitle">
+                            <i class="bi bi-calendar3"></i> Season @league.Season
+                        </div>
+                        @if (!string.IsNullOrEmpty(league.Description))
+                        {
+                            <p class="ff-text-muted ff-text-sm mb-3">@league.Description</p>
+                        }
+                        <div class="ff-card__meta">
+                            <span class="ff-card__meta-item">
+                                <i class="bi bi-shield"></i>
+                                <span class="ff-card__value">@league.Teams.Count</span> / @league.MaxTeams Teams
+                            </span>
+                        </div>
+                        <div class="ff-card__footer">
+                            <span class="ff-text-muted ff-text-sm">
+                                Created @league.CreatedAt.ToString("dd MMM yyyy")
+                            </span>
+                            <span class="ff-btn ff-btn--outline ff-btn--sm">
+                                View <i class="bi bi-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}

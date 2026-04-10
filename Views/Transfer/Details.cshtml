@@ -1,0 +1,114 @@
+@model Transfer
+@{
+    ViewData["Title"] = $"Transfer - {Model.Player.FullName}";
+
+    string statusClass = Model.Status switch
+    {
+        TransferStatus.Accepted => "ff-badge--accepted",
+        TransferStatus.Pending => "ff-badge--pending",
+        TransferStatus.Rejected => "ff-badge--rejected",
+        TransferStatus.Cancelled => "ff-badge--cancelled",
+        _ => "ff-badge--pending"
+    };
+}
+
+<!-- Breadcrumb -->
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="Transfer" asp-action="Index">Transfers</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">@Model.Player.FullName</li>
+</ul>
+
+<!-- Hero -->
+<div class="ff-hero ff-animate-in">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <h1 class="ff-hero__title">Transfer Details</h1>
+            <p class="ff-hero__subtitle mb-0">
+                <a asp-controller="Player" asp-action="Details" asp-route-id="@Model.Player.Id" style="color: var(--ff-accent);">
+                    @Model.Player.FullName
+                </a>
+            </p>
+        </div>
+        <span class="ff-badge @statusClass" style="font-size: 0.9rem; padding: 0.4rem 1rem;">@Model.Status</span>
+    </div>
+</div>
+
+<!-- Details Grid -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="ff-card">
+            <h3 class="ff-section-title"><i class="bi bi-box-arrow-right"></i> From</h3>
+            @if (Model.FromTeam != null)
+            {
+                <div class="ff-detail-grid">
+                    <div class="ff-detail-item">
+                        <span class="ff-detail-item__label">Team</span>
+                        <span class="ff-detail-item__value">
+                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@Model.FromTeam.Id">
+                                @Model.FromTeam.Name
+                            </a>
+                        </span>
+                    </div>
+                    <div class="ff-detail-item">
+                        <span class="ff-detail-item__label">Owner</span>
+                        <span class="ff-detail-item__value">@Model.FromTeam.OwnerName</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p class="ff-text-muted mb-0"><i class="bi bi-person-x"></i> Free Agent (no previous team)</p>
+            }
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="ff-card">
+            <h3 class="ff-section-title"><i class="bi bi-box-arrow-in-right"></i> To</h3>
+            <div class="ff-detail-grid">
+                <div class="ff-detail-item">
+                    <span class="ff-detail-item__label">Team</span>
+                    <span class="ff-detail-item__value">
+                        <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@Model.ToTeam.Id">
+                            @Model.ToTeam.Name
+                        </a>
+                    </span>
+                </div>
+                <div class="ff-detail-item">
+                    <span class="ff-detail-item__label">Owner</span>
+                    <span class="ff-detail-item__value">@Model.ToTeam.OwnerName</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="ff-stat-card">
+            <div class="ff-stat-card__icon"><i class="bi bi-cash-stack"></i></div>
+            <div class="ff-stat-card__value">€@Model.Price.ToString("N0")</div>
+            <div class="ff-stat-card__label">Transfer Price</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="ff-stat-card">
+            <div class="ff-stat-card__icon"><i class="bi bi-calendar3"></i></div>
+            <div class="ff-stat-card__value">@Model.TransferDate.ToString("dd MMM yyyy")</div>
+            <div class="ff-stat-card__label">Transfer Date</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="ff-stat-card">
+            <div class="ff-stat-card__icon"><i class="bi bi-flag-fill"></i></div>
+            <div class="ff-stat-card__value"><span class="ff-badge @statusClass">@Model.Status</span></div>
+            <div class="ff-stat-card__label">Status</div>
+        </div>
+    </div>
+</div>
+
+<a asp-controller="Transfer" asp-action="Index" class="ff-btn ff-btn--outline">
+    <i class="bi bi-arrow-left"></i> Back to Transfers
+</a>

@@ -1,0 +1,124 @@
+@model FantasyTeam
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<!-- Breadcrumb -->
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="FantasyTeam" asp-action="Index">Teams</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">@Model.Name</li>
+</ul>
+
+<!-- Hero -->
+<div class="ff-hero ff-animate-in">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <h1 class="ff-hero__title">@Model.Name</h1>
+            <p class="ff-hero__subtitle mb-0">
+                <i class="bi bi-person-fill"></i> @Model.OwnerName
+            </p>
+        </div>
+        <div class="text-end">
+            <div class="ff-card__points" style="font-size: 2.5rem;">@Model.TotalPoints</div>
+            <div class="ff-card__points-label">Total Points</div>
+        </div>
+    </div>
+</div>
+
+<!-- Info -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="ff-stat-card">
+            <div class="ff-stat-card__icon"><i class="bi bi-diagram-3-fill"></i></div>
+            <div class="ff-stat-card__value">
+                @if (Model.League != null)
+                {
+                    <a asp-controller="League" asp-action="Details" asp-route-id="@Model.League.Id">
+                        @Model.League.Name
+                    </a>
+                }
+                else
+                {
+                    <span class="ff-text-muted">No League</span>
+                }
+            </div>
+            <div class="ff-stat-card__label">League</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="ff-stat-card">
+            <div class="ff-stat-card__icon"><i class="bi bi-cash-stack"></i></div>
+            <div class="ff-stat-card__value">€@Model.Budget.ToString("N0")</div>
+            <div class="ff-stat-card__label">Budget</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="ff-stat-card">
+            <div class="ff-stat-card__icon"><i class="bi bi-calendar3"></i></div>
+            <div class="ff-stat-card__value">@Model.CreatedAt.ToString("dd MMM yyyy")</div>
+            <div class="ff-stat-card__label">Created</div>
+        </div>
+    </div>
+</div>
+
+<!-- Players -->
+<h2 class="ff-section-title"><i class="bi bi-people-fill"></i> Squad (@(Model.Players?.Count ?? 0) Players)</h2>
+@if (Model.Players != null && Model.Players.Any())
+{
+    <div class="ff-table-responsive">
+        <table class="ff-table">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Club</th>
+                    <th>Position</th>
+                    <th>Goals</th>
+                    <th>Assists</th>
+                    <th>Points</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var player in Model.Players)
+                {
+                    string badgeClass = player.Position switch
+                    {
+                        Position.Goalkeeper => "ff-badge--gk",
+                        Position.Defender => "ff-badge--def",
+                        Position.Midfielder => "ff-badge--mid",
+                        Position.Forward => "ff-badge--fwd",
+                        _ => "ff-badge--mid"
+                    };
+
+                    <tr>
+                        <td>
+                            <a asp-controller="Player" asp-action="Details" asp-route-id="@player.Id">
+                                @player.FullName
+                            </a>
+                        </td>
+                        <td>@player.Club</td>
+                        <td><span class="ff-badge @badgeClass">@player.Position</span></td>
+                        <td>@player.Goals</td>
+                        <td>@player.Assists</td>
+                        <td><strong class="ff-text-accent">@player.TotalPoints</strong></td>
+                        <td>
+                            <a asp-controller="Player" asp-action="Details" asp-route-id="@player.Id" class="ff-btn ff-btn--outline ff-btn--sm">
+                                View <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="ff-empty">
+        <div class="ff-empty__icon"><i class="bi bi-people"></i></div>
+        <div class="ff-empty__text">No players in this team yet.</div>
+    </div>
+}
