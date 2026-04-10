@@ -19,6 +19,26 @@
           }
         ]
       }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"C:\\Users\\marijan.varivoda\\source\\FantasyFootball\\.github\\hooks\\log_subagent.ps1\""
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -ExecutionPolicy Bypass -File \"C:\\Users\\marijan.varivoda\\source\\FantasyFootball\\.github\\hooks\\log_subagent.ps1\""
+          }
+        ]
+      }
     ]
   }
 }
