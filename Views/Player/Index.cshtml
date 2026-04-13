@@ -36,6 +36,19 @@ else
                     }
                 </select>
             </div>
+            <div class="ff-locker-filter__group">
+                <label for="filterPosition" class="ff-locker-filter__label">
+                    <i class="bi bi-person-badge-fill" aria-hidden="true"></i>
+                    <span class="ff-locker-filter__label-text">Position</span>
+                </label>
+                <select id="filterPosition" class="ff-locker-filter__select" aria-label="Filter by position">
+                    <option value="">All Positions</option>
+                    <option value="Goalkeeper">Goalkeeper</option>
+                    <option value="Defender">Defender</option>
+                    <option value="Midfielder">Midfielder</option>
+                    <option value="Forward">Forward</option>
+                </select>
+            </div>
             <div class="ff-locker-filter__group ff-locker-filter__group--search">
                 <label for="filterSearch" class="ff-locker-filter__label">
                     <i class="bi bi-search" aria-hidden="true"></i>
@@ -251,6 +264,7 @@ $(function () {
     var $lockers = $('.ff-locker');
     var totalCount = $lockers.length;
     var $clubFilter = $('#filterClub');
+    var $positionFilter = $('#filterPosition');
     var $searchFilter = $('#filterSearch');
     var $searchClear = $('#filterSearchClear');
     var $filterCount = $('#filterCount');
@@ -260,18 +274,21 @@ $(function () {
 
     function applyFilters() {
         var clubVal = $clubFilter.val().toLowerCase();
+        var positionVal = $positionFilter.val();
         var searchVal = $searchFilter.val().toLowerCase().trim();
         var visibleCount = 0;
 
         $lockers.each(function () {
             var $locker = $(this);
             var playerClub = ($locker.data('player-club') || '').toString().toLowerCase();
+            var playerPosition = ($locker.data('player-position') || '').toString();
             var playerName = ($locker.data('player-name') || '').toString().toLowerCase();
 
             var matchesClub = !clubVal || playerClub === clubVal;
+            var matchesPosition = !positionVal || playerPosition === positionVal;
             var matchesSearch = !searchVal || playerName.indexOf(searchVal) !== -1;
 
-            if (matchesClub && matchesSearch) {
+            if (matchesClub && matchesPosition && matchesSearch) {
                 $locker.show();
                 visibleCount++;
             } else {
@@ -294,6 +311,7 @@ $(function () {
     }
 
     $clubFilter.on('change', applyFilters);
+    $positionFilter.on('change', applyFilters);
     $searchFilter.on('input', applyFilters);
 
     $searchClear.on('click', function () {
@@ -304,6 +322,7 @@ $(function () {
 
     $clearAll.on('click', function () {
         $clubFilter.val('');
+        $positionFilter.val('');
         $searchFilter.val('');
         applyFilters();
     });
