@@ -1,78 +1,922 @@
 @model List<Transfer>
 @{
     ViewData["Title"] = "Transfers";
+
+    // -----------------------------------------------------------
+    // Helpers (inline, no backend change)
+    // -----------------------------------------------------------
+    string PosAbbr(Position p) => p switch
+    {
+        Position.Goalkeeper => "GK",
+        Position.Defender   => "DEF",
+        Position.Midfielder => "MID",
+        Position.Forward    => "FWD",
+        _ => "MID"
+    };
+
+    string PosBadgeClass(Position p) => p switch
+    {
+        Position.Goalkeeper => "ff-badge--gk",
+        Position.Defender   => "ff-badge--def",
+        Position.Midfielder => "ff-badge--mid",
+        Position.Forward    => "ff-badge--fwd",
+        _ => "ff-badge--mid"
+    };
+
+    string StatusBadgeClass(TransferStatus s) => s switch
+    {
+        TransferStatus.Accepted  => "ff-badge--accepted",
+        TransferStatus.Pending   => "ff-badge--pending",
+        TransferStatus.Rejected  => "ff-badge--rejected",
+        TransferStatus.Cancelled => "ff-badge--cancelled",
+        _ => "ff-badge--pending"
+    };
+
+    var all = Model ?? new List<Transfer>();
+
+    // -----------------------------------------------------------
+    // Trend datasets
+    // -----------------------------------------------------------
+    var mostExpensive = all
+        .Where(t => t.Status == TransferStatus.Accepted)
+        .OrderByDescending(t => t.Price)
+        .ToList();
+
+    var transfersIn = all
+        .Where(t => t.Status == TransferStatus.Accepted)
+        .OrderByDescending(t => t.TransferDate)
+        .ToList();
+
+    var transfersOut = all
+        .Where(t => t.FromTeam != null && t.Status == TransferStatus.Accepted)
+        .OrderByDescending(t => t.TransferDate)
+        .ToList();
+
+    var pending = all
+        .Where(t => t.Status == TransferStatus.Pending)
+        .OrderByDescending(t => t.TransferDate)
+        .ToList();
+
+    var freeAgentSignings = all
+        .Where(t => t.FromTeam == null && t.Status == TransferStatus.Accepted)
+        .OrderByDescending(t => t.TransferDate)
+        .ToList();
+
+    var rejectedCancelled = all
+        .Where(t => t.Status == TransferStatus.Rejected || t.Status == TransferStatus.Cancelled)
+        .OrderByDescending(t => t.TransferDate)
+        .ToList();
 }
 
-<h1 class="ff-page-title"><i class="bi bi-arrow-left-right"></i> Transfers</h1>
+<!-- Breadcrumb -->
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Transfers</li>
+</ul>
 
-@if (Model == null || !Model.Any())
+<!-- Page header -->
+<header class="ff-page-header ff-animate-in">
+    <div class="ff-page-header__main">
+        <h1 class="ff-page-header__title"><i class="bi bi-arrow-left-right"></i> Transfer Trends</h1>
+        <p class="ff-page-header__meta">
+            <span class="ff-page-header__meta-item">
+                <i class="bi bi-activity"></i> @all.Count total transfers
+            </span>
+            <span class="ff-page-header__meta-item">
+                <i class="bi bi-check-circle-fill"></i> @all.Count(t => t.Status == TransferStatus.Accepted) accepted
+            </span>
+            <span class="ff-page-header__meta-item">
+                <i class="bi bi-hourglass-split"></i> @pending.Count pending
+            </span>
+        </p>
+    </div>
+    <p class="ff-page-header__description">
+        A dashboard of transfer activity across the league &mdash; pick a trend card and click &ldquo;View all&rdquo; for the full list.
+    </p>
+</header>
+
+@if (!all.Any())
 {
     <div class="ff-empty">
         <div class="ff-empty__icon"><i class="bi bi-arrow-left-right"></i></div>
-        <div class="ff-empty__text">No transfers found.</div>
+        <div class="ff-empty__text">No transfers recorded yet.</div>
     </div>
 }
 else
 {
-    <div class="ff-table-responsive">
-        <table class="ff-table">
-            <thead>
-                <tr>
-                    <th>Player</th>
-                    <th>From</th>
-                    <th>To</th>
-                    <th>Price</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var transfer in Model)
-                {
-                    string statusClass = transfer.Status switch
-                    {
-                        TransferStatus.Accepted => "ff-badge--accepted",
-                        TransferStatus.Pending => "ff-badge--pending",
-                        TransferStatus.Rejected => "ff-badge--rejected",
-                        TransferStatus.Cancelled => "ff-badge--cancelled",
-                        _ => "ff-badge--pending"
-                    };
+    // ---------- Local render helper: builds a .ff-player-link anchor ----------
+    // Returns IHtmlContent so Razor emits the HTML without re-encoding.
+    Microsoft.AspNetCore.Html.IHtmlContent PlayerLink(Player p)
+    {
+        var nameEnc      = System.Net.WebUtility.HtmlEncode(p.FullName ?? "");
+        var clubEnc      = System.Net.WebUtility.HtmlEncode(p.Club ?? "");
+        var natEnc       = System.Net.WebUtility.HtmlEncode(p.Nationality ?? "");
+        var teamsJson    = System.Text.Json.JsonSerializer.Serialize(
+                              p.FantasyTeams?.Select(t => new { t.Id, t.Name, t.OwnerName, t.TotalPoints }));
+        var teamsJsonEnc = System.Net.WebUtility.HtmlEncode(teamsJson);
 
-                    <tr>
-                        <td>
-                            <a asp-controller="Player" asp-action="Details" asp-route-id="@transfer.Player.Id">
-                                @transfer.Player.FullName
-                            </a>
-                        </td>
-                        <td>
-                            @if (transfer.FromTeam != null)
+        var sb = new System.Text.StringBuilder();
+        sb.Append("<a href=\"#\" class=\"ff-player-link ff-widget-row__name\" role=\"button\" tabindex=\"0\"");
+        sb.Append(" aria-haspopup=\"dialog\" aria-label=\"Open locker for ").Append(nameEnc).Append("\"");
+        sb.Append(" data-player-id=\"").Append(p.Id).Append("\"");
+        sb.Append(" data-player-name=\"").Append(nameEnc).Append("\"");
+        sb.Append(" data-player-club=\"").Append(clubEnc).Append("\"");
+        sb.Append(" data-player-nationality=\"").Append(natEnc).Append("\"");
+        sb.Append(" data-player-position=\"").Append(p.Position).Append("\"");
+        sb.Append(" data-player-pos-abbr=\"").Append(PosAbbr(p.Position)).Append("\"");
+        sb.Append(" data-player-badge=\"").Append(PosBadgeClass(p.Position)).Append("\"");
+        sb.Append(" data-player-dob=\"").Append(p.DateOfBirth.ToString("dd MMM yyyy")).Append("\"");
+        sb.Append(" data-player-value=\"").Append(p.MarketValue.ToString("N0")).Append("\"");
+        sb.Append(" data-player-goals=\"").Append(p.Goals).Append("\"");
+        sb.Append(" data-player-assists=\"").Append(p.Assists).Append("\"");
+        sb.Append(" data-player-cleansheets=\"").Append(p.CleanSheets).Append("\"");
+        sb.Append(" data-player-points=\"").Append(p.TotalPoints).Append("\"");
+        sb.Append(" data-player-teams='").Append(teamsJsonEnc).Append("'>");
+        sb.Append(nameEnc);
+        sb.Append("</a>");
+        return new Microsoft.AspNetCore.Html.HtmlString(sb.ToString());
+    }
+
+    <!-- Grid of trend widgets -->
+    <div class="row g-4">
+
+        <!-- ==================== 1. Most Expensive ==================== -->
+        <section class="col-lg-6 col-xl-4">
+            <div class="ff-widget-card ff-widget-card--expensive" data-trend-id="expensive">
+                <div class="ff-widget-card__header">
+                    <h2 class="ff-widget-card__title">
+                        <i class="bi bi-gem"></i> Most Expensive
+                    </h2>
+                    <span class="ff-widget-card__count">@mostExpensive.Count total</span>
+                </div>
+                <div class="ff-widget-card__body ff-widget-card__body--list">
+                    @if (mostExpensive.Any())
+                    {
+                        <ol class="ff-widget-list ff-widget-list--ranked">
+                            @{ int er = 1; }
+                            @foreach (var t in mostExpensive.Take(5))
                             {
-                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.FromTeam.Id">
-                                    @transfer.FromTeam.Name
-                                </a>
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__rank">@er</div>
+                                    <div class="ff-widget-row__main">
+                                        @PlayerLink(t.Player)
+                                        <span class="ff-widget-row__sub">@t.Player.Club &middot; @t.ToTeam.Name</span>
+                                    </div>
+                                    <div class="ff-trend-row__metric ff-trend-row__metric--price">
+                                        &euro;@t.Price.ToString("N0")
+                                    </div>
+                                </li>
+                                er++;
                             }
-                            else
-                            {
-                                <span class="ff-text-muted">Free Agent</span>
-                            }
-                        </td>
-                        <td>
-                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.ToTeam.Id">
-                                @transfer.ToTeam.Name
-                            </a>
-                        </td>
-                        <td>€@transfer.Price.ToString("N0")</td>
-                        <td>@transfer.TransferDate.ToString("dd MMM yyyy")</td>
-                        <td><span class="ff-badge @statusClass">@transfer.Status</span></td>
-                        <td>
-                            <a asp-controller="Transfer" asp-action="Details" asp-route-id="@transfer.Id" class="ff-btn ff-btn--outline ff-btn--sm">
-                                Details <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </td>
-                    </tr>
+                        </ol>
+                    }
+                    else
+                    {
+                        <div class="ff-widget-card__empty">
+                            <i class="bi bi-gem"></i>
+                            No accepted transfers yet.
+                        </div>
+                    }
+                </div>
+                @if (mostExpensive.Any())
+                {
+                    <div class="ff-widget-card__footer">
+                        <button type="button"
+                                class="ff-btn ff-btn--outline ff-btn--sm ff-trend-viewall"
+                                data-trend-id="expensive"
+                                data-trend-title="Most Expensive Transfers"
+                                data-trend-icon="bi-gem">
+                            View all @mostExpensive.Count <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                    <!-- Hidden full list, cloned into modal -->
+                    <div class="ff-trend-widget__full" data-trend-content="expensive">
+                        <div class="ff-table-responsive">
+                            <table class="ff-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Player</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th class="text-end">Price</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{ int erFull = 1; }
+                                    @foreach (var t in mostExpensive)
+                                    {
+                                        <tr>
+                                            <td class="ff-table__rank">@erFull</td>
+                                            <td>@PlayerLink(t.Player)</td>
+                                            <td>
+                                                @if (t.FromTeam != null)
+                                                {
+                                                    <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.FromTeam.Id">@t.FromTeam.Name</a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="ff-text-muted">Free Agent</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.ToTeam.Id">@t.ToTeam.Name</a>
+                                            </td>
+                                            <td class="ff-num text-end">&euro;@t.Price.ToString("N0")</td>
+                                            <td><span class="ff-text-muted ff-text-sm">@t.TransferDate.ToString("dd MMM yyyy")</span></td>
+                                            <td><span class="ff-badge @StatusBadgeClass(t.Status)">@t.Status</span></td>
+                                        </tr>
+                                        erFull++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 }
-            </tbody>
-        </table>
+            </div>
+        </section>
+
+        <!-- ==================== 2. Transfers In (recent accepted) ==================== -->
+        <section class="col-lg-6 col-xl-4">
+            <div class="ff-widget-card ff-widget-card--in" data-trend-id="in">
+                <div class="ff-widget-card__header">
+                    <h2 class="ff-widget-card__title">
+                        <i class="bi bi-arrow-down-circle-fill"></i> Recent Transfers In
+                    </h2>
+                    <span class="ff-widget-card__count">@transfersIn.Count total</span>
+                </div>
+                <div class="ff-widget-card__body ff-widget-card__body--list">
+                    @if (transfersIn.Any())
+                    {
+                        <ul class="ff-widget-list">
+                            @foreach (var t in transfersIn.Take(5))
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__main">
+                                        @PlayerLink(t.Player)
+                                        <span class="ff-widget-row__sub">
+                                            <i class="bi bi-arrow-right-short"></i> @t.ToTeam.Name
+                                        </span>
+                                    </div>
+                                    <div class="ff-trend-row__metric ff-trend-row__metric--date">
+                                        @t.TransferDate.ToString("dd MMM")
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="ff-widget-card__empty">
+                            <i class="bi bi-arrow-down-circle"></i>
+                            No incoming transfers yet.
+                        </div>
+                    }
+                </div>
+                @if (transfersIn.Any())
+                {
+                    <div class="ff-widget-card__footer">
+                        <button type="button"
+                                class="ff-btn ff-btn--outline ff-btn--sm ff-trend-viewall"
+                                data-trend-id="in"
+                                data-trend-title="Recent Transfers In"
+                                data-trend-icon="bi-arrow-down-circle-fill">
+                            View all @transfersIn.Count <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                    <div class="ff-trend-widget__full" data-trend-content="in">
+                        <div class="ff-table-responsive">
+                            <table class="ff-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th class="text-end">Price</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var t in transfersIn)
+                                    {
+                                        <tr>
+                                            <td>@PlayerLink(t.Player)</td>
+                                            <td>
+                                                @if (t.FromTeam != null)
+                                                {
+                                                    <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.FromTeam.Id">@t.FromTeam.Name</a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="ff-text-muted">Free Agent</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.ToTeam.Id">@t.ToTeam.Name</a>
+                                            </td>
+                                            <td class="ff-num text-end">&euro;@t.Price.ToString("N0")</td>
+                                            <td><span class="ff-text-muted ff-text-sm">@t.TransferDate.ToString("dd MMM yyyy")</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- ==================== 3. Transfers Out ==================== -->
+        <section class="col-lg-6 col-xl-4">
+            <div class="ff-widget-card ff-widget-card--out" data-trend-id="out">
+                <div class="ff-widget-card__header">
+                    <h2 class="ff-widget-card__title">
+                        <i class="bi bi-arrow-up-circle-fill"></i> Recent Transfers Out
+                    </h2>
+                    <span class="ff-widget-card__count">@transfersOut.Count total</span>
+                </div>
+                <div class="ff-widget-card__body ff-widget-card__body--list">
+                    @if (transfersOut.Any())
+                    {
+                        <ul class="ff-widget-list">
+                            @foreach (var t in transfersOut.Take(5))
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__main">
+                                        @PlayerLink(t.Player)
+                                        <span class="ff-widget-row__sub">
+                                            <i class="bi bi-arrow-left-short"></i> @t.FromTeam.Name
+                                        </span>
+                                    </div>
+                                    <div class="ff-trend-row__metric ff-trend-row__metric--down">
+                                        @t.TransferDate.ToString("dd MMM")
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="ff-widget-card__empty">
+                            <i class="bi bi-arrow-up-circle"></i>
+                            No outgoing transfers yet.
+                        </div>
+                    }
+                </div>
+                @if (transfersOut.Any())
+                {
+                    <div class="ff-widget-card__footer">
+                        <button type="button"
+                                class="ff-btn ff-btn--outline ff-btn--sm ff-trend-viewall"
+                                data-trend-id="out"
+                                data-trend-title="Recent Transfers Out"
+                                data-trend-icon="bi-arrow-up-circle-fill">
+                            View all @transfersOut.Count <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                    <div class="ff-trend-widget__full" data-trend-content="out">
+                        <div class="ff-table-responsive">
+                            <table class="ff-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th class="text-end">Price</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var t in transfersOut)
+                                    {
+                                        <tr>
+                                            <td>@PlayerLink(t.Player)</td>
+                                            <td>
+                                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.FromTeam.Id">@t.FromTeam.Name</a>
+                                            </td>
+                                            <td>
+                                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.ToTeam.Id">@t.ToTeam.Name</a>
+                                            </td>
+                                            <td class="ff-num text-end">&euro;@t.Price.ToString("N0")</td>
+                                            <td><span class="ff-text-muted ff-text-sm">@t.TransferDate.ToString("dd MMM yyyy")</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- ==================== 4. Pending ==================== -->
+        <section class="col-lg-6 col-xl-4">
+            <div class="ff-widget-card ff-widget-card--pending" data-trend-id="pending">
+                <div class="ff-widget-card__header">
+                    <h2 class="ff-widget-card__title">
+                        <i class="bi bi-hourglass-split"></i> Pending Transfers
+                    </h2>
+                    <span class="ff-widget-card__count">@pending.Count total</span>
+                </div>
+                <div class="ff-widget-card__body ff-widget-card__body--list">
+                    @if (pending.Any())
+                    {
+                        <ul class="ff-widget-list">
+                            @foreach (var t in pending.Take(5))
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__main">
+                                        @PlayerLink(t.Player)
+                                        <span class="ff-widget-row__sub">
+                                            @(t.FromTeam != null ? t.FromTeam.Name : "Free Agent")
+                                            <i class="bi bi-arrow-right-short"></i> @t.ToTeam.Name
+                                        </span>
+                                    </div>
+                                    <div class="ff-trend-row__metric ff-trend-row__metric--pending">
+                                        @t.TransferDate.ToString("dd MMM")
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="ff-widget-card__empty">
+                            <i class="bi bi-hourglass"></i>
+                            No pending transfers.
+                        </div>
+                    }
+                </div>
+                @if (pending.Any())
+                {
+                    <div class="ff-widget-card__footer">
+                        <button type="button"
+                                class="ff-btn ff-btn--outline ff-btn--sm ff-trend-viewall"
+                                data-trend-id="pending"
+                                data-trend-title="Pending Transfers"
+                                data-trend-icon="bi-hourglass-split">
+                            View all @pending.Count <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                    <div class="ff-trend-widget__full" data-trend-content="pending">
+                        <div class="ff-table-responsive">
+                            <table class="ff-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th class="text-end">Price</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var t in pending)
+                                    {
+                                        <tr>
+                                            <td>@PlayerLink(t.Player)</td>
+                                            <td>
+                                                @if (t.FromTeam != null)
+                                                {
+                                                    <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.FromTeam.Id">@t.FromTeam.Name</a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="ff-text-muted">Free Agent</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.ToTeam.Id">@t.ToTeam.Name</a>
+                                            </td>
+                                            <td class="ff-num text-end">&euro;@t.Price.ToString("N0")</td>
+                                            <td><span class="ff-text-muted ff-text-sm">@t.TransferDate.ToString("dd MMM yyyy")</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- ==================== 5. Free Agent Signings ==================== -->
+        <section class="col-lg-6 col-xl-4">
+            <div class="ff-widget-card ff-widget-card--freeagent" data-trend-id="freeagent">
+                <div class="ff-widget-card__header">
+                    <h2 class="ff-widget-card__title">
+                        <i class="bi bi-person-plus-fill"></i> Free Agent Signings
+                    </h2>
+                    <span class="ff-widget-card__count">@freeAgentSignings.Count total</span>
+                </div>
+                <div class="ff-widget-card__body ff-widget-card__body--list">
+                    @if (freeAgentSignings.Any())
+                    {
+                        <ul class="ff-widget-list">
+                            @foreach (var t in freeAgentSignings.Take(5))
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__main">
+                                        @PlayerLink(t.Player)
+                                        <span class="ff-widget-row__sub">
+                                            <i class="bi bi-arrow-right-short"></i> @t.ToTeam.Name
+                                        </span>
+                                    </div>
+                                    <div class="ff-trend-row__metric ff-trend-row__metric--price">
+                                        &euro;@t.Price.ToString("N0")
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="ff-widget-card__empty">
+                            <i class="bi bi-person-plus"></i>
+                            No free agent signings yet.
+                        </div>
+                    }
+                </div>
+                @if (freeAgentSignings.Any())
+                {
+                    <div class="ff-widget-card__footer">
+                        <button type="button"
+                                class="ff-btn ff-btn--outline ff-btn--sm ff-trend-viewall"
+                                data-trend-id="freeagent"
+                                data-trend-title="Free Agent Signings"
+                                data-trend-icon="bi-person-plus-fill">
+                            View all @freeAgentSignings.Count <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                    <div class="ff-trend-widget__full" data-trend-content="freeagent">
+                        <div class="ff-table-responsive">
+                            <table class="ff-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>To</th>
+                                        <th class="text-end">Price</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var t in freeAgentSignings)
+                                    {
+                                        <tr>
+                                            <td>@PlayerLink(t.Player)</td>
+                                            <td>
+                                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.ToTeam.Id">@t.ToTeam.Name</a>
+                                            </td>
+                                            <td class="ff-num text-end">&euro;@t.Price.ToString("N0")</td>
+                                            <td><span class="ff-text-muted ff-text-sm">@t.TransferDate.ToString("dd MMM yyyy")</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- ==================== 6. Rejected / Cancelled ==================== -->
+        <section class="col-lg-6 col-xl-4">
+            <div class="ff-widget-card ff-widget-card--rejected" data-trend-id="rejected">
+                <div class="ff-widget-card__header">
+                    <h2 class="ff-widget-card__title">
+                        <i class="bi bi-x-octagon-fill"></i> Rejected &amp; Cancelled
+                    </h2>
+                    <span class="ff-widget-card__count">@rejectedCancelled.Count total</span>
+                </div>
+                <div class="ff-widget-card__body ff-widget-card__body--list">
+                    @if (rejectedCancelled.Any())
+                    {
+                        <ul class="ff-widget-list">
+                            @foreach (var t in rejectedCancelled.Take(5))
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__main">
+                                        @PlayerLink(t.Player)
+                                        <span class="ff-widget-row__sub">
+                                            @(t.FromTeam != null ? t.FromTeam.Name : "Free Agent")
+                                            <i class="bi bi-arrow-right-short"></i> @t.ToTeam.Name
+                                        </span>
+                                    </div>
+                                    <span class="ff-badge @StatusBadgeClass(t.Status)">@t.Status</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="ff-widget-card__empty">
+                            <i class="bi bi-x-octagon"></i>
+                            No rejected or cancelled transfers.
+                        </div>
+                    }
+                </div>
+                @if (rejectedCancelled.Any())
+                {
+                    <div class="ff-widget-card__footer">
+                        <button type="button"
+                                class="ff-btn ff-btn--outline ff-btn--sm ff-trend-viewall"
+                                data-trend-id="rejected"
+                                data-trend-title="Rejected & Cancelled Transfers"
+                                data-trend-icon="bi-x-octagon-fill">
+                            View all @rejectedCancelled.Count <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                    <div class="ff-trend-widget__full" data-trend-content="rejected">
+                        <div class="ff-table-responsive">
+                            <table class="ff-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th class="text-end">Price</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var t in rejectedCancelled)
+                                    {
+                                        <tr>
+                                            <td>@PlayerLink(t.Player)</td>
+                                            <td>
+                                                @if (t.FromTeam != null)
+                                                {
+                                                    <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.FromTeam.Id">@t.FromTeam.Name</a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="ff-text-muted">Free Agent</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.ToTeam.Id">@t.ToTeam.Name</a>
+                                            </td>
+                                            <td class="ff-num text-end">&euro;@t.Price.ToString("N0")</td>
+                                            <td><span class="ff-text-muted ff-text-sm">@t.TransferDate.ToString("dd MMM yyyy")</span></td>
+                                            <td><span class="ff-badge @StatusBadgeClass(t.Status)">@t.Status</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+
     </div>
+
+    <!-- ==================== Reusable Bootstrap Trend Modal ==================== -->
+    <div class="modal fade ff-trend-modal"
+         id="trendModal"
+         tabindex="-1"
+         aria-labelledby="trendModalTitle"
+         aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="trendModalTitle">
+                        <i class="bi bi-activity" id="trendModalIcon"></i>
+                        <span id="trendModalTitleText">Trend</span>
+                    </h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="trendModalBody">
+                    <!-- Cloned full list is injected here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="ff-btn ff-btn--outline ff-btn--sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== Locker Modal (player details) ==================== -->
+    <div class="ff-locker-modal-backdrop" id="lockerModalBackdrop" aria-hidden="true">
+        <div class="ff-locker-modal" role="dialog" aria-modal="true" aria-labelledby="lockerModalName">
+            <div class="ff-locker-modal__door-wrapper">
+                <div class="ff-locker-modal__door" aria-hidden="true">
+                    <div class="ff-locker-modal__door-handle"></div>
+                </div>
+
+                <div class="ff-locker-modal__interior">
+                    <button class="ff-locker-modal__close" aria-label="Close locker" id="lockerModalClose">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+
+                    <div class="ff-locker-modal__header">
+                        <div class="ff-locker-modal__player-identity">
+                            <div>
+                                <h2 class="ff-locker-modal__name" id="lockerModalName"></h2>
+                                <div class="ff-locker-modal__meta">
+                                    <span id="lockerModalBadge"></span>
+                                    <span><i class="bi bi-building"></i> <span id="lockerModalClub"></span></span>
+                                    <span><i class="bi bi-globe"></i> <span id="lockerModalNationality"></span></span>
+                                </div>
+                            </div>
+                            <div class="ff-locker-modal__points">
+                                <div class="ff-locker-modal__points-value" id="lockerModalPoints"></div>
+                                <div class="ff-locker-modal__points-label">Total Pts</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ff-locker-modal__stats">
+                        <div class="ff-locker-modal__stat">
+                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-bullseye"></i></div>
+                            <div class="ff-locker-modal__stat-value" id="lockerModalGoals"></div>
+                            <div class="ff-locker-modal__stat-label">Goals</div>
+                        </div>
+                        <div class="ff-locker-modal__stat">
+                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-hand-thumbs-up-fill"></i></div>
+                            <div class="ff-locker-modal__stat-value" id="lockerModalAssists"></div>
+                            <div class="ff-locker-modal__stat-label">Assists</div>
+                        </div>
+                        <div class="ff-locker-modal__stat">
+                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-shield-fill-check"></i></div>
+                            <div class="ff-locker-modal__stat-value" id="lockerModalCleanSheets"></div>
+                            <div class="ff-locker-modal__stat-label">Clean Sheets</div>
+                        </div>
+                        <div class="ff-locker-modal__stat">
+                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-cash-stack"></i></div>
+                            <div class="ff-locker-modal__stat-value" id="lockerModalValue"></div>
+                            <div class="ff-locker-modal__stat-label">Value</div>
+                        </div>
+                        <div class="ff-locker-modal__stat">
+                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-cake2-fill"></i></div>
+                            <div class="ff-locker-modal__stat-value" id="lockerModalDob"></div>
+                            <div class="ff-locker-modal__stat-label">Born</div>
+                        </div>
+                    </div>
+
+                    <hr class="ff-locker-modal__divider" />
+
+                    <div class="ff-locker-modal__teams">
+                        <div class="ff-locker-modal__teams-title">
+                            <i class="bi bi-shield-fill"></i> Fantasy Teams
+                        </div>
+                        <div class="ff-locker-modal__team-list" id="lockerModalTeams">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="ff-locker-modal__actions">
+                        <a href="#" class="ff-locker-modal__details-link" id="lockerModalDetailsLink">
+                            Full Details <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(function () {
+            /* ============================================================
+               Trend "View all" Bootstrap modal — reusable
+               ============================================================ */
+            var $trendModalEl = $('#trendModal');
+            var trendModalInstance = null;
+
+            if ($trendModalEl.length && typeof bootstrap !== 'undefined') {
+                trendModalInstance = new bootstrap.Modal($trendModalEl[0]);
+            }
+
+            $(document).on('click', '.ff-trend-viewall', function () {
+                var $btn = $(this);
+                var trendId = $btn.data('trend-id');
+                var title = $btn.data('trend-title') || 'Trend';
+                var iconCls = $btn.data('trend-icon') || 'bi-activity';
+
+                // Locate the hidden full-list content block
+                var $source = $('.ff-trend-widget__full[data-trend-content="' + trendId + '"]');
+
+                $('#trendModalTitleText').text(title);
+                $('#trendModalIcon').attr('class', 'bi ' + iconCls);
+
+                var $body = $('#trendModalBody');
+                $body.empty();
+
+                if ($source.length) {
+                    // Clone so original block stays put (data attrs + listeners via delegation still work)
+                    $body.append($source.clone().removeClass('ff-trend-widget__full').css('display', ''));
+                } else {
+                    $body.html('<div class="ff-trend-modal__empty"><i class="bi bi-inbox"></i><br/>No transfers for this trend.</div>');
+                }
+
+                if (trendModalInstance) {
+                    trendModalInstance.show();
+                }
+            });
+
+            /* ============================================================
+               Locker Modal — shared trigger: .ff-player-link[data-player-id]
+               ============================================================ */
+            var $backdrop = $('#lockerModalBackdrop');
+            var triggerSelector = '.ff-player-link[data-player-id]';
+
+            function openLocker($trigger) {
+                var d = $trigger.data();
+
+                $('#lockerModalName').text(d.playerName);
+                $('#lockerModalClub').text(d.playerClub);
+                $('#lockerModalNationality').text(d.playerNationality);
+                $('#lockerModalPoints').text(d.playerPoints);
+                $('#lockerModalGoals').text(d.playerGoals);
+                $('#lockerModalAssists').text(d.playerAssists);
+                $('#lockerModalCleanSheets').text(d.playerCleansheets);
+                $('#lockerModalValue').html('&euro;' + d.playerValue);
+                $('#lockerModalDob').text(d.playerDob);
+
+                var badgeCls = d.playerBadge;
+                var posAbbr = d.playerPosAbbr;
+                $('#lockerModalBadge').html('<span class="ff-badge ' + badgeCls + '">' + posAbbr + '</span>');
+                $('#lockerModalDetailsLink').attr('href', '/Player/Details/' + d.playerId);
+
+                var $teamsList = $('#lockerModalTeams');
+                $teamsList.empty();
+
+                var teams = d.playerTeams;
+                if (teams && teams.length > 0) {
+                    for (var i = 0; i < teams.length; i++) {
+                        var t = teams[i];
+                        var teamName = t.Name || t.name;
+                        var teamOwner = t.OwnerName || t.ownerName;
+                        var teamPoints = t.TotalPoints != null ? t.TotalPoints : t.totalPoints;
+                        var teamId = t.Id != null ? t.Id : t.id;
+
+                        $teamsList.append(
+                            '<div class="ff-locker-modal__team-row">' +
+                                '<div class="ff-locker-modal__team-info">' +
+                                    '<a href="/FantasyTeam/Details/' + teamId + '" class="ff-locker-modal__team-name">' + teamName + '</a>' +
+                                    '<div class="ff-locker-modal__team-owner">' + teamOwner + '</div>' +
+                                '</div>' +
+                                '<div class="ff-locker-modal__team-points">' + teamPoints + '<small>pts</small></div>' +
+                            '</div>'
+                        );
+                    }
+                } else {
+                    $teamsList.html('<div class="ff-locker-modal__no-teams"><i class="bi bi-shield"></i> Not in any fantasy team</div>');
+                }
+
+                $('body').addClass('ff-locker-modal-open');
+                $backdrop.attr('aria-hidden', 'false');
+                $backdrop[0].offsetHeight; // reflow
+                $backdrop.addClass('ff-locker-modal--visible');
+
+                setTimeout(function () {
+                    $('#lockerModalClose').focus();
+                }, 100);
+            }
+
+            function closeLocker() {
+                $backdrop.removeClass('ff-locker-modal--visible');
+                $('body').removeClass('ff-locker-modal-open');
+                setTimeout(function () {
+                    $backdrop.attr('aria-hidden', 'true');
+                }, 400);
+            }
+
+            // Delegated: works for widget lists AND cloned content inside Bootstrap modal
+            $(document).on('click', triggerSelector, function (e) {
+                e.preventDefault();
+                openLocker($(this));
+            });
+
+            $(document).on('keydown', triggerSelector, function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openLocker($(this));
+                }
+            });
+
+            $('#lockerModalClose').on('click', function (e) {
+                e.stopPropagation();
+                closeLocker();
+            });
+
+            $backdrop.on('click', function (e) {
+                if ($(e.target).closest('.ff-locker-modal').length === 0) {
+                    closeLocker();
+                }
+            });
+
+            $(document).on('keydown', function (e) {
+                if (e.key === 'Escape' && $backdrop.hasClass('ff-locker-modal--visible')) {
+                    closeLocker();
+                }
+            });
+        });
+    </script>
 }

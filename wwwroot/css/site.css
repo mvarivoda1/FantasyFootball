@@ -3122,3 +3122,151 @@ body.ff-locker-modal-open {
     }
 }
 
+/* ============================================
+   Trend Widget (Transfer/Index) — grid of trend cards
+   ============================================ */
+
+.ff-widget-card__footer {
+    padding: 0.6rem 1rem;
+    border-top: 1px solid rgba(55, 0, 60, 0.06);
+    background: linear-gradient(180deg, #fafafa 0%, #f4f4f4 100%);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ff-widget-card__footer .ff-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+.ff-widget-card__body--list {
+    padding: 0.6rem 0.7rem;
+}
+
+/* Compact trend row — extends ff-widget-row with metric pill */
+.ff-trend-row__metric {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--fpl-purple);
+    background: rgba(55, 0, 60, 0.07);
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--fpl-radius-pill);
+    white-space: nowrap;
+}
+
+.ff-trend-row__metric--price {
+    color: #0f5d1f;
+    background: rgba(0, 255, 135, 0.14);
+}
+
+.ff-trend-row__metric--date {
+    color: var(--fpl-text-secondary);
+    background: rgba(55, 0, 60, 0.04);
+    font-weight: 700;
+}
+
+.ff-trend-row__metric--down {
+    color: #7a1f1f;
+    background: rgba(233, 0, 82, 0.1);
+}
+
+.ff-trend-row__metric--pending {
+    color: #7a5a00;
+    background: rgba(234, 179, 8, 0.15);
+}
+
+.ff-trend-row__metric--rejected {
+    color: #7a1f1f;
+    background: rgba(239, 68, 68, 0.12);
+}
+
+/* Icon accent colors inside widget card titles (per trend) */
+.ff-widget-card--expensive .ff-widget-card__title i { color: #d4a30a; }
+.ff-widget-card--in .ff-widget-card__title i        { color: #0f9d58; }
+.ff-widget-card--out .ff-widget-card__title i       { color: #e90052; }
+.ff-widget-card--pending .ff-widget-card__title i   { color: #d97706; }
+.ff-widget-card--freeagent .ff-widget-card__title i { color: var(--fpl-purple); }
+.ff-widget-card--rejected .ff-widget-card__title i  { color: #991b1b; }
+
+/* View-all Bootstrap modal override (reusable trend modal) */
+.modal.ff-trend-modal .modal-content {
+    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+    border: 1px solid rgba(55, 0, 60, 0.12);
+    border-radius: var(--fpl-radius);
+    color: var(--fpl-text);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    position: relative;
+}
+
+.modal.ff-trend-modal .modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--fpl-purple), var(--fpl-green));
+    z-index: 1;
+}
+
+.modal.ff-trend-modal .modal-header {
+    border-bottom: 1px solid rgba(55, 0, 60, 0.08);
+    padding: 1rem 1.25rem;
+    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+}
+
+.modal.ff-trend-modal .modal-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--fpl-purple);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal.ff-trend-modal .modal-title i {
+    color: var(--fpl-green);
+}
+
+.modal.ff-trend-modal .modal-body {
+    padding: 0;
+    max-height: 65vh;
+    overflow-y: auto;
+}
+
+.modal.ff-trend-modal .modal-body .ff-table {
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+}
+
+.modal.ff-trend-modal .modal-body .ff-table-responsive {
+    border-radius: 0;
+    margin: 0;
+}
+
+.modal.ff-trend-modal .modal-footer {
+    border-top: 1px solid rgba(55, 0, 60, 0.06);
+    padding: 0.65rem 1.25rem;
+    background: #fafafa;
+}
+
+.ff-trend-modal__empty {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--fpl-text-secondary);
+}
+
+/* Pre-rendered hidden full-list container lives inside the widget footer */
+.ff-trend-widget__full {
+    display: none;
+}
+
