@@ -14,37 +14,179 @@
 }
 else
 {
-    <div class="row g-4">
-        @foreach (var league in Model)
-        {
-            <div class="col-lg-4 col-md-6 col-12">
-                <a asp-controller="League" asp-action="Details" asp-route-id="@league.Id" style="text-decoration:none; color:inherit;">
-                    <div class="ff-card">
-                        <div class="ff-card__title">@league.Name</div>
-                        <div class="ff-card__subtitle">
-                            <i class="bi bi-calendar3"></i> Season @league.Season
-                        </div>
-                        @if (!string.IsNullOrEmpty(league.Description))
-                        {
-                            <p class="ff-text-muted ff-text-sm mb-3">@league.Description</p>
-                        }
-                        <div class="ff-card__meta">
-                            <span class="ff-card__meta-item">
-                                <i class="bi bi-shield"></i>
-                                <span class="ff-card__value">@league.Teams.Count</span> / @league.MaxTeams Teams
-                            </span>
-                        </div>
-                        <div class="ff-card__footer">
-                            <span class="ff-text-muted ff-text-sm">
-                                Created @league.CreatedAt.ToString("dd MMM yyyy")
-                            </span>
-                            <span class="ff-btn ff-btn--outline ff-btn--sm">
-                                View <i class="bi bi-arrow-right"></i>
-                            </span>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        }
+    <div class="ff-table-responsive">
+        <table class="ff-table ff-table--sortable" id="ff-leagues-table" aria-label="Leagues list">
+            <thead>
+                <tr>
+                    <th class="ff-th-sort" data-sort-key="name" data-sort-type="string" tabindex="0" role="button" aria-sort="none" scope="col">
+                        <span class="ff-th-sort__inner">
+                            Name <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                        </span>
+                    </th>
+                    <th class="ff-th-sort" data-sort-key="season" data-sort-type="string" tabindex="0" role="button" aria-sort="none" scope="col">
+                        <span class="ff-th-sort__inner">
+                            Season <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                        </span>
+                    </th>
+                    <th class="ff-th-sort" data-sort-key="teams" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                        <span class="ff-th-sort__inner">
+                            Teams <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                        </span>
+                    </th>
+                    <th class="ff-th-sort" data-sort-key="points" data-sort-type="number" tabindex="0" role="button" aria-sort="descending" scope="col">
+                        <span class="ff-th-sort__inner">
+                            Total Points <i class="bi bi-arrow-down ff-th-sort__icon" aria-hidden="true"></i>
+                        </span>
+                    </th>
+                    <th class="ff-th-sort" data-sort-key="transfers" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                        <span class="ff-th-sort__inner">
+                            Transfers <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                        </span>
+                    </th>
+                    <th class="ff-th-sort" data-sort-key="created" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                        <span class="ff-th-sort__inner">
+                            Created <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                        </span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    // Default sort: Total Points desc
+                    var sortedLeagues = Model
+                        .OrderByDescending(l => l.Teams?.Sum(t => t.TotalPoints) ?? 0)
+                        .ToList();
+                }
+                @foreach (var league in sortedLeagues)
+                {
+                    var teamCount = league.Teams?.Count ?? 0;
+                    var totalPoints = league.Teams?.Sum(t => t.TotalPoints) ?? 0;
+                    var acceptedTransfers = league.Transfers?.Count(t => t.Status == TransferStatus.Accepted) ?? 0;
+                    var detailsUrl = Url.Action("Details", "League", new { id = league.Id });
+
+                    <tr class="ff-table__row--clickable"
+                        tabindex="0"
+                        role="link"
+                        data-href="@detailsUrl"
+                        aria-label="Open league @league.Name">
+                        <td data-sort-value="@league.Name.ToLowerInvariant()">
+                            <a asp-controller="League" asp-action="Details" asp-route-id="@league.Id">
+                                @league.Name
+                            </a>
+                        </td>
+                        <td data-sort-value="@league.Season">
+                            <i class="bi bi-calendar3 ff-text-muted me-1"></i>@league.Season
+                        </td>
+                        <td class="ff-num" data-sort-value="@teamCount">
+                            <strong>@teamCount</strong> <span class="ff-text-muted ff-text-sm">/ @league.MaxTeams</span>
+                        </td>
+                        <td class="ff-num ff-num--accent" data-sort-value="@totalPoints">
+                            @totalPoints
+                        </td>
+                        <td class="ff-num" data-sort-value="@acceptedTransfers">
+                            @acceptedTransfers
+                        </td>
+                        <td class="ff-num" data-sort-value="@league.CreatedAt.Ticks">
+                            <span class="ff-text-muted ff-text-sm">@league.CreatedAt.ToString("dd MMM yyyy")</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            'use strict';
+
+            var table = document.getElementById('ff-leagues-table');
+            if (!table) return;
+
+            // --- Row click navigation ---
+            table.addEventListener('click', function (e) {
+                if (e.target.closest('a')) return; // let link clicks behave normally
+                if (e.target.closest('.ff-th-sort')) return;
+                var row = e.target.closest('.ff-table__row--clickable');
+                if (!row) return;
+                var href = row.getAttribute('data-href');
+                if (href) window.location.href = href;
+            });
+
+            table.addEventListener('keydown', function (e) {
+                var row = e.target.closest('.ff-table__row--clickable');
+                if (!row) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    var href = row.getAttribute('data-href');
+                    if (href) window.location.href = href;
+                }
+            });
+
+            // --- Sorting ---
+            function compareValues(a, b, type, dir) {
+                var mult = dir === 'ascending' ? 1 : -1;
+                if (type === 'number') {
+                    var na = parseFloat(a) || 0;
+                    var nb = parseFloat(b) || 0;
+                    return (na - nb) * mult;
+                }
+                // string
+                return String(a).localeCompare(String(b)) * mult;
+            }
+
+            function sortBy(th) {
+                var tbody = table.querySelector('tbody');
+                if (!tbody) return;
+                var headers = table.querySelectorAll('thead th.ff-th-sort');
+                var keyIndex = -1;
+                headers.forEach(function (h, i) {
+                    if (h === th) keyIndex = i;
+                });
+                if (keyIndex === -1) return;
+
+                var current = th.getAttribute('aria-sort');
+                var next = current === 'ascending' ? 'descending' : 'ascending';
+
+                // reset all other headers
+                headers.forEach(function (h) {
+                    if (h !== th) {
+                        h.setAttribute('aria-sort', 'none');
+                        var ic = h.querySelector('.ff-th-sort__icon');
+                        if (ic) {
+                            ic.classList.remove('bi-arrow-up', 'bi-arrow-down');
+                            ic.classList.add('bi-arrow-down-up');
+                        }
+                    }
+                });
+
+                th.setAttribute('aria-sort', next);
+                var icon = th.querySelector('.ff-th-sort__icon');
+                if (icon) {
+                    icon.classList.remove('bi-arrow-down-up', 'bi-arrow-up', 'bi-arrow-down');
+                    icon.classList.add(next === 'ascending' ? 'bi-arrow-up' : 'bi-arrow-down');
+                }
+
+                var type = th.getAttribute('data-sort-type') || 'string';
+                var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+                rows.sort(function (ra, rb) {
+                    var va = ra.children[keyIndex].getAttribute('data-sort-value');
+                    var vb = rb.children[keyIndex].getAttribute('data-sort-value');
+                    return compareValues(va, vb, type, next);
+                });
+                rows.forEach(function (r) { tbody.appendChild(r); });
+            }
+
+            table.querySelectorAll('thead th.ff-th-sort').forEach(function (th) {
+                th.addEventListener('click', function () { sortBy(th); });
+                th.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        sortBy(th);
+                    }
+                });
+            });
+        })();
+    </script>
 }

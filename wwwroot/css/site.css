@@ -2672,3 +2672,453 @@ body.ff-locker-modal-open {
     }
 }
 
+/* ============================================
+   Sortable Table (.ff-table--sortable)
+   ============================================ */
+
+.ff-table--sortable thead th.ff-th-sort {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease;
+    position: relative;
+}
+
+.ff-table--sortable thead th.ff-th-sort:hover,
+.ff-table--sortable thead th.ff-th-sort:focus-visible {
+    background: var(--fpl-purple-light);
+    outline: none;
+}
+
+.ff-th-sort__inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ff-th-sort__icon {
+    opacity: 0.4;
+    font-size: 0.8em;
+    transition: opacity 0.15s ease, transform 0.2s ease;
+}
+
+.ff-table--sortable thead th.ff-th-sort[aria-sort="ascending"] .ff-th-sort__icon,
+.ff-table--sortable thead th.ff-th-sort[aria-sort="descending"] .ff-th-sort__icon {
+    opacity: 1;
+    color: var(--fpl-green);
+}
+
+.ff-table__row--clickable {
+    cursor: pointer;
+}
+
+.ff-table__row--clickable:focus-visible {
+    outline: 2px solid var(--fpl-green);
+    outline-offset: -2px;
+    background: #f5fff9;
+}
+
+.ff-table__row--clickable td {
+    transition: var(--fpl-transition);
+}
+
+.ff-num {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.ff-num--accent {
+    font-weight: 700;
+    color: var(--fpl-purple);
+}
+
+/* ============================================
+   League Page Header (compact, no hero)
+   ============================================ */
+
+.ff-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1.25rem;
+    padding: 0 0 1rem 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(55, 0, 60, 0.08);
+    position: relative;
+}
+
+.ff-page-header::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 64px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--fpl-purple), var(--fpl-green));
+}
+
+.ff-page-header__main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ff-page-header__title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--fpl-text-dark);
+    margin: 0 0 0.25rem 0;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+}
+
+.ff-page-header__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    font-size: 0.85rem;
+    color: var(--fpl-text-secondary);
+    margin: 0;
+}
+
+.ff-page-header__meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.ff-page-header__meta-item i {
+    color: var(--fpl-purple);
+    font-size: 0.85rem;
+}
+
+.ff-page-header__description {
+    flex: 1 1 100%;
+    font-size: 0.9rem;
+    color: var(--fpl-text-secondary);
+    margin: 0.25rem 0 0 0;
+    line-height: 1.5;
+}
+
+/* ============================================
+   Widget (League Details) — table-holding cards
+   ============================================ */
+
+.ff-widget-card {
+    background: var(--fpl-white);
+    border: 1px solid rgba(55, 0, 60, 0.08);
+    border-radius: var(--fpl-radius);
+    box-shadow: var(--fpl-shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+.ff-widget-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--fpl-purple), var(--fpl-green));
+    z-index: 2;
+}
+
+.ff-widget-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid rgba(55, 0, 60, 0.06);
+    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+}
+
+.ff-widget-card__title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--fpl-purple);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ff-widget-card__title i {
+    color: var(--fpl-purple);
+}
+
+.ff-widget-card__count {
+    background: rgba(55, 0, 60, 0.08);
+    color: var(--fpl-purple);
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--fpl-radius-pill);
+    letter-spacing: 0.04em;
+}
+
+.ff-widget-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Embedded table inside widget-card: remove external radius/shadow */
+.ff-widget-card .ff-table {
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.ff-widget-card .ff-table-responsive {
+    border-radius: 0;
+    margin: 0;
+}
+
+.ff-widget-card__empty {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--fpl-text-secondary);
+}
+
+.ff-widget-card__empty i {
+    display: block;
+    font-size: 2rem;
+    color: var(--fpl-purple);
+    opacity: 0.3;
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   Player Popup Modal (Bootstrap 5 .modal override)
+   ============================================ */
+
+.modal.ff-player-modal .modal-content {
+    background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
+    border: 1px solid rgba(0, 255, 135, 0.18);
+    border-radius: var(--fpl-radius);
+    color: #ffffff;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    position: relative;
+}
+
+.modal.ff-player-modal .modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--fpl-purple), var(--fpl-green));
+    z-index: 1;
+}
+
+.modal.ff-player-modal .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.25rem 1.5rem 1rem;
+}
+
+.modal.ff-player-modal .modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal.ff-player-modal .modal-title i {
+    color: var(--fpl-green);
+}
+
+.modal.ff-player-modal .btn-close {
+    filter: invert(1) grayscale(100%) brightness(2);
+    opacity: 0.65;
+}
+
+.modal.ff-player-modal .btn-close:hover {
+    opacity: 1;
+}
+
+.modal.ff-player-modal .modal-body {
+    padding: 1.25rem 1.5rem 1.5rem;
+    min-height: 160px;
+}
+
+.modal.ff-player-modal .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.75rem 1.5rem;
+}
+
+/* Content inside modal body */
+.ff-player-popup__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.ff-player-popup__name {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.2;
+}
+
+.ff-player-popup__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.9rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.5rem;
+}
+
+.ff-player-popup__meta i {
+    color: var(--fpl-green);
+    margin-right: 0.2rem;
+}
+
+.ff-player-popup__points {
+    flex-shrink: 0;
+    text-align: center;
+    background: rgba(0, 255, 135, 0.08);
+    border: 1px solid rgba(0, 255, 135, 0.25);
+    border-radius: var(--fpl-radius-sm);
+    padding: 0.5rem 0.85rem;
+    min-width: 80px;
+}
+
+.ff-player-popup__points-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--fpl-green);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.ff-player-popup__points-label {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 0.25rem;
+    font-weight: 700;
+}
+
+.ff-player-popup__stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+@media (min-width: 480px) {
+    .ff-player-popup__stats {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.ff-player-popup__stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--fpl-radius-sm);
+    padding: 0.65rem 0.5rem;
+    text-align: center;
+}
+
+.ff-player-popup__stat-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #ffffff;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.ff-player-popup__stat-label {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.3rem;
+    font-weight: 600;
+}
+
+.ff-player-popup__skeleton {
+    padding: 1rem 0;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.ff-player-popup__skeleton i {
+    font-size: 1.5rem;
+    color: var(--fpl-green);
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+.ff-player-popup__error {
+    padding: 1rem;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--fpl-radius-sm);
+    color: #fecaca;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.ff-player-popup__details-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 1rem;
+    background: rgba(0, 255, 135, 0.12);
+    color: var(--fpl-green);
+    border: 1px solid rgba(0, 255, 135, 0.3);
+    border-radius: var(--fpl-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--fpl-transition);
+}
+
+.ff-player-popup__details-link:hover {
+    background: var(--fpl-green);
+    color: #0a0e17;
+    text-decoration: none;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Player link (makes anchor look like link even inside table) */
+.ff-player-link {
+    color: var(--fpl-purple);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--fpl-transition);
+}
+
+.ff-player-link:hover {
+    color: var(--fpl-purple-light);
+    text-decoration: underline;
+}
+
+/* Responsive: header stack */
+@media (max-width: 575.98px) {
+    .ff-page-header__title {
+        font-size: 1.4rem;
+    }
+}
+

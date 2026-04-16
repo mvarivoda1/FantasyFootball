@@ -2,6 +2,8 @@
 @{
     ViewData["Title"] = Model.Name;
     var sortedTeams = Model.Teams.OrderByDescending(t => t.TotalPoints).ToList();
+    var transferCount = Model.Transfers?.Count() ?? 0;
+    var standingsCount = sortedTeams.Count;
 }
 
 <!-- Breadcrumb -->
@@ -13,126 +15,400 @@
     <li class="ff-breadcrumb__item ff-breadcrumb__item--active">@Model.Name</li>
 </ul>
 
-<!-- Hero -->
-<div class="ff-hero ff-animate-in">
-    <h1 class="ff-hero__title">@Model.Name</h1>
-    <p class="ff-hero__subtitle">
-        <i class="bi bi-calendar3"></i> Season @Model.Season
-        &nbsp;&bull;&nbsp;
-        <i class="bi bi-shield"></i> @Model.Teams.Count / @Model.MaxTeams Teams
-    </p>
+<!-- Compact header (no hero) -->
+<header class="ff-page-header ff-animate-in">
+    <div class="ff-page-header__main">
+        <h1 class="ff-page-header__title">@Model.Name</h1>
+        <p class="ff-page-header__meta">
+            <span class="ff-page-header__meta-item">
+                <i class="bi bi-calendar3"></i> Season @Model.Season
+            </span>
+            <span class="ff-page-header__meta-item">
+                <i class="bi bi-shield"></i> @Model.Teams.Count / @Model.MaxTeams Teams
+            </span>
+            <span class="ff-page-header__meta-item">
+                <i class="bi bi-arrow-left-right"></i> @transferCount Transfers
+            </span>
+        </p>
+    </div>
     @if (!string.IsNullOrEmpty(Model.Description))
     {
-        <p class="ff-text-muted mt-2 mb-0">@Model.Description</p>
+        <p class="ff-page-header__description">@Model.Description</p>
     }
+</header>
+
+<!-- Side-by-side widgets: Standings + Transfers -->
+<div class="row g-4">
+    <!-- Standings widget -->
+    <section class="col-lg-6">
+        <div class="ff-widget-card">
+            <div class="ff-widget-card__header">
+                <h2 class="ff-widget-card__title">
+                    <i class="bi bi-bar-chart-fill"></i> Standings
+                </h2>
+                <span class="ff-widget-card__count">@standingsCount teams</span>
+            </div>
+            <div class="ff-widget-card__body">
+                @if (sortedTeams.Any())
+                {
+                    <div class="ff-table-responsive">
+                        <table class="ff-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Team</th>
+                                    <th>Owner</th>
+                                    <th class="text-end">Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int rank = 1; }
+                                @foreach (var team in sortedTeams)
+                                {
+                                    <tr>
+                                        <td class="ff-table__rank">@rank</td>
+                                        <td>
+                                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@team.Id">
+                                                @team.Name
+                                            </a>
+                                        </td>
+                                        <td>@team.OwnerName</td>
+                                        <td class="ff-num ff-num--accent"><strong>@team.TotalPoints</strong></td>
+                                    </tr>
+                                    rank++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="ff-widget-card__empty">
+                        <i class="bi bi-shield"></i>
+                        No teams in this league yet.
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Transfers widget -->
+    <section class="col-lg-6">
+        <div class="ff-widget-card">
+            <div class="ff-widget-card__header">
+                <h2 class="ff-widget-card__title">
+                    <i class="bi bi-arrow-left-right"></i> Transfers
+                </h2>
+                <span class="ff-widget-card__count">@transferCount total</span>
+            </div>
+            <div class="ff-widget-card__body">
+                @if (Model.Transfers != null && Model.Transfers.Any())
+                {
+                    <div class="ff-table-responsive">
+                        <table class="ff-table">
+                            <thead>
+                                <tr>
+                                    <th>Player</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th class="text-end">Price</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var transfer in Model.Transfers)
+                                {
+                                    string statusClass = transfer.Status switch
+                                    {
+                                        TransferStatus.Accepted => "ff-badge--accepted",
+                                        TransferStatus.Pending => "ff-badge--pending",
+                                        TransferStatus.Rejected => "ff-badge--rejected",
+                                        TransferStatus.Cancelled => "ff-badge--cancelled",
+                                        _ => "ff-badge--pending"
+                                    };
+
+                                    string badgeClass = transfer.Player.Position switch
+                                    {
+                                        Position.Goalkeeper => "ff-badge--gk",
+                                        Position.Defender   => "ff-badge--def",
+                                        Position.Midfielder => "ff-badge--mid",
+                                        Position.Forward    => "ff-badge--fwd",
+                                        _ => "ff-badge--mid"
+                                    };
+
+                                    string posAbbr = transfer.Player.Position switch
+                                    {
+                                        Position.Goalkeeper => "GK",
+                                        Position.Defender   => "DEF",
+                                        Position.Midfielder => "MID",
+                                        Position.Forward    => "FWD",
+                                        _ => "MID"
+                                    };
+
+                                    <tr>
+                                        <td>
+                                            <a href="#"
+                                               class="ff-player-link"
+                                               role="button"
+                                               tabindex="0"
+                                               aria-haspopup="dialog"
+                                               aria-label="Open locker for @transfer.Player.FullName"
+                                               data-player-id="@transfer.Player.Id"
+                                               data-player-name="@transfer.Player.FullName"
+                                               data-player-club="@transfer.Player.Club"
+                                               data-player-nationality="@transfer.Player.Nationality"
+                                               data-player-position="@transfer.Player.Position"
+                                               data-player-pos-abbr="@posAbbr"
+                                               data-player-badge="@badgeClass"
+                                               data-player-dob="@transfer.Player.DateOfBirth.ToString("dd MMM yyyy")"
+                                               data-player-value="@transfer.Player.MarketValue.ToString("N0")"
+                                               data-player-goals="@transfer.Player.Goals"
+                                               data-player-assists="@transfer.Player.Assists"
+                                               data-player-cleansheets="@transfer.Player.CleanSheets"
+                                               data-player-points="@transfer.Player.TotalPoints"
+                                               data-player-teams='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(transfer.Player.FantasyTeams?.Select(t => new { t.Id, t.Name, t.OwnerName, t.TotalPoints })))'>
+                                                @transfer.Player.FullName
+                                            </a>
+                                        </td>
+                                        <td>
+                                            @if (transfer.FromTeam != null)
+                                            {
+                                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.FromTeam.Id">
+                                                    @transfer.FromTeam.Name
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="ff-text-muted">Free Agent</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.ToTeam.Id">
+                                                @transfer.ToTeam.Name
+                                            </a>
+                                        </td>
+                                        <td class="ff-num">€@transfer.Price.ToString("N0")</td>
+                                        <td><span class="ff-text-muted ff-text-sm">@transfer.TransferDate.ToString("dd MMM yyyy")</span></td>
+                                        <td><span class="ff-badge @statusClass">@transfer.Status</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="ff-widget-card__empty">
+                        <i class="bi bi-arrow-left-right"></i>
+                        No transfers recorded in this league.
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
 </div>
 
-<!-- Standings -->
-<h2 class="ff-section-title"><i class="bi bi-bar-chart-fill"></i> Standings</h2>
-@if (sortedTeams.Any())
-{
-    <div class="ff-table-responsive mb-5">
-        <table class="ff-table">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Team</th>
-                    <th>Owner</th>
-                    <th>Points</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{ int rank = 1; }
-                @foreach (var team in sortedTeams)
-                {
-                    <tr>
-                        <td class="ff-table__rank">@rank</td>
-                        <td>
-                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@team.Id">
-                                @team.Name
-                            </a>
-                        </td>
-                        <td>@team.OwnerName</td>
-                        <td><strong class="ff-text-accent">@team.TotalPoints</strong></td>
-                    </tr>
-                    rank++;
-                }
-            </tbody>
-        </table>
-    </div>
-}
-else
-{
-    <div class="ff-empty mb-5">
-        <div class="ff-empty__icon"><i class="bi bi-shield"></i></div>
-        <div class="ff-empty__text">No teams in this league yet.</div>
-    </div>
-}
+<!-- Locker Modal Backdrop (single reusable instance) -->
+<div class="ff-locker-modal-backdrop" id="lockerModalBackdrop" aria-hidden="true">
+    <div class="ff-locker-modal" role="dialog" aria-modal="true" aria-labelledby="lockerModalName">
+        <div class="ff-locker-modal__door-wrapper">
+            <!-- Animated door piece -->
+            <div class="ff-locker-modal__door" aria-hidden="true">
+                <div class="ff-locker-modal__door-handle"></div>
+            </div>
 
-<!-- Transfers -->
-<h2 class="ff-section-title"><i class="bi bi-arrow-left-right"></i> Transfers</h2>
-@if (Model.Transfers != null && Model.Transfers.Any())
-{
-    <div class="ff-table-responsive">
-        <table class="ff-table">
-            <thead>
-                <tr>
-                    <th>Player</th>
-                    <th>From</th>
-                    <th>To</th>
-                    <th>Price</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var transfer in Model.Transfers)
-                {
-                    string statusClass = transfer.Status switch
-                    {
-                        TransferStatus.Accepted => "ff-badge--accepted",
-                        TransferStatus.Pending => "ff-badge--pending",
-                        TransferStatus.Rejected => "ff-badge--rejected",
-                        TransferStatus.Cancelled => "ff-badge--cancelled",
-                        _ => "ff-badge--pending"
-                    };
+            <!-- Locker interior with player details -->
+            <div class="ff-locker-modal__interior">
+                <button class="ff-locker-modal__close" aria-label="Close locker" id="lockerModalClose">
+                    <i class="bi bi-x-lg"></i>
+                </button>
 
-                    <tr>
-                        <td>
-                            <a asp-controller="Player" asp-action="Details" asp-route-id="@transfer.Player.Id">
-                                @transfer.Player.FullName
-                            </a>
-                        </td>
-                        <td>
-                            @if (transfer.FromTeam != null)
-                            {
-                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.FromTeam.Id">
-                                    @transfer.FromTeam.Name
-                                </a>
-                            }
-                            else
-                            {
-                                <span class="ff-text-muted">Free Agent</span>
-                            }
-                        </td>
-                        <td>
-                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.ToTeam.Id">
-                                @transfer.ToTeam.Name
-                            </a>
-                        </td>
-                        <td>€@transfer.Price.ToString("N0")</td>
-                        <td>@transfer.TransferDate.ToString("dd MMM yyyy")</td>
-                        <td><span class="ff-badge @statusClass">@transfer.Status</span></td>
-                    </tr>
+                <!-- Header -->
+                <div class="ff-locker-modal__header">
+                    <div class="ff-locker-modal__player-identity">
+                        <div>
+                            <h2 class="ff-locker-modal__name" id="lockerModalName"></h2>
+                            <div class="ff-locker-modal__meta">
+                                <span id="lockerModalBadge"></span>
+                                <span><i class="bi bi-building"></i> <span id="lockerModalClub"></span></span>
+                                <span><i class="bi bi-globe"></i> <span id="lockerModalNationality"></span></span>
+                            </div>
+                        </div>
+                        <div class="ff-locker-modal__points">
+                            <div class="ff-locker-modal__points-value" id="lockerModalPoints"></div>
+                            <div class="ff-locker-modal__points-label">Total Pts</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="ff-locker-modal__stats">
+                    <div class="ff-locker-modal__stat">
+                        <div class="ff-locker-modal__stat-icon"><i class="bi bi-bullseye"></i></div>
+                        <div class="ff-locker-modal__stat-value" id="lockerModalGoals"></div>
+                        <div class="ff-locker-modal__stat-label">Goals</div>
+                    </div>
+                    <div class="ff-locker-modal__stat">
+                        <div class="ff-locker-modal__stat-icon"><i class="bi bi-hand-thumbs-up-fill"></i></div>
+                        <div class="ff-locker-modal__stat-value" id="lockerModalAssists"></div>
+                        <div class="ff-locker-modal__stat-label">Assists</div>
+                    </div>
+                    <div class="ff-locker-modal__stat">
+                        <div class="ff-locker-modal__stat-icon"><i class="bi bi-shield-fill-check"></i></div>
+                        <div class="ff-locker-modal__stat-value" id="lockerModalCleanSheets"></div>
+                        <div class="ff-locker-modal__stat-label">Clean Sheets</div>
+                    </div>
+                    <div class="ff-locker-modal__stat">
+                        <div class="ff-locker-modal__stat-icon"><i class="bi bi-cash-stack"></i></div>
+                        <div class="ff-locker-modal__stat-value" id="lockerModalValue"></div>
+                        <div class="ff-locker-modal__stat-label">Value</div>
+                    </div>
+                    <div class="ff-locker-modal__stat">
+                        <div class="ff-locker-modal__stat-icon"><i class="bi bi-cake2-fill"></i></div>
+                        <div class="ff-locker-modal__stat-value" id="lockerModalDob"></div>
+                        <div class="ff-locker-modal__stat-label">Born</div>
+                    </div>
+                </div>
+
+                <hr class="ff-locker-modal__divider" />
+
+                <!-- Fantasy Teams -->
+                <div class="ff-locker-modal__teams">
+                    <div class="ff-locker-modal__teams-title">
+                        <i class="bi bi-shield-fill"></i> Fantasy Teams
+                    </div>
+                    <div class="ff-locker-modal__team-list" id="lockerModalTeams">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="ff-locker-modal__actions">
+                    <a href="#" class="ff-locker-modal__details-link" id="lockerModalDetailsLink">
+                        Full Details <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            /* ---- Locker Modal Logic (shared trigger: .ff-locker, .ff-player-link[data-player-id]) ---- */
+            var $backdrop = $('#lockerModalBackdrop');
+            var $modal = $backdrop.find('.ff-locker-modal');
+            var triggerSelector = '.ff-locker, .ff-player-link[data-player-id]';
+
+            // Open locker modal
+            function openLocker($trigger) {
+                var d = $trigger.data();
+
+                // Populate modal fields
+                $('#lockerModalName').text(d.playerName);
+                $('#lockerModalClub').text(d.playerClub);
+                $('#lockerModalNationality').text(d.playerNationality);
+                $('#lockerModalPoints').text(d.playerPoints);
+                $('#lockerModalGoals').text(d.playerGoals);
+                $('#lockerModalAssists').text(d.playerAssists);
+                $('#lockerModalCleanSheets').text(d.playerCleansheets);
+                $('#lockerModalValue').html('&euro;' + d.playerValue);
+                $('#lockerModalDob').text(d.playerDob);
+
+                // Badge
+                var badgeCls = d.playerBadge;
+                var posAbbr = d.playerPosAbbr;
+                $('#lockerModalBadge').html('<span class="ff-badge ' + badgeCls + '">' + posAbbr + '</span>');
+
+                // Details link
+                $('#lockerModalDetailsLink').attr('href', '/Player/Details/' + d.playerId);
+
+                // Fantasy teams
+                var $teamsList = $('#lockerModalTeams');
+                $teamsList.empty();
+
+                var teams = d.playerTeams;
+                if (teams && teams.length > 0) {
+                    for (var i = 0; i < teams.length; i++) {
+                        var t = teams[i];
+                        var teamName = t.Name || t.name;
+                        var teamOwner = t.OwnerName || t.ownerName;
+                        var teamPoints = t.TotalPoints != null ? t.TotalPoints : t.totalPoints;
+                        var teamId = t.Id != null ? t.Id : t.id;
+
+                        $teamsList.append(
+                            '<div class="ff-locker-modal__team-row">' +
+                                '<div class="ff-locker-modal__team-info">' +
+                                    '<a href="/FantasyTeam/Details/' + teamId + '" class="ff-locker-modal__team-name">' + teamName + '</a>' +
+                                    '<div class="ff-locker-modal__team-owner">' + teamOwner + '</div>' +
+                                '</div>' +
+                                '<div class="ff-locker-modal__team-points">' + teamPoints + '<small>pts</small></div>' +
+                            '</div>'
+                        );
+                    }
+                } else {
+                    $teamsList.html('<div class="ff-locker-modal__no-teams"><i class="bi bi-shield"></i> Not in any fantasy team</div>');
                 }
-            </tbody>
-        </table>
-    </div>
-}
-else
-{
-    <div class="ff-empty">
-        <div class="ff-empty__icon"><i class="bi bi-arrow-left-right"></i></div>
-        <div class="ff-empty__text">No transfers recorded in this league.</div>
-    </div>
+
+                // Show modal
+                $('body').addClass('ff-locker-modal-open');
+                $backdrop.attr('aria-hidden', 'false');
+
+                // Force a reflow before adding class so transition fires
+                $backdrop[0].offsetHeight;
+                $backdrop.addClass('ff-locker-modal--visible');
+
+                // Focus close button
+                setTimeout(function () {
+                    $('#lockerModalClose').focus();
+                }, 100);
+            }
+
+            // Close locker modal
+            function closeLocker() {
+                $backdrop.removeClass('ff-locker-modal--visible');
+                $('body').removeClass('ff-locker-modal-open');
+
+                setTimeout(function () {
+                    $backdrop.attr('aria-hidden', 'true');
+                }, 400);
+            }
+
+            // Click on locker / player link
+            $(document).on('click', triggerSelector, function (e) {
+                e.preventDefault();
+                openLocker($(this));
+            });
+
+            // Keyboard: Enter/Space on locker / player link
+            $(document).on('keydown', triggerSelector, function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openLocker($(this));
+                }
+            });
+
+            // Close button
+            $('#lockerModalClose').on('click', function (e) {
+                e.stopPropagation();
+                closeLocker();
+            });
+
+            // Click outside modal (on backdrop)
+            $backdrop.on('click', function (e) {
+                if ($(e.target).closest('.ff-locker-modal').length === 0) {
+                    closeLocker();
+                }
+            });
+
+            // Escape key
+            $(document).on('keydown', function (e) {
+                if (e.key === 'Escape' && $backdrop.hasClass('ff-locker-modal--visible')) {
+                    closeLocker();
+                }
+            });
+        });
+    </script>
 }
