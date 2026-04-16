@@ -1,6 +1,13 @@
 @model FantasyTeam
 @{
     ViewData["Title"] = Model.Name;
+
+    // Grupiranje squad-a po poziciji
+    var gks = Model.Players?.Where(p => p.Position == Position.Goalkeeper).ToList() ?? new List<Player>();
+    var defs = Model.Players?.Where(p => p.Position == Position.Defender).ToList() ?? new List<Player>();
+    var mids = Model.Players?.Where(p => p.Position == Position.Midfielder).ToList() ?? new List<Player>();
+    var fwds = Model.Players?.Where(p => p.Position == Position.Forward).ToList() ?? new List<Player>();
+    var total = (Model.Players?.Count ?? 0);
 }
 
 <!-- Breadcrumb -->
@@ -64,55 +71,48 @@
     </div>
 </div>
 
-<!-- Players -->
-<h2 class="ff-section-title"><i class="bi bi-people-fill"></i> Squad (@(Model.Players?.Count ?? 0) Players)</h2>
-@if (Model.Players != null && Model.Players.Any())
-{
-    <div class="ff-table-responsive">
-        <table class="ff-table">
-            <thead>
-                <tr>
-                    <th>Player</th>
-                    <th>Club</th>
-                    <th>Position</th>
-                    <th>Goals</th>
-                    <th>Assists</th>
-                    <th>Points</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var player in Model.Players)
-                {
-                    string badgeClass = player.Position switch
-                    {
-                        Position.Goalkeeper => "ff-badge--gk",
-                        Position.Defender => "ff-badge--def",
-                        Position.Midfielder => "ff-badge--mid",
-                        Position.Forward => "ff-badge--fwd",
-                        _ => "ff-badge--mid"
-                    };
+<!-- Squad formation -->
+<h2 class="ff-section-title"><i class="bi bi-people-fill"></i> Squad (@total Players)</h2>
 
-                    <tr>
-                        <td>
-                            <a asp-controller="Player" asp-action="Details" asp-route-id="@player.Id">
-                                @player.FullName
-                            </a>
-                        </td>
-                        <td>@player.Club</td>
-                        <td><span class="ff-badge @badgeClass">@player.Position</span></td>
-                        <td>@player.Goals</td>
-                        <td>@player.Assists</td>
-                        <td><strong class="ff-text-accent">@player.TotalPoints</strong></td>
-                        <td>
-                            <a asp-controller="Player" asp-action="Details" asp-route-id="@player.Id" class="ff-btn ff-btn--outline ff-btn--sm">
-                                View <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </td>
-                    </tr>
+@if (total > 0)
+{
+    <div class="ff-totw" role="region" aria-label="Squad formation">
+        @if (fwds.Any())
+        {
+            <div class="ff-totw__row ff-totw__row--fwd">
+                @foreach (var p in fwds)
+                {
+                    <partial name="_SquadPlayer" model="p" />
                 }
-            </tbody>
-        </table>
+            </div>
+        }
+        @if (mids.Any())
+        {
+            <div class="ff-totw__row ff-totw__row--mid">
+                @foreach (var p in mids)
+                {
+                    <partial name="_SquadPlayer" model="p" />
+                }
+            </div>
+        }
+        @if (defs.Any())
+        {
+            <div class="ff-totw__row ff-totw__row--def">
+                @foreach (var p in defs)
+                {
+                    <partial name="_SquadPlayer" model="p" />
+                }
+            </div>
+        }
+        @if (gks.Any())
+        {
+            <div class="ff-totw__row ff-totw__row--gk">
+                @foreach (var p in gks)
+                {
+                    <partial name="_SquadPlayer" model="p" />
+                }
+            </div>
+        }
     </div>
 }
 else

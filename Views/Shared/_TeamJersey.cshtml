@@ -1,0 +1,52 @@
+@model FantasyFootball.Models.FantasyTeam
+
+@functions {
+    // Deterministicki hash iz imena tima -> hue (0-359)
+    static int HueFromName(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return 210;
+        unchecked
+        {
+            int hash = 23;
+            foreach (char c in name) hash = hash * 31 + c;
+            return Math.Abs(hash) % 360;
+        }
+    }
+
+    static string Hsl(int hue, int sat, int light)
+        => $"hsl({hue}, {sat}%, {light}%)";
+}
+
+@{
+    var name = Model?.Name ?? "?";
+    int hue = HueFromName(name);
+    // Primarna boja dresa: fiksna sat/light za konzistentan look
+    string bodyColor = Hsl(hue, 72, 48);
+    // Kontrast: shift hue + druga luminance za rukave/akcente
+    string accentColor = Hsl((hue + 35) % 360, 70, 28);
+    string trimColor = Hsl(hue, 80, 88);
+    string initial = (name.Trim().Length > 0 ? name.Trim().Substring(0, 1) : "?").ToUpperInvariant();
+}
+
+<svg class="ff-jersey" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"
+     role="img" aria-label="@name jersey">
+    <title>@name</title>
+    <!-- Lijevi rukav -->
+    <polygon points="2,16 14,10 20,20 12,30" fill="@accentColor" stroke="rgba(0,0,0,0.25)" stroke-width="0.8" />
+    <!-- Desni rukav -->
+    <polygon points="62,16 50,10 44,20 52,30" fill="@accentColor" stroke="rgba(0,0,0,0.25)" stroke-width="0.8" />
+    <!-- Tijelo dresa -->
+    <path d="M14,10 L22,8 Q32,14 42,8 L50,10 L46,22 L46,56 Q32,60 18,56 L18,22 Z"
+          fill="@bodyColor" stroke="rgba(0,0,0,0.3)" stroke-width="0.8" />
+    <!-- Vertikalna pruga (akcent) -->
+    <rect x="30" y="14" width="4" height="44" fill="@accentColor" opacity="0.35" />
+    <!-- Ovratnik -->
+    <path d="M26,8 Q32,14 38,8 L36,12 Q32,15 28,12 Z"
+          fill="@trimColor" stroke="rgba(0,0,0,0.25)" stroke-width="0.6" />
+    <!-- Inicijal -->
+    <text x="32" y="40" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+          font-weight="800" font-size="16" fill="#ffffff"
+          style="paint-order: stroke; stroke: rgba(0,0,0,0.35); stroke-width: 1.2px;">
+        @initial
+    </text>
+</svg>

@@ -1,0 +1,10 @@
+@model FantasyFootball.Models.Player
+
+<a asp-controller="Player" asp-action="Details" asp-route-id="@Model.Id"
+   class="ff-totw-player" title="@Model.FullName - @Model.TotalPoints points">
+    <div class="ff-totw-player__shirt ff-totw-player__shirt--@Model.Position.ToString().ToLower().Substring(0,3)">
+        <span class="ff-totw-player__points">@Model.TotalPoints</span>
+    </div>
+    <div class="ff-totw-player__name">@Model.LastName</div>
+    <div class="ff-totw-player__stat">@Model.Goals G &middot; @Model.Assists A</div>
+</a>

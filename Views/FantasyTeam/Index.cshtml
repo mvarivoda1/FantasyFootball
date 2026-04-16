@@ -1,11 +1,13 @@
 @model List<FantasyTeam>
 @{
     ViewData["Title"] = "Fantasy Teams";
+    // Default ranking: sortirano DESC po TotalPoints
+    var ranked = Model?.OrderByDescending(t => t.TotalPoints).ToList();
 }
 
 <h1 class="ff-page-title"><i class="bi bi-shield-fill"></i> Fantasy Teams</h1>
 
-@if (Model == null || !Model.Any())
+@if (ranked == null || !ranked.Any())
 {
     <div class="ff-empty">
         <div class="ff-empty__icon"><i class="bi bi-shield"></i></div>
@@ -14,41 +16,62 @@
 }
 else
 {
-    <div class="row g-4">
-        @foreach (var team in Model)
-        {
-            <div class="col-lg-4 col-md-6 col-12">
-                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@team.Id" style="text-decoration:none; color:inherit;">
-                    <div class="ff-card">
-                        <div class="ff-card__title">@team.Name</div>
-                        <div class="ff-card__subtitle">
-                            <i class="bi bi-person-fill"></i> @team.OwnerName
-                        </div>
-                        <div class="ff-card__meta">
-                            @if (team.League != null)
-                            {
-                                <span class="ff-card__meta-item">
-                                    <i class="bi bi-diagram-3"></i>
-                                    <span class="ff-card__value">@team.League.Name</span>
+    <div class="ff-ranking-wrap ff-animate-in">
+        <div class="ff-table-responsive">
+            <table class="ff-table ff-ranking-table" id="ff-ranking-table">
+                <thead>
+                    <tr>
+                        <th class="ff-ranking-table__rank" scope="col">#</th>
+                        <th class="ff-ranking-table__logo" scope="col"><span class="visually-hidden">Logo</span></th>
+                        <th scope="col">Team</th>
+                        <th class="d-none d-md-table-cell" scope="col">Owner</th>
+                        <th class="ff-ranking-table__sort ff-ranking-table__sort--active"
+                            scope="col"
+                            data-sort="points"
+                            aria-sort="descending"
+                            tabindex="0"
+                            role="button">
+                            <span>Points</span>
+                            <i class="bi bi-arrow-down ff-ranking-table__sort-icon" aria-hidden="true"></i>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int rank = 1; }
+                    @foreach (var team in ranked)
+                    {
+                        <tr class="ff-ranking-row"
+                            data-href="@Url.Action("Details", "FantasyTeam", new { id = team.Id })"
+                            tabindex="0"
+                            role="link"
+                            aria-label="@team.Name — @team.TotalPoints points">
+                            <td class="ff-ranking-table__rank" data-rank>@rank</td>
+                            <td class="ff-ranking-table__logo">
+                                <partial name="_TeamJersey" model="team" />
+                            </td>
+                            <td class="ff-ranking-table__team">
+                                <div class="ff-ranking-table__team-name">@team.Name</div>
+                                @if (team.League != null)
+                                {
+                                    <div class="ff-ranking-table__team-sub">
+                                        <i class="bi bi-diagram-3"></i> @team.League.Name
+                                    </div>
+                                }
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <span class="ff-ranking-table__owner">
+                                    <i class="bi bi-person-fill"></i> @team.OwnerName
                                 </span>
-                            }
-                            <span class="ff-card__meta-item">
-                                <i class="bi bi-cash-stack"></i>
-                                <span class="ff-card__value">€@team.Budget.ToString("N0")</span>
-                            </span>
-                        </div>
-                        <div class="ff-card__footer">
-                            <div>
-                                <div class="ff-card__points">@team.TotalPoints</div>
-                                <div class="ff-card__points-label">Total Points</div>
-                            </div>
-                            <span class="ff-btn ff-btn--outline ff-btn--sm">
-                                View <i class="bi bi-arrow-right"></i>
-                            </span>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        }
+                            </td>
+                            <td class="ff-ranking-table__points" data-points="@team.TotalPoints">
+                                <span class="ff-ranking-table__points-value">@team.TotalPoints</span>
+                                <small>pts</small>
+                            </td>
+                        </tr>
+                        rank++;
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 }

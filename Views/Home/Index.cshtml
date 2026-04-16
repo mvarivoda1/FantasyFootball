@@ -1,202 +1,435 @@
+@using FantasyFootball.Models
+@using FantasyFootball.Models.ViewModels
+@model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
-
-    var topPlayers = ViewBag.TopPlayers as List<Player> ?? new List<Player>();
-    var leagues = ViewBag.Leagues as List<League> ?? new List<League>();
-    var topTeams = ViewBag.Teams as List<FantasyTeam> ?? new List<FantasyTeam>();
-    var latestGameweek = ViewBag.LatestGameweek as Gameweek;
-    int totalPlayers = ViewBag.TotalPlayers ?? 0;
-    int totalTeams = ViewBag.TotalTeams ?? 0;
-    int totalLeagues = ViewBag.TotalLeagues ?? 0;
 }
 
-<!-- Hero -->
-<div class="ff-hero text-center ff-animate-in">
-    <h1 class="ff-hero__title">
-        <i class="bi bi-trophy-fill" style="color: var(--fpl-green);"></i>
-        Fantasy Football <span class="ff-hero__accent">2025/26</span>
-    </h1>
-    <p class="ff-hero__subtitle">
-        Build your dream squad, compete in leagues, and climb the rankings.
-        Track player performances, manage transfers, and dominate your fantasy league.
-    </p>
-</div>
+<section class="ff-dashboard ff-animate-in" aria-label="Fantasy Football dashboard">
 
-<!-- Stats -->
-<div class="row g-4 mb-5">
-    <div class="col-md-4">
-        <div class="ff-stat-card ff-animate-in">
-            <div class="ff-stat-card__icon"><i class="bi bi-people-fill"></i></div>
-            <div class="ff-stat-card__value">@totalPlayers</div>
-            <div class="ff-stat-card__label">Total Players</div>
+    <!-- ROW 1: Gameweek Status + Next Deadline -->
+    <div class="row g-3 ff-dashboard__row">
+        <div class="col-12 col-lg-8">
+            <article class="ff-widget ff-widget--feature" aria-labelledby="gw-status-title">
+                <header class="ff-widget__header">
+                    <h2 id="gw-status-title" class="ff-widget__title">
+                        <span class="ff-widget__icon"><i class="bi bi-calendar2-week-fill" aria-hidden="true"></i></span>
+                        Gameweek @(Model.LatestGameweek?.WeekNumber ?? 0) Status
+                    </h2>
+                    <span class="ff-widget__badge ff-widget__badge--live">Finished</span>
+                </header>
+                <div class="ff-widget__body">
+                    @if (Model.LatestGameweek != null)
+                    {
+                        <div class="ff-gw-stats">
+                            <div class="ff-gw-stat">
+                                <div class="ff-gw-stat__value">@Model.MatchesInLatestGw</div>
+                                <div class="ff-gw-stat__label">Matches</div>
+                            </div>
+                            <div class="ff-gw-stat">
+                                <div class="ff-gw-stat__value">@Model.TotalGoalsInLatestGw</div>
+                                <div class="ff-gw-stat__label">Goals</div>
+                            </div>
+                            <div class="ff-gw-stat">
+                                <div class="ff-gw-stat__value">@Model.TotalAssistsInLatestGw</div>
+                                <div class="ff-gw-stat__label">Assists</div>
+                            </div>
+                            <div class="ff-gw-stat">
+                                <div class="ff-gw-stat__value">@Model.TotalCleanSheetsInLatestGw</div>
+                                <div class="ff-gw-stat__label">Clean Sheets</div>
+                            </div>
+                        </div>
+                        <div class="ff-widget__meta">
+                            <i class="bi bi-calendar-range" aria-hidden="true"></i>
+                            @Model.LatestGameweek.StartDate.ToString("MMM d") &mdash; @Model.LatestGameweek.EndDate.ToString("MMM d, yyyy")
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="ff-widget__empty">No gameweek data available.</p>
+                    }
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <article class="ff-widget ff-widget--countdown" aria-labelledby="next-deadline-title">
+                <header class="ff-widget__header">
+                    <h2 id="next-deadline-title" class="ff-widget__title">
+                        <span class="ff-widget__icon"><i class="bi bi-stopwatch-fill" aria-hidden="true"></i></span>
+                        Next Deadline
+                    </h2>
+                </header>
+                <div class="ff-widget__body">
+                    <div class="ff-countdown" data-deadline="@Model.NextDeadline.ToString("yyyy-MM-ddTHH:mm:ss")">
+                        <div class="ff-countdown__unit">
+                            <span class="ff-countdown__value" data-unit="days">--</span>
+                            <span class="ff-countdown__label">Days</span>
+                        </div>
+                        <div class="ff-countdown__unit">
+                            <span class="ff-countdown__value" data-unit="hours">--</span>
+                            <span class="ff-countdown__label">Hrs</span>
+                        </div>
+                        <div class="ff-countdown__unit">
+                            <span class="ff-countdown__value" data-unit="minutes">--</span>
+                            <span class="ff-countdown__label">Min</span>
+                        </div>
+                        <div class="ff-countdown__unit">
+                            <span class="ff-countdown__value" data-unit="seconds">--</span>
+                            <span class="ff-countdown__label">Sec</span>
+                        </div>
+                    </div>
+                    <div class="ff-widget__meta">
+                        Gameweek @Model.NextGameweekNumber &middot; @Model.NextDeadline.ToString("ddd dd MMM, HH:mm")
+                    </div>
+                </div>
+            </article>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="ff-stat-card ff-animate-in">
-            <div class="ff-stat-card__icon"><i class="bi bi-shield-fill"></i></div>
-            <div class="ff-stat-card__value">@totalTeams</div>
-            <div class="ff-stat-card__label">Total Teams</div>
+
+    <!-- ROW 2: Player of the Week + Top Transfers In + Top Transfers Out -->
+    <div class="row g-3 ff-dashboard__row">
+        <div class="col-12 col-md-6 col-lg-4">
+            <article class="ff-widget ff-widget--potw" aria-labelledby="potw-title">
+                <header class="ff-widget__header">
+                    <h2 id="potw-title" class="ff-widget__title">
+                        <span class="ff-widget__icon"><i class="bi bi-star-fill" aria-hidden="true"></i></span>
+                        Player of the Week
+                    </h2>
+                </header>
+                <div class="ff-widget__body">
+                    @if (Model.PlayerOfTheWeek != null)
+                    {
+                        var potw = Model.PlayerOfTheWeek;
+                        <a asp-controller="Player" asp-action="Details" asp-route-id="@potw.Player.Id" class="ff-potw">
+                            <div class="ff-potw__top">
+                                <span class="ff-badge ff-badge--@potw.Player.Position.ToString().ToLower().Substring(0,3)">
+                                    @potw.Player.Position
+                                </span>
+                                <span class="ff-potw__club">@potw.Player.Club</span>
+                            </div>
+                            <div class="ff-potw__name">@potw.Player.FullName</div>
+                            <div class="ff-potw__score">
+                                <span class="ff-potw__points">@potw.PointsEarned</span>
+                                <span class="ff-potw__pts-label">PTS</span>
+                            </div>
+                            <div class="ff-potw__stats">
+                                <span><i class="bi bi-bullseye" aria-hidden="true"></i> @potw.Goals G</span>
+                                <span><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> @potw.Assists A</span>
+                                <span><i class="bi bi-stopwatch" aria-hidden="true"></i> @potw.MinutesPlayed'</span>
+                            </div>
+                        </a>
+                    }
+                    else
+                    {
+                        <p class="ff-widget__empty">No data.</p>
+                    }
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4">
+            <article class="ff-widget" aria-labelledby="transfers-in-title">
+                <header class="ff-widget__header">
+                    <h2 id="transfers-in-title" class="ff-widget__title">
+                        <span class="ff-widget__icon ff-widget__icon--in"><i class="bi bi-arrow-down-circle-fill" aria-hidden="true"></i></span>
+                        Top Transfers In
+                    </h2>
+                </header>
+                <div class="ff-widget__body ff-widget__body--list">
+                    @if (Model.TopTransfersIn.Any())
+                    {
+                        <ul class="ff-widget-list">
+                            @foreach (var item in Model.TopTransfersIn)
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__main">
+                                        <a asp-controller="Player" asp-action="Details" asp-route-id="@item.Player.Id" class="ff-widget-row__name">
+                                            @item.Player.FullName
+                                        </a>
+                                        <span class="ff-widget-row__sub">@item.Player.Club &middot; @item.Player.Position</span>
+                                    </div>
+                                    <div class="ff-widget-row__value ff-widget-row__value--up">
+                                        <i class="bi bi-arrow-up-short" aria-hidden="true"></i>@item.TransferCount
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="ff-widget__empty">No transfers yet.</p>
+                    }
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4">
+            <article class="ff-widget" aria-labelledby="transfers-out-title">
+                <header class="ff-widget__header">
+                    <h2 id="transfers-out-title" class="ff-widget__title">
+                        <span class="ff-widget__icon ff-widget__icon--out"><i class="bi bi-arrow-up-circle-fill" aria-hidden="true"></i></span>
+                        Top Transfers Out
+                    </h2>
+                </header>
+                <div class="ff-widget__body ff-widget__body--list">
+                    @if (Model.TopTransfersOut.Any())
+                    {
+                        <ul class="ff-widget-list">
+                            @foreach (var item in Model.TopTransfersOut)
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__main">
+                                        <a asp-controller="Player" asp-action="Details" asp-route-id="@item.Player.Id" class="ff-widget-row__name">
+                                            @item.Player.FullName
+                                        </a>
+                                        <span class="ff-widget-row__sub">@item.Player.Club &middot; @item.Player.Position</span>
+                                    </div>
+                                    <div class="ff-widget-row__value ff-widget-row__value--down">
+                                        <i class="bi bi-arrow-down-short" aria-hidden="true"></i>@item.TransferCount
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="ff-widget__empty">No transfers yet.</p>
+                    }
+                </div>
+            </article>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="ff-stat-card ff-animate-in">
-            <div class="ff-stat-card__icon"><i class="bi bi-diagram-3-fill"></i></div>
-            <div class="ff-stat-card__value">@totalLeagues</div>
-            <div class="ff-stat-card__label">Total Leagues</div>
+
+    <!-- ROW 3: Team of the Week (wide) + Player Availability -->
+    <div class="row g-3 ff-dashboard__row">
+        <div class="col-12 col-lg-8">
+            <article class="ff-widget ff-widget--totw" aria-labelledby="totw-title">
+                <header class="ff-widget__header">
+                    <h2 id="totw-title" class="ff-widget__title">
+                        <span class="ff-widget__icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
+                        Team of the Week
+                    </h2>
+                    <span class="ff-widget__badge">GW @(Model.LatestGameweek?.WeekNumber ?? 0)</span>
+                </header>
+                <div class="ff-widget__body">
+                    <div class="ff-totw">
+                        @if (Model.TotwForwards.Any())
+                        {
+                            <div class="ff-totw__row ff-totw__row--fwd">
+                                @foreach (var perf in Model.TotwForwards)
+                                {
+                                    <partial name="_TotwPlayer" model="perf" />
+                                }
+                            </div>
+                        }
+                        @if (Model.TotwMidfielders.Any())
+                        {
+                            <div class="ff-totw__row ff-totw__row--mid">
+                                @foreach (var perf in Model.TotwMidfielders)
+                                {
+                                    <partial name="_TotwPlayer" model="perf" />
+                                }
+                            </div>
+                        }
+                        @if (Model.TotwDefenders.Any())
+                        {
+                            <div class="ff-totw__row ff-totw__row--def">
+                                @foreach (var perf in Model.TotwDefenders)
+                                {
+                                    <partial name="_TotwPlayer" model="perf" />
+                                }
+                            </div>
+                        }
+                        @if (Model.TotwGoalkeepers.Any())
+                        {
+                            <div class="ff-totw__row ff-totw__row--gk">
+                                @foreach (var perf in Model.TotwGoalkeepers)
+                                {
+                                    <partial name="_TotwPlayer" model="perf" />
+                                }
+                            </div>
+                        }
+                        @if (!Model.TotwForwards.Any() && !Model.TotwMidfielders.Any() && !Model.TotwDefenders.Any() && !Model.TotwGoalkeepers.Any())
+                        {
+                            <p class="ff-widget__empty">No performances recorded.</p>
+                        }
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <article class="ff-widget" aria-labelledby="availability-title">
+                <header class="ff-widget__header">
+                    <h2 id="availability-title" class="ff-widget__title">
+                        <span class="ff-widget__icon"><i class="bi bi-heart-pulse-fill" aria-hidden="true"></i></span>
+                        Player Availability
+                    </h2>
+                </header>
+                <div class="ff-widget__body ff-widget__body--list">
+                    @if (Model.PlayerAvailability.Any())
+                    {
+                        <ul class="ff-widget-list">
+                            @foreach (var item in Model.PlayerAvailability)
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__main">
+                                        <a asp-controller="Player" asp-action="Details" asp-route-id="@item.Player.Id" class="ff-widget-row__name">
+                                            @item.Player.FullName
+                                        </a>
+                                        <span class="ff-widget-row__sub">@item.Player.Club</span>
+                                    </div>
+                                    <div class="ff-status ff-status--@item.StatusClass" title="@item.Status (@item.ChancePercent%)">
+                                        <span class="ff-status__dot" aria-hidden="true"></span>
+                                        <span class="ff-status__text">@item.ChancePercent%</span>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="ff-widget__empty">No data.</p>
+                    }
+                </div>
+            </article>
         </div>
     </div>
-</div>
 
-<!-- Top Players -->
-@if (topPlayers.Any())
-{
-    <h2 class="ff-section-title"><i class="bi bi-star-fill"></i> Top 5 Players</h2>
-    <div class="ff-table-responsive mb-5">
-        <table class="ff-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Player</th>
-                    <th>Club</th>
-                    <th>Position</th>
-                    <th>Goals</th>
-                    <th>Assists</th>
-                    <th>Points</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{ int playerRank = 1; }
-                @foreach (var player in topPlayers)
-                {
-                    <tr>
-                        <td class="ff-table__rank">@playerRank</td>
-                        <td>
-                            <a asp-controller="Player" asp-action="Details" asp-route-id="@player.Id">
-                                @player.FullName
-                            </a>
-                        </td>
-                        <td>@player.Club</td>
-                        <td>
-                            <span class="ff-badge ff-badge--@player.Position.ToString().ToLower().Substring(0, 3)">
-                                @player.Position
-                            </span>
-                        </td>
-                        <td>@player.Goals</td>
-                        <td>@player.Assists</td>
-                        <td><strong class="ff-text-accent">@player.TotalPoints</strong></td>
-                    </tr>
-                    playerRank++;
-                }
-            </tbody>
-        </table>
-    </div>
-}
+    <!-- ROW 4: Most Valuable Teams + Best Leagues + Top Scorers -->
+    <div class="row g-3 ff-dashboard__row">
+        <div class="col-12 col-md-6 col-lg-4">
+            <article class="ff-widget" aria-labelledby="teams-title">
+                <header class="ff-widget__header">
+                    <h2 id="teams-title" class="ff-widget__title">
+                        <span class="ff-widget__icon"><i class="bi bi-shield-fill-check" aria-hidden="true"></i></span>
+                        Most Valuable Teams
+                    </h2>
+                </header>
+                <div class="ff-widget__body ff-widget__body--list">
+                    @if (Model.MostValuableTeams.Any())
+                    {
+                        <ol class="ff-widget-list ff-widget-list--ranked">
+                            @{ int tr = 1; }
+                            @foreach (var team in Model.MostValuableTeams)
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__rank">@tr</div>
+                                    <div class="ff-widget-row__main">
+                                        <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@team.Id" class="ff-widget-row__name">
+                                            @team.Name
+                                        </a>
+                                        <span class="ff-widget-row__sub">@team.OwnerName</span>
+                                    </div>
+                                    <div class="ff-widget-row__value ff-widget-row__value--points">
+                                        @team.TotalPoints<small>pts</small>
+                                    </div>
+                                </li>
+                                tr++;
+                            }
+                        </ol>
+                    }
+                    else
+                    {
+                        <p class="ff-widget__empty">No teams.</p>
+                    }
+                </div>
+            </article>
+        </div>
 
-<!-- Top Teams -->
-@if (topTeams.Any())
-{
-    <h2 class="ff-section-title"><i class="bi bi-shield-fill-check"></i> Top 5 Teams</h2>
-    <div class="ff-table-responsive mb-5">
-        <table class="ff-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Team</th>
-                    <th>Owner</th>
-                    <th>Budget</th>
-                    <th>Points</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{ int teamRank = 1; }
-                @foreach (var team in topTeams)
-                {
-                    <tr>
-                        <td class="ff-table__rank">@teamRank</td>
-                        <td>
-                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@team.Id">
-                                @team.Name
-                            </a>
-                        </td>
-                        <td>@team.OwnerName</td>
-                        <td>€@team.Budget.ToString("N0")</td>
-                        <td><strong class="ff-text-accent">@team.TotalPoints</strong></td>
-                    </tr>
-                    teamRank++;
-                }
-            </tbody>
-        </table>
-    </div>
-}
+        <div class="col-12 col-md-6 col-lg-4">
+            <article class="ff-widget" aria-labelledby="leagues-title">
+                <header class="ff-widget__header">
+                    <h2 id="leagues-title" class="ff-widget__title">
+                        <span class="ff-widget__icon"><i class="bi bi-diagram-3-fill" aria-hidden="true"></i></span>
+                        Best Leagues
+                    </h2>
+                </header>
+                <div class="ff-widget__body ff-widget__body--list">
+                    @if (Model.BestLeagues.Any())
+                    {
+                        <ul class="ff-widget-list">
+                            @foreach (var item in Model.BestLeagues)
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__main">
+                                        <a asp-controller="League" asp-action="Details" asp-route-id="@item.League.Id" class="ff-widget-row__name">
+                                            @item.League.Name
+                                        </a>
+                                        <span class="ff-widget-row__sub">@item.TotalTeams teams &middot; avg @item.AveragePoints.ToString("N0") pts</span>
+                                    </div>
+                                    <div class="ff-widget-row__value ff-widget-row__value--points">
+                                        @item.TotalPoints<small>pts</small>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="ff-widget__empty">No leagues.</p>
+                    }
+                </div>
+            </article>
+        </div>
 
-<!-- Latest Gameweek -->
-@if (latestGameweek != null)
-{
-    <h2 class="ff-section-title"><i class="bi bi-calendar-event-fill"></i> Latest Gameweek (@latestGameweek.WeekNumber)</h2>
-    <div class="ff-table-responsive mb-5">
-        <table class="ff-table">
-            <thead>
-                <tr>
-                    <th>Player</th>
-                    <th>Opponent</th>
-                    <th>Goals</th>
-                    <th>Assists</th>
-                    <th>Minutes</th>
-                    <th>Points</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var perf in latestGameweek.Performances)
-                {
-                    <tr>
-                        <td>
-                            <a asp-controller="Player" asp-action="Details" asp-route-id="@perf.Player.Id">
-                                @perf.Player.FullName
-                            </a>
-                        </td>
-                        <td>@perf.Opponent</td>
-                        <td>@perf.Goals</td>
-                        <td>@perf.Assists</td>
-                        <td>@perf.MinutesPlayed'</td>
-                        <td><strong class="ff-text-accent">@perf.PointsEarned</strong></td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <div class="col-12 col-md-6 col-lg-4">
+            <article class="ff-widget" aria-labelledby="scorers-title">
+                <header class="ff-widget__header">
+                    <h2 id="scorers-title" class="ff-widget__title">
+                        <span class="ff-widget__icon"><i class="bi bi-bullseye" aria-hidden="true"></i></span>
+                        Top Scorers
+                    </h2>
+                </header>
+                <div class="ff-widget__body ff-widget__body--list">
+                    @if (Model.TopScorers.Any())
+                    {
+                        <ol class="ff-widget-list ff-widget-list--ranked">
+                            @{ int sr = 1; }
+                            @foreach (var player in Model.TopScorers)
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__rank">@sr</div>
+                                    <div class="ff-widget-row__main">
+                                        <a asp-controller="Player" asp-action="Details" asp-route-id="@player.Id" class="ff-widget-row__name">
+                                            @player.FullName
+                                        </a>
+                                        <span class="ff-widget-row__sub">@player.Club</span>
+                                    </div>
+                                    <div class="ff-widget-row__value ff-widget-row__value--points">
+                                        @player.Goals<small>G</small>
+                                    </div>
+                                </li>
+                                sr++;
+                            }
+                        </ol>
+                    }
+                    else
+                    {
+                        <p class="ff-widget__empty">No data.</p>
+                    }
+                </div>
+            </article>
+        </div>
     </div>
-}
 
-<!-- Quick Links -->
-<h2 class="ff-section-title"><i class="bi bi-lightning-fill"></i> Quick Links</h2>
-<div class="row g-3 mb-4">
-    <div class="col-md-4 col-sm-6">
-        <a asp-controller="Player" asp-action="Index" class="ff-quick-link">
-            <span class="ff-quick-link__icon"><i class="bi bi-people-fill"></i></span>
-            <span class="ff-quick-link__text">Browse All Players</span>
+    <!-- Quick nav footer -->
+    <nav class="ff-quick-nav" aria-label="Quick navigation">
+        <a asp-controller="Player" asp-action="Index" class="ff-quick-nav__item">
+            <i class="bi bi-people-fill" aria-hidden="true"></i><span>Players</span>
         </a>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <a asp-controller="FantasyTeam" asp-action="Index" class="ff-quick-link">
-            <span class="ff-quick-link__icon"><i class="bi bi-shield-fill"></i></span>
-            <span class="ff-quick-link__text">View All Teams</span>
+        <a asp-controller="FantasyTeam" asp-action="Index" class="ff-quick-nav__item">
+            <i class="bi bi-shield-fill" aria-hidden="true"></i><span>Teams</span>
         </a>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <a asp-controller="League" asp-action="Index" class="ff-quick-link">
-            <span class="ff-quick-link__icon"><i class="bi bi-diagram-3-fill"></i></span>
-            <span class="ff-quick-link__text">Explore Leagues</span>
+        <a asp-controller="League" asp-action="Index" class="ff-quick-nav__item">
+            <i class="bi bi-diagram-3-fill" aria-hidden="true"></i><span>Leagues</span>
         </a>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <a asp-controller="Gameweek" asp-action="Index" class="ff-quick-link">
-            <span class="ff-quick-link__icon"><i class="bi bi-calendar-week-fill"></i></span>
-            <span class="ff-quick-link__text">Gameweek Results</span>
+        <a asp-controller="Gameweek" asp-action="Index" class="ff-quick-nav__item">
+            <i class="bi bi-calendar-week-fill" aria-hidden="true"></i><span>Gameweeks</span>
         </a>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <a asp-controller="Transfer" asp-action="Index" class="ff-quick-link">
-            <span class="ff-quick-link__icon"><i class="bi bi-arrow-left-right"></i></span>
-            <span class="ff-quick-link__text">Transfer Activity</span>
+        <a asp-controller="Transfer" asp-action="Index" class="ff-quick-nav__item">
+            <i class="bi bi-arrow-left-right" aria-hidden="true"></i><span>Transfers</span>
         </a>
-    </div>
-</div>
+    </nav>
+</section>

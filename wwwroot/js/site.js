@@ -1,4 +1,152 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
+// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
 
-// Write your JavaScript code.
+// --- Deadline Countdown ---
+(function () {
+    'use strict';
+
+    function pad(n) {
+        return n < 10 ? '0' + n : '' + n;
+    }
+
+    function updateCountdown(el) {
+        var raw = el.getAttribute('data-deadline');
+        if (!raw) return;
+
+        var target = new Date(raw).getTime();
+        if (isNaN(target)) return;
+
+        var now = new Date().getTime();
+        var diff = Math.max(0, target - now);
+
+        var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        var minutes = Math.floor((diff / (1000 * 60)) % 60);
+        var seconds = Math.floor((diff / 1000) % 60);
+
+        var setUnit = function (unit, value) {
+            var node = el.querySelector('[data-unit="' + unit + '"]');
+            if (node) node.textContent = pad(value);
+        };
+
+        setUnit('days', days);
+        setUnit('hours', hours);
+        setUnit('minutes', minutes);
+        setUnit('seconds', seconds);
+
+        if (diff === 0) {
+            el.classList.add('ff-countdown--expired');
+        }
+    }
+
+    function initCountdowns() {
+        var countdowns = document.querySelectorAll('.ff-countdown[data-deadline]');
+        if (!countdowns.length) return;
+
+        countdowns.forEach(function (el) {
+            updateCountdown(el);
+        });
+
+        setInterval(function () {
+            countdowns.forEach(function (el) {
+                updateCountdown(el);
+            });
+        }, 1000);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCountdowns);
+    } else {
+        initCountdowns();
+    }
+})();
+
+// --- Ranking Table: klikabilni red + sort toggle ---
+(function () {
+    'use strict';
+
+    function renumberRows(tbody) {
+        var rows = tbody.querySelectorAll('tr');
+        rows.forEach(function (row, i) {
+            var cell = row.querySelector('[data-rank]');
+            if (cell) cell.textContent = (i + 1);
+        });
+    }
+
+    function updateMedalClasses() {
+        // CSS nth-child handles vizual, nista za JS
+    }
+
+    function sortByPoints(table, direction) {
+        var tbody = table.querySelector('tbody');
+        if (!tbody) return;
+        var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+        rows.sort(function (a, b) {
+            var av = parseInt(a.querySelector('[data-points]').getAttribute('data-points'), 10) || 0;
+            var bv = parseInt(b.querySelector('[data-points]').getAttribute('data-points'), 10) || 0;
+            return direction === 'asc' ? av - bv : bv - av;
+        });
+        rows.forEach(function (r) { tbody.appendChild(r); });
+        renumberRows(tbody);
+        updateMedalClasses();
+    }
+
+    function initRankingTable() {
+        var table = document.getElementById('ff-ranking-table');
+        if (!table) return;
+
+        // Klikabilni red
+        table.addEventListener('click', function (e) {
+            // Zanemari klik unutar sort-header celije
+            if (e.target.closest('.ff-ranking-table__sort')) return;
+            var row = e.target.closest('.ff-ranking-row');
+            if (!row) return;
+            var href = row.getAttribute('data-href');
+            if (href) window.location.href = href;
+        });
+
+        // Keyboard activacija reda
+        table.addEventListener('keydown', function (e) {
+            var row = e.target.closest('.ff-ranking-row');
+            if (!row) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                var href = row.getAttribute('data-href');
+                if (href) window.location.href = href;
+            }
+        });
+
+        // Sort handler na header-u (event delegation)
+        var sortHeader = table.querySelector('.ff-ranking-table__sort[data-sort="points"]');
+        if (!sortHeader) return;
+
+        function toggleSort() {
+            var current = sortHeader.getAttribute('aria-sort') || 'descending';
+            var next = current === 'descending' ? 'ascending' : 'descending';
+            sortHeader.setAttribute('aria-sort', next);
+            sortHeader.classList.add('ff-ranking-table__sort--active');
+
+            var icon = sortHeader.querySelector('.ff-ranking-table__sort-icon');
+            if (icon) {
+                icon.classList.remove('bi-arrow-down', 'bi-arrow-up');
+                icon.classList.add(next === 'descending' ? 'bi-arrow-down' : 'bi-arrow-up');
+            }
+
+            sortByPoints(table, next === 'descending' ? 'desc' : 'asc');
+        }
+
+        sortHeader.addEventListener('click', toggleSort);
+        sortHeader.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleSort();
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRankingTable);
+    } else {
+        initRankingTable();
+    }
+})();
