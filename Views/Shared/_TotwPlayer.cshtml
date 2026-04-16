@@ -1,7 +1,17 @@
 @model FantasyFootball.Models.MatchPerformance
+@{
+    var shirtVariant = Model.Player.Position switch
+    {
+        Position.Goalkeeper => "gk",
+        Position.Defender => "def",
+        Position.Midfielder => "mid",
+        Position.Forward => "fwd",
+        _ => "def"
+    };
+}
 
 <a asp-controller="Player" asp-action="Details" asp-route-id="@Model.Player.Id" class="ff-totw-player" title="@Model.Player.FullName - @Model.PointsEarned points">
-    <div class="ff-totw-player__shirt ff-totw-player__shirt--@Model.Player.Position.ToString().ToLower().Substring(0,3)">
+    <div class="ff-totw-player__shirt ff-totw-player__shirt--@shirtVariant">
         <span class="ff-totw-player__points">@Model.PointsEarned</span>
     </div>
     <div class="ff-totw-player__name">@Model.Player.LastName</div>

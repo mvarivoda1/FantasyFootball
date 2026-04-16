@@ -955,44 +955,6 @@ body {
     }
 }
 
-/* --- Room Header --- */
-.ff-locker-room-header {
-    background: linear-gradient(135deg, var(--fpl-purple) 0%, var(--fpl-purple-dark) 100%);
-    border-radius: var(--fpl-radius);
-    padding: 2rem 2rem 1.75rem;
-    margin-bottom: 1.75rem;
-    position: relative;
-    overflow: hidden;
-    color: #ffffff;
-}
-
-.ff-locker-room-header::before {
-    content: '';
-    position: absolute;
-    top: -40%;
-    right: -10%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(0, 255, 135, 0.1) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.ff-locker-room-header__title {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: #ffffff;
-    margin: 0 0 0.25rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-.ff-locker-room-header__subtitle {
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.7);
-    margin: 0;
-}
-
 /* --- Individual Locker Door --- */
 .ff-locker {
     position: relative;
@@ -2462,10 +2424,40 @@ body.ff-locker-modal-open {
     border-bottom: none;
 }
 
-.ff-totw-player__shirt--gk { background: var(--fpl-pos-gk); color: #1a1a1a; }
-.ff-totw-player__shirt--def { background: var(--fpl-pos-def); color: #1a1a1a; }
-.ff-totw-player__shirt--mid { background: var(--fpl-pos-mid); color: #1a1a1a; }
-.ff-totw-player__shirt--fwd { background: var(--fpl-pos-fwd); color: #ffffff; }
+/* Per-position jersey colors — distinct from generic --fpl-pos-* tokens
+   so we can tune the pitch view without affecting badges / locker stripes. */
+.ff-totw-player__shirt--gk {
+    background: linear-gradient(180deg, #ffd60a 0%, #f5a524 100%);
+    color: #1a1a1a;
+    border-color: rgba(120, 70, 0, 0.45);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35), inset 0 -6px 10px rgba(120, 70, 0, 0.18);
+}
+
+.ff-totw-player__shirt--def {
+    background: linear-gradient(180deg, #22c55e 0%, #0d8a3e 100%);
+    color: #ffffff;
+    border-color: rgba(0, 55, 25, 0.4);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35), inset 0 -6px 10px rgba(0, 45, 20, 0.22);
+}
+
+.ff-totw-player__shirt--mid {
+    background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+    color: #ffffff;
+    border-color: rgba(10, 30, 90, 0.4);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35), inset 0 -6px 10px rgba(5, 20, 80, 0.25);
+}
+
+.ff-totw-player__shirt--fwd {
+    background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+    color: #ffffff;
+    border-color: rgba(90, 10, 10, 0.45);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35), inset 0 -6px 10px rgba(90, 10, 10, 0.25);
+}
+
+/* GK number sits on a light shirt — drop the dark shadow used on colored shirts */
+.ff-totw-player__shirt--gk .ff-totw-player__points {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
 
 .ff-totw-player__points {
     font-size: 0.95rem;

@@ -121,20 +121,57 @@ namespace FantasyFootball.Controllers
                 .FirstOrDefault();
 
             // --- Team of the Week (by position) ---
+            // Formation rules: 1 GK + 3-5 DEF + 2-5 MID + 1-3 FWD = 11 players.
+            // Pick the valid formation that maximizes total points this gameweek.
             if (latest != null)
             {
                 var perfsByPos = latest.Performances
                     .GroupBy(p => p.Player.Position)
                     .ToDictionary(g => g.Key, g => g.OrderByDescending(p => p.PointsEarned).ToList());
 
-                vm.TotwGoalkeepers = perfsByPos.TryGetValue(Position.Goalkeeper, out var gks)
-                    ? gks.Take(1).ToList() : new List<MatchPerformance>();
-                vm.TotwDefenders = perfsByPos.TryGetValue(Position.Defender, out var defs)
-                    ? defs.Take(4).ToList() : new List<MatchPerformance>();
-                vm.TotwMidfielders = perfsByPos.TryGetValue(Position.Midfielder, out var mids)
-                    ? mids.Take(3).ToList() : new List<MatchPerformance>();
-                vm.TotwForwards = perfsByPos.TryGetValue(Position.Forward, out var fwds)
-                    ? fwds.Take(3).ToList() : new List<MatchPerformance>();
+                var gkPerfs = perfsByPos.TryGetValue(Position.Goalkeeper, out var gks) ? gks : new List<MatchPerformance>();
+                var defPerfs = perfsByPos.TryGetValue(Position.Defender, out var defs) ? defs : new List<MatchPerformance>();
+                var midPerfs = perfsByPos.TryGetValue(Position.Midfielder, out var mids) ? mids : new List<MatchPerformance>();
+                var fwdPerfs = perfsByPos.TryGetValue(Position.Forward, out var fwds) ? fwds : new List<MatchPerformance>();
+
+                int PrefixPoints(List<MatchPerformance> list, int take)
+                    => list.Take(take).Sum(p => p.PointsEarned);
+
+                (int d, int m, int f) bestFormation = (0, 0, 0);
+                int bestScore = -1;
+
+                for (int d = 3; d <= 5; d++)
+                {
+                    for (int m = 2; m <= 5; m++)
+                    {
+                        int f = 10 - d - m;
+                        if (f < 1 || f > 3) continue;
+                        if (defPerfs.Count < d || midPerfs.Count < m || fwdPerfs.Count < f) continue;
+
+                        int score = PrefixPoints(defPerfs, d) + PrefixPoints(midPerfs, m) + PrefixPoints(fwdPerfs, f);
+                        if (score > bestScore)
+                        {
+                            bestScore = score;
+                            bestFormation = (d, m, f);
+                        }
+                    }
+                }
+
+                // Fallback: if no valid formation fits (not enough players at some position),
+                // take whatever's available within the min/max bounds.
+                if (bestScore < 0)
+                {
+                    bestFormation = (
+                        Math.Min(5, Math.Max(0, defPerfs.Count)),
+                        Math.Min(5, Math.Max(0, midPerfs.Count)),
+                        Math.Min(3, Math.Max(0, fwdPerfs.Count))
+                    );
+                }
+
+                vm.TotwGoalkeepers = gkPerfs.Take(1).ToList();
+                vm.TotwDefenders = defPerfs.Take(bestFormation.d).ToList();
+                vm.TotwMidfielders = midPerfs.Take(bestFormation.m).ToList();
+                vm.TotwForwards = fwdPerfs.Take(bestFormation.f).ToList();
             }
 
             // --- Player Availability ---
