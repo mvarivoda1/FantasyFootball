@@ -306,26 +306,31 @@ body {
 
 /* --- Footer (.ff-footer) --- */
 .ff-footer {
-    background: var(--fpl-purple);
-    color: rgba(255, 255, 255, 0.7);
+    background: #ffffff;
+    color: var(--fpl-text-secondary);
     padding: 1.5rem 0;
     position: absolute;
     bottom: 0;
     width: 100%;
     font-size: 0.875rem;
+    border-top: 1px solid rgba(55, 0, 60, 0.06);
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .ff-footer a {
-    color: var(--fpl-green);
+    color: var(--fpl-purple);
+    text-decoration: none;
+    transition: var(--fpl-transition);
 }
 
-.ff-footer a:hover {
-    color: #ffffff;
-    text-decoration: none;
+.ff-footer a:hover,
+.ff-footer a:focus-visible {
+    color: var(--fpl-purple-light);
+    text-decoration: underline;
 }
 
 .ff-footer .ff-footer__heart {
-    color: var(--fpl-green);
+    color: var(--fpl-pos-fwd);
 }
 
 /* --- Cards (.ff-card) --- */
@@ -1921,6 +1926,97 @@ body.ff-locker-modal-open {
     border: 1px solid rgba(0, 255, 135, 0.3);
 }
 
+/* --- TOTW Gameweek Nav --- */
+.ff-totw-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ff-totw-nav__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(55, 0, 60, 0.08);
+    color: var(--fpl-purple);
+    border: 1px solid rgba(55, 0, 60, 0.12);
+    font-size: 0.85rem;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--fpl-transition);
+}
+
+.ff-totw-nav__arrow:hover {
+    background: var(--fpl-purple);
+    color: #ffffff;
+    border-color: var(--fpl-purple);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(55, 0, 60, 0.25);
+    text-decoration: none;
+}
+
+.ff-totw-nav__arrow:focus-visible {
+    outline: 2px solid var(--fpl-green);
+    outline-offset: 2px;
+}
+
+.ff-totw-nav__arrow--disabled,
+.ff-totw-nav__arrow--disabled:hover {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: rgba(55, 0, 60, 0.05);
+    color: var(--fpl-purple);
+    border-color: rgba(55, 0, 60, 0.08);
+    transform: none;
+    box-shadow: none;
+}
+
+.ff-totw-nav__label {
+    min-width: 58px;
+    justify-content: center;
+}
+
+/* --- TOTW widget: AJAX loading state --- */
+#totwWidget {
+    position: relative;
+}
+
+#totwWidget .ff-widget__body,
+#totwWidget .ff-widget__header {
+    transition: opacity 0.18s ease;
+}
+
+#totwWidget.ff-totw--loading .ff-widget__body,
+#totwWidget.ff-totw--loading .ff-widget__header {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+#totwWidget.ff-totw--loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    margin: -14px 0 0 -14px;
+    border-radius: 50%;
+    border: 2px solid rgba(55, 0, 60, 0.2);
+    border-top-color: var(--fpl-purple, #37003c);
+    animation: ff-totw-spin 0.7s linear infinite;
+    pointer-events: none;
+    z-index: 3;
+}
+
+@keyframes ff-totw-spin {
+    to { transform: rotate(360deg); }
+}
+
 .ff-widget__body {
     flex: 1;
     display: flex;
@@ -3397,5 +3493,27 @@ body.ff-locker-modal-open {
 /* Pre-rendered hidden full-list container lives inside the widget footer */
 .ff-trend-widget__full {
     display: none;
+}
+
+/* --- Page Title Meta line (compact subtitle under .ff-page-title) --- */
+.ff-page-title__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: -0.75rem 0 1.5rem 0;
+    color: var(--fpl-text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.ff-page-title__meta i {
+    color: var(--fpl-accent, #00f5a0);
+    margin-right: 0.35rem;
+}
+
+.ff-page-title__meta-sep {
+    opacity: 0.35;
+    user-select: none;
 }
 

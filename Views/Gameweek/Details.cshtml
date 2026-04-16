@@ -1,6 +1,7 @@
 @model Gameweek
 @{
     ViewData["Title"] = $"Gameweek {Model.WeekNumber}";
+    var totalPerformances = Model.Performances?.Count ?? 0;
 }
 
 <!-- Breadcrumb -->
@@ -12,80 +13,121 @@
     <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Gameweek @Model.WeekNumber</li>
 </ul>
 
-<!-- Hero -->
-<div class="ff-hero ff-animate-in">
-    <h1 class="ff-hero__title">
-        <i class="bi bi-calendar-event-fill" style="color: var(--ff-accent);"></i>
-        Gameweek @Model.WeekNumber
-    </h1>
-    <p class="ff-hero__subtitle">
-        @Model.StartDate.ToString("dd MMM yyyy") &ndash; @Model.EndDate.ToString("dd MMM yyyy")
-    </p>
+<!-- Compact Title -->
+<h1 class="ff-page-title"><i class="bi bi-calendar-event-fill"></i> Gameweek @Model.WeekNumber</h1>
+<div class="ff-page-title__meta">
+    <span><i class="bi bi-calendar3"></i>@Model.StartDate.ToString("dd MMM yyyy") &ndash; @Model.EndDate.ToString("dd MMM yyyy")</span>
+    <span class="ff-page-title__meta-sep">|</span>
+    <span><i class="bi bi-people-fill"></i>@totalPerformances performances</span>
 </div>
 
-<!-- Stats -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3 col-6">
-        <div class="ff-stat-card">
-            <div class="ff-stat-card__icon"><i class="bi bi-people-fill"></i></div>
-            <div class="ff-stat-card__value">@(Model.Performances?.Count ?? 0)</div>
-            <div class="ff-stat-card__label">Performances</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="ff-stat-card">
-            <div class="ff-stat-card__icon"><i class="bi bi-bullseye"></i></div>
-            <div class="ff-stat-card__value">@(Model.Performances?.Sum(p => p.Goals) ?? 0)</div>
-            <div class="ff-stat-card__label">Total Goals</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="ff-stat-card">
-            <div class="ff-stat-card__icon"><i class="bi bi-hand-thumbs-up-fill"></i></div>
-            <div class="ff-stat-card__value">@(Model.Performances?.Sum(p => p.Assists) ?? 0)</div>
-            <div class="ff-stat-card__label">Total Assists</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="ff-stat-card">
-            <div class="ff-stat-card__icon"><i class="bi bi-star-fill"></i></div>
-            <div class="ff-stat-card__value">@(Model.Performances?.Sum(p => p.PointsEarned) ?? 0)</div>
-            <div class="ff-stat-card__label">Total Points</div>
-        </div>
-    </div>
-</div>
-
-<!-- Performances Table -->
-<h2 class="ff-section-title"><i class="bi bi-list-stars"></i> Performances</h2>
 @if (Model.Performances != null && Model.Performances.Any())
 {
+    <!-- Filter Bar -->
+    <div class="ff-locker-filter ff-animate-in" role="search" aria-label="Filter performances">
+        <div class="ff-locker-filter__controls">
+            <div class="ff-locker-filter__group">
+                <label for="filterPosition" class="ff-locker-filter__label">
+                    <i class="bi bi-person-badge-fill" aria-hidden="true"></i>
+                    <span class="ff-locker-filter__label-text">Position</span>
+                </label>
+                <select id="filterPosition" class="ff-locker-filter__select" aria-label="Filter performances by position">
+                    <option value="">All Positions</option>
+                    <option value="Goalkeeper">Goalkeeper</option>
+                    <option value="Defender">Defender</option>
+                    <option value="Midfielder">Midfielder</option>
+                    <option value="Forward">Forward</option>
+                </select>
+            </div>
+        </div>
+        <div class="ff-locker-filter__status">
+            <span class="ff-locker-filter__count" id="filterCount">
+                Showing <strong>@totalPerformances</strong> of <strong>@totalPerformances</strong> performances
+            </span>
+        </div>
+    </div>
+
+    <!-- Empty Filter State -->
+    <div class="ff-locker-filter-empty" id="filterEmptyState" style="display:none;">
+        <div class="ff-locker-filter-empty__icon"><i class="bi bi-funnel"></i></div>
+        <div class="ff-locker-filter-empty__text">No performances match the selected position</div>
+        <button type="button" class="ff-locker-filter-empty__clear" id="filterClearAll">
+            <i class="bi bi-arrow-counterclockwise"></i> Clear filter
+        </button>
+    </div>
+
+    <!-- Performances Table -->
     <div class="ff-table-responsive">
-        <table class="ff-table">
+        <table class="ff-table ff-table--sortable" id="ff-performances-table" aria-label="Gameweek performances">
             <thead>
                 <tr>
-                    <th>Player</th>
-                    <th>Opponent</th>
-                    <th>Goals</th>
-                    <th>Assists</th>
-                    <th>Clean Sheet</th>
-                    <th>YC</th>
-                    <th>RC</th>
-                    <th>Minutes</th>
-                    <th>Points</th>
+                    <th scope="col">Player</th>
+                    <th scope="col">Pos</th>
+                    <th scope="col">Opponent</th>
+                    <th class="ff-th-sort" data-sort-key="goals" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                        <span class="ff-th-sort__inner">
+                            Goals <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                        </span>
+                    </th>
+                    <th class="ff-th-sort" data-sort-key="assists" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                        <span class="ff-th-sort__inner">
+                            Assists <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                        </span>
+                    </th>
+                    <th scope="col">Clean Sheet</th>
+                    <th scope="col">YC</th>
+                    <th scope="col">RC</th>
+                    <th class="ff-th-sort" data-sort-key="minutes" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                        <span class="ff-th-sort__inner">
+                            Minutes <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                        </span>
+                    </th>
+                    <th class="ff-th-sort" data-sort-key="points" data-sort-type="number" tabindex="0" role="button" aria-sort="descending" scope="col">
+                        <span class="ff-th-sort__inner">
+                            Points <i class="bi bi-arrow-down ff-th-sort__icon" aria-hidden="true"></i>
+                        </span>
+                    </th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var perf in Model.Performances)
+                @{
+                    // Default sort: Points desc
+                    var sortedPerformances = Model.Performances
+                        .OrderByDescending(p => p.PointsEarned)
+                        .ToList();
+                }
+                @foreach (var perf in sortedPerformances)
                 {
-                    <tr>
+                    string badgeClass = perf.Player.Position switch
+                    {
+                        Position.Goalkeeper => "ff-badge--gk",
+                        Position.Defender   => "ff-badge--def",
+                        Position.Midfielder => "ff-badge--mid",
+                        Position.Forward    => "ff-badge--fwd",
+                        _ => "ff-badge--mid"
+                    };
+
+                    string posAbbr = perf.Player.Position switch
+                    {
+                        Position.Goalkeeper => "GK",
+                        Position.Defender   => "DEF",
+                        Position.Midfielder => "MID",
+                        Position.Forward    => "FWD",
+                        _ => "MID"
+                    };
+
+                    <tr data-position="@perf.Player.Position">
                         <td>
                             <a asp-controller="Player" asp-action="Details" asp-route-id="@perf.Player.Id">
                                 @perf.Player.FullName
                             </a>
                         </td>
+                        <td>
+                            <span class="ff-badge @badgeClass">@posAbbr</span>
+                        </td>
                         <td>@perf.Opponent</td>
-                        <td>@perf.Goals</td>
-                        <td>@perf.Assists</td>
+                        <td class="ff-num" data-sort-value="@perf.Goals">@perf.Goals</td>
+                        <td class="ff-num" data-sort-value="@perf.Assists">@perf.Assists</td>
                         <td>
                             @if (perf.CleanSheet)
                             {
@@ -116,8 +158,10 @@
                                 <span class="ff-text-muted">0</span>
                             }
                         </td>
-                        <td>@perf.MinutesPlayed'</td>
-                        <td><strong class="ff-text-accent">@perf.PointsEarned</strong></td>
+                        <td class="ff-num" data-sort-value="@perf.MinutesPlayed">@perf.MinutesPlayed'</td>
+                        <td class="ff-num ff-num--accent" data-sort-value="@perf.PointsEarned">
+                            <strong>@perf.PointsEarned</strong>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -130,4 +174,118 @@ else
         <div class="ff-empty__icon"><i class="bi bi-list-stars"></i></div>
         <div class="ff-empty__text">No performances recorded for this gameweek.</div>
     </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            'use strict';
+
+            var table = document.getElementById('ff-performances-table');
+            if (!table) return;
+
+            var tbody = table.querySelector('tbody');
+            var allRows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+            var totalCount = allRows.length;
+
+            var $positionFilter = $('#filterPosition');
+            var $filterCount = $('#filterCount');
+            var $emptyState = $('#filterEmptyState');
+            var $tableWrapper = $(table).closest('.ff-table-responsive');
+            var $clearAll = $('#filterClearAll');
+
+            /* ---- Filtering ---- */
+            function applyFilter() {
+                var positionVal = $positionFilter.val();
+                var visibleCount = 0;
+
+                allRows.forEach(function (row) {
+                    var rowPosition = row.getAttribute('data-position') || '';
+                    var matches = !positionVal || rowPosition === positionVal;
+                    if (matches) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                $filterCount.html('Showing <strong>' + visibleCount + '</strong> of <strong>' + totalCount + '</strong> performances');
+
+                if (visibleCount === 0 && totalCount > 0) {
+                    $emptyState.show();
+                    $tableWrapper.hide();
+                } else {
+                    $emptyState.hide();
+                    $tableWrapper.show();
+                }
+            }
+
+            $positionFilter.on('change', applyFilter);
+            $clearAll.on('click', function () {
+                $positionFilter.val('');
+                applyFilter();
+            });
+
+            /* ---- Sorting ---- */
+            function compareValues(a, b, type, dir) {
+                var mult = dir === 'ascending' ? 1 : -1;
+                if (type === 'number') {
+                    var na = parseFloat(a) || 0;
+                    var nb = parseFloat(b) || 0;
+                    return (na - nb) * mult;
+                }
+                return String(a).localeCompare(String(b)) * mult;
+            }
+
+            function sortBy(th) {
+                var headers = table.querySelectorAll('thead th');
+                var keyIndex = -1;
+                headers.forEach(function (h, i) {
+                    if (h === th) keyIndex = i;
+                });
+                if (keyIndex === -1) return;
+
+                var current = th.getAttribute('aria-sort');
+                var next = current === 'ascending' ? 'descending' : 'ascending';
+
+                // Reset all other sortable headers
+                table.querySelectorAll('thead th.ff-th-sort').forEach(function (h) {
+                    if (h !== th) {
+                        h.setAttribute('aria-sort', 'none');
+                        var ic = h.querySelector('.ff-th-sort__icon');
+                        if (ic) {
+                            ic.classList.remove('bi-arrow-up', 'bi-arrow-down');
+                            ic.classList.add('bi-arrow-down-up');
+                        }
+                    }
+                });
+
+                th.setAttribute('aria-sort', next);
+                var icon = th.querySelector('.ff-th-sort__icon');
+                if (icon) {
+                    icon.classList.remove('bi-arrow-down-up', 'bi-arrow-up', 'bi-arrow-down');
+                    icon.classList.add(next === 'ascending' ? 'bi-arrow-up' : 'bi-arrow-down');
+                }
+
+                var type = th.getAttribute('data-sort-type') || 'string';
+                allRows.sort(function (ra, rb) {
+                    var va = ra.children[keyIndex].getAttribute('data-sort-value');
+                    var vb = rb.children[keyIndex].getAttribute('data-sort-value');
+                    return compareValues(va, vb, type, next);
+                });
+                allRows.forEach(function (r) { tbody.appendChild(r); });
+            }
+
+            table.querySelectorAll('thead th.ff-th-sort').forEach(function (th) {
+                th.addEventListener('click', function () { sortBy(th); });
+                th.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        sortBy(th);
+                    }
+                });
+            });
+        })();
+    </script>
 }

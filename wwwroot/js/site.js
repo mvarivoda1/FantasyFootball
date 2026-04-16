@@ -215,3 +215,94 @@
         initRankingTable();
     }
 })();
+
+// --- TOTW widget: AJAX navigacija izmedu gameweekova (bez skrolanja na vrh) ---
+(function () {
+    'use strict';
+
+    var widget = document.getElementById('totwWidget');
+    if (!widget) return;
+
+    var inFlight = false;
+
+    function getGwFromLink(link) {
+        var dataGw = link.getAttribute('data-gw');
+        if (dataGw) return dataGw;
+
+        var href = link.getAttribute('href') || '';
+        var match = href.match(/[?&]gw=(\d+)/);
+        return match ? match[1] : null;
+    }
+
+    function replaceContent(html) {
+        // Koristimo template da parsiramo HTML bez izvrsavanja skripti
+        var tpl = document.createElement('template');
+        tpl.innerHTML = html.trim();
+        // Obrisi postojece header + body, ubaci novi
+        widget.innerHTML = '';
+        widget.appendChild(tpl.content);
+    }
+
+    function updateUrl(gw) {
+        if (!window.history || !window.history.replaceState) return;
+        try {
+            var url = new URL(window.location.href);
+            url.searchParams.set('gw', gw);
+            window.history.replaceState(window.history.state, '', url.toString());
+        } catch (e) {
+            // Noop ako URL API nije dostupan
+        }
+    }
+
+    function loadGameweek(gw) {
+        if (inFlight || !gw) return;
+        inFlight = true;
+        widget.classList.add('ff-totw--loading');
+
+        var url = '/Home/TotwPartial?gw=' + encodeURIComponent(gw);
+
+        fetch(url, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html'
+            }
+        })
+            .then(function (response) {
+                if (!response.ok) throw new Error('Network response not OK');
+                return response.text();
+            })
+            .then(function (html) {
+                replaceContent(html);
+                updateUrl(gw);
+            })
+            .catch(function () {
+                // Tihi fallback — ne ruinirati stranicu; korisnik moze pokusati opet
+            })
+            .then(function () {
+                widget.classList.remove('ff-totw--loading');
+                inFlight = false;
+            });
+    }
+
+    widget.addEventListener('click', function (e) {
+        var link = e.target.closest('.ff-totw-nav a');
+        if (!link) return;
+        if (!widget.contains(link)) return;
+        if (link.classList.contains('ff-totw-nav__arrow--disabled')) return;
+
+        e.preventDefault();
+        var gw = getGwFromLink(link);
+        if (gw) loadGameweek(gw);
+    });
+
+    widget.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var link = e.target.closest('.ff-totw-nav a');
+        if (!link) return;
+        e.preventDefault();
+        var gw = getGwFromLink(link);
+        if (gw) loadGameweek(gw);
+    });
+})();

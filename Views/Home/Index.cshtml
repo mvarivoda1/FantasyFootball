@@ -204,58 +204,8 @@
     <!-- ROW 3: Team of the Week (wide) + Player Availability -->
     <div class="row g-3 ff-dashboard__row">
         <div class="col-12 col-lg-8">
-            <article class="ff-widget ff-widget--totw" aria-labelledby="totw-title">
-                <header class="ff-widget__header">
-                    <h2 id="totw-title" class="ff-widget__title">
-                        <span class="ff-widget__icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
-                        Team of the Week
-                    </h2>
-                    <span class="ff-widget__badge">GW @(Model.LatestGameweek?.WeekNumber ?? 0)</span>
-                </header>
-                <div class="ff-widget__body">
-                    <div class="ff-totw">
-                        @if (Model.TotwForwards.Any())
-                        {
-                            <div class="ff-totw__row ff-totw__row--fwd">
-                                @foreach (var perf in Model.TotwForwards)
-                                {
-                                    <partial name="_TotwPlayer" model="perf" />
-                                }
-                            </div>
-                        }
-                        @if (Model.TotwMidfielders.Any())
-                        {
-                            <div class="ff-totw__row ff-totw__row--mid">
-                                @foreach (var perf in Model.TotwMidfielders)
-                                {
-                                    <partial name="_TotwPlayer" model="perf" />
-                                }
-                            </div>
-                        }
-                        @if (Model.TotwDefenders.Any())
-                        {
-                            <div class="ff-totw__row ff-totw__row--def">
-                                @foreach (var perf in Model.TotwDefenders)
-                                {
-                                    <partial name="_TotwPlayer" model="perf" />
-                                }
-                            </div>
-                        }
-                        @if (Model.TotwGoalkeepers.Any())
-                        {
-                            <div class="ff-totw__row ff-totw__row--gk">
-                                @foreach (var perf in Model.TotwGoalkeepers)
-                                {
-                                    <partial name="_TotwPlayer" model="perf" />
-                                }
-                            </div>
-                        }
-                        @if (!Model.TotwForwards.Any() && !Model.TotwMidfielders.Any() && !Model.TotwDefenders.Any() && !Model.TotwGoalkeepers.Any())
-                        {
-                            <p class="ff-widget__empty">No performances recorded.</p>
-                        }
-                    </div>
-                </div>
+            <article id="totwWidget" class="ff-widget ff-widget--totw" aria-labelledby="totw-title" aria-live="polite">
+                <partial name="_TotwContent" model="Model" />
             </article>
         </div>
 

@@ -184,9 +184,101 @@ namespace FantasyFootball.Repositories
                 // Chelsea vs Tottenham
                 new MatchPerformance { Id = 70, Player = byId(9),  MatchDate = new DateTime(2025, 9, 29), Opponent = "Tottenham",  Goals = 1, Assists = 0, CleanSheet = false, YellowCards = 0, RedCards = 0, MinutesPlayed = 90, PointsEarned = 7 },
                 new MatchPerformance { Id = 71, Player = byId(58), MatchDate = new DateTime(2025, 9, 29), Opponent = "Tottenham",  Goals = 0, Assists = 2, CleanSheet = false, YellowCards = 0, RedCards = 0, MinutesPlayed = 90, PointsEarned = 7 },
+                // Arsenal vs Newcastle – GK + extra DEF (clean sheet side)
+                new MatchPerformance { Id = 72, Player = byId(8),  MatchDate = new DateTime(2025, 9, 28), Opponent = "Newcastle",  Goals = 0, Assists = 0, CleanSheet = true,  YellowCards = 0, RedCards = 0, MinutesPlayed = 90, PointsEarned = 11 },
+                new MatchPerformance { Id = 73, Player = byId(7),  MatchDate = new DateTime(2025, 9, 28), Opponent = "Newcastle",  Goals = 0, Assists = 0, CleanSheet = true,  YellowCards = 0, RedCards = 0, MinutesPlayed = 90, PointsEarned = 9 },
+                // Liverpool vs Man City – extra DEF
+                new MatchPerformance { Id = 74, Player = byId(4),  MatchDate = new DateTime(2025, 9, 27), Opponent = "Man City",   Goals = 0, Assists = 0, CleanSheet = false, YellowCards = 0, RedCards = 0, MinutesPlayed = 90, PointsEarned = 3 },
             });
 
             _gameweeks = new List<Gameweek> { gw1, gw2, gw3, gw4, gw5, gw6 };
+
+            // Ensure each gameweek has enough performances per position so the TOTW
+            // algorithm (1 GK + 3-5 DEF + 2-5 MID + 1-3 FWD = 11) always has valid choices.
+            int fillerId = _gameweeks.SelectMany(g => g.Performances).Max(p => p.Id) + 1;
+            foreach (var gw in _gameweeks)
+            {
+                fillerId = EnsureFormationDepth(gw, p, fillerId);
+            }
+        }
+
+        private static int EnsureFormationDepth(Gameweek gw, List<Player> pool, int nextId)
+        {
+            var targets = new (Position pos, int count)[]
+            {
+                (Position.Goalkeeper, 2),
+                (Position.Defender,   5),
+                (Position.Midfielder, 5),
+                (Position.Forward,    3),
+            };
+
+            var used = gw.Performances.Select(p => p.Player.Id).ToHashSet();
+            string[] filler = { "Brighton", "Fulham", "Ipswich", "Palace", "Brentford", "Everton", "Leicester", "Southampton", "West Ham", "Wolves" };
+
+            foreach (var (pos, target) in targets)
+            {
+                int have = gw.Performances.Count(x => x.Player.Position == pos);
+                int need = target - have;
+                if (need <= 0) continue;
+
+                var candidates = pool
+                    .Where(pl => pl.Position == pos && !used.Contains(pl.Id))
+                    .OrderByDescending(pl => pl.TotalPoints)
+                    .Take(need)
+                    .ToList();
+
+                foreach (var player in candidates)
+                {
+                    int seed = Math.Abs(gw.WeekNumber * 131 + player.Id * 17);
+                    int goals = 0, assists = 0, yc = 0, minutes = 90;
+                    bool cs = false;
+                    int points;
+
+                    switch (pos)
+                    {
+                        case Position.Forward:
+                            goals = (seed % 3 == 0) ? 1 + ((seed / 3) % 2) : 0;
+                            assists = (seed % 5 == 0) ? 1 : 0;
+                            points = goals * 4 + assists * 3 + 2;
+                            break;
+                        case Position.Midfielder:
+                            goals = (seed % 4 == 0) ? 1 : 0;
+                            assists = (seed % 3 == 0) ? 1 : 0;
+                            points = goals * 5 + assists * 3 + 2;
+                            break;
+                        case Position.Defender:
+                            goals = (seed % 11 == 0) ? 1 : 0;
+                            assists = (seed % 6 == 0) ? 1 : 0;
+                            cs = (seed % 2 == 0);
+                            points = goals * 6 + assists * 3 + (cs ? 4 : 0) + 2;
+                            break;
+                        default: // Goalkeeper
+                            cs = (seed % 2 == 0);
+                            points = (cs ? 5 : 0) + 2;
+                            break;
+                    }
+                    if (seed % 13 == 0) { yc = 1; points -= 1; }
+
+                    int dayOffset = seed % Math.Max(1, (gw.EndDate - gw.StartDate).Days + 1);
+                    gw.Performances.Add(new MatchPerformance
+                    {
+                        Id = nextId++,
+                        Player = player,
+                        MatchDate = gw.StartDate.AddDays(dayOffset),
+                        Opponent = filler[seed % filler.Length],
+                        Goals = goals,
+                        Assists = assists,
+                        CleanSheet = cs,
+                        YellowCards = yc,
+                        RedCards = 0,
+                        MinutesPlayed = minutes,
+                        PointsEarned = points
+                    });
+                    used.Add(player.Id);
+                }
+            }
+
+            return nextId;
         }
 
         public List<Gameweek> GetAll() => _gameweeks;

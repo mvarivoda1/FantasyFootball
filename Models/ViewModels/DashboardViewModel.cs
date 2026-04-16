@@ -28,6 +28,11 @@ namespace FantasyFootball.Models.ViewModels
         public List<MatchPerformance> TotwMidfielders { get; set; } = new();
         public List<MatchPerformance> TotwForwards { get; set; } = new();
 
+        // TOTW navigation (which gameweek is currently being shown in the widget)
+        public int TotwGameweekNumber { get; set; }
+        public int? TotwPrevGameweek { get; set; }
+        public int? TotwNextGameweek { get; set; }
+
         // Player Availability
         public List<PlayerAvailabilityItem> PlayerAvailability { get; set; } = new();
 

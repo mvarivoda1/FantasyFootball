@@ -28,7 +28,7 @@ namespace FantasyFootball.Controllers
             _transferRepo = transferRepo;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int? gw = null)
         {
             var vm = new DashboardViewModel();
 
@@ -36,6 +36,11 @@ namespace FantasyFootball.Controllers
             var allGameweeks = _gameweekRepo.GetAll().OrderBy(g => g.WeekNumber).ToList();
             var latest = allGameweeks.OrderByDescending(g => g.WeekNumber).FirstOrDefault();
             vm.LatestGameweek = latest;
+
+            // --- TOTW Target Gameweek (prev/next navigation) ---
+            var totwGw = gw.HasValue
+                ? allGameweeks.FirstOrDefault(g => g.WeekNumber == gw.Value) ?? latest
+                : latest;
 
             if (latest != null)
             {
@@ -121,58 +126,7 @@ namespace FantasyFootball.Controllers
                 .FirstOrDefault();
 
             // --- Team of the Week (by position) ---
-            // Formation rules: 1 GK + 3-5 DEF + 2-5 MID + 1-3 FWD = 11 players.
-            // Pick the valid formation that maximizes total points this gameweek.
-            if (latest != null)
-            {
-                var perfsByPos = latest.Performances
-                    .GroupBy(p => p.Player.Position)
-                    .ToDictionary(g => g.Key, g => g.OrderByDescending(p => p.PointsEarned).ToList());
-
-                var gkPerfs = perfsByPos.TryGetValue(Position.Goalkeeper, out var gks) ? gks : new List<MatchPerformance>();
-                var defPerfs = perfsByPos.TryGetValue(Position.Defender, out var defs) ? defs : new List<MatchPerformance>();
-                var midPerfs = perfsByPos.TryGetValue(Position.Midfielder, out var mids) ? mids : new List<MatchPerformance>();
-                var fwdPerfs = perfsByPos.TryGetValue(Position.Forward, out var fwds) ? fwds : new List<MatchPerformance>();
-
-                int PrefixPoints(List<MatchPerformance> list, int take)
-                    => list.Take(take).Sum(p => p.PointsEarned);
-
-                (int d, int m, int f) bestFormation = (0, 0, 0);
-                int bestScore = -1;
-
-                for (int d = 3; d <= 5; d++)
-                {
-                    for (int m = 2; m <= 5; m++)
-                    {
-                        int f = 10 - d - m;
-                        if (f < 1 || f > 3) continue;
-                        if (defPerfs.Count < d || midPerfs.Count < m || fwdPerfs.Count < f) continue;
-
-                        int score = PrefixPoints(defPerfs, d) + PrefixPoints(midPerfs, m) + PrefixPoints(fwdPerfs, f);
-                        if (score > bestScore)
-                        {
-                            bestScore = score;
-                            bestFormation = (d, m, f);
-                        }
-                    }
-                }
-
-                // Fallback: if no valid formation fits (not enough players at some position),
-                // take whatever's available within the min/max bounds.
-                if (bestScore < 0)
-                {
-                    bestFormation = (
-                        Math.Min(5, Math.Max(0, defPerfs.Count)),
-                        Math.Min(5, Math.Max(0, midPerfs.Count)),
-                        Math.Min(3, Math.Max(0, fwdPerfs.Count))
-                    );
-                }
-
-                vm.TotwGoalkeepers = gkPerfs.Take(1).ToList();
-                vm.TotwDefenders = defPerfs.Take(bestFormation.d).ToList();
-                vm.TotwMidfielders = midPerfs.Take(bestFormation.m).ToList();
-                vm.TotwForwards = fwdPerfs.Take(bestFormation.f).ToList();
-            }
+            PopulateTotw(vm, totwGw, allGameweeks);
 
             // --- Player Availability ---
             if (latest != null)
@@ -271,6 +225,84 @@ namespace FantasyFootball.Controllers
                 .ToList();
 
             return View(vm);
+        }
+
+        // AJAX endpoint — returns only the TOTW widget content so navigation arrows
+        // don't cause a full page reload (which would scroll the user to the top).
+        public IActionResult TotwPartial(int? gw = null)
+        {
+            var allGameweeks = _gameweekRepo.GetAll().OrderBy(g => g.WeekNumber).ToList();
+            var latest = allGameweeks.OrderByDescending(g => g.WeekNumber).FirstOrDefault();
+            var totwGw = gw.HasValue
+                ? allGameweeks.FirstOrDefault(g => g.WeekNumber == gw.Value) ?? latest
+                : latest;
+
+            var vm = new DashboardViewModel();
+            PopulateTotw(vm, totwGw, allGameweeks);
+            return PartialView("_TotwContent", vm);
+        }
+
+        private static void PopulateTotw(DashboardViewModel vm, Gameweek? totwGw, List<Gameweek> allGameweeks)
+        {
+            // Formation rules: 1 GK + 3-5 DEF + 2-5 MID + 1-3 FWD = 11 players.
+            // Pick the valid formation that maximizes total points this gameweek.
+            if (totwGw == null) return;
+
+            vm.TotwGameweekNumber = totwGw.WeekNumber;
+            vm.TotwPrevGameweek = allGameweeks
+                .Where(g => g.WeekNumber < totwGw.WeekNumber)
+                .OrderByDescending(g => g.WeekNumber)
+                .FirstOrDefault()?.WeekNumber;
+            vm.TotwNextGameweek = allGameweeks
+                .Where(g => g.WeekNumber > totwGw.WeekNumber)
+                .OrderBy(g => g.WeekNumber)
+                .FirstOrDefault()?.WeekNumber;
+
+            var perfsByPos = totwGw.Performances
+                .GroupBy(p => p.Player.Position)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(p => p.PointsEarned).ToList());
+
+            var gkPerfs = perfsByPos.TryGetValue(Position.Goalkeeper, out var gks) ? gks : new List<MatchPerformance>();
+            var defPerfs = perfsByPos.TryGetValue(Position.Defender, out var defs) ? defs : new List<MatchPerformance>();
+            var midPerfs = perfsByPos.TryGetValue(Position.Midfielder, out var mids) ? mids : new List<MatchPerformance>();
+            var fwdPerfs = perfsByPos.TryGetValue(Position.Forward, out var fwds) ? fwds : new List<MatchPerformance>();
+
+            int PrefixPoints(List<MatchPerformance> list, int take)
+                => list.Take(take).Sum(p => p.PointsEarned);
+
+            (int d, int m, int f) bestFormation = (0, 0, 0);
+            int bestScore = -1;
+
+            for (int d = 3; d <= 5; d++)
+            {
+                for (int m = 2; m <= 5; m++)
+                {
+                    int f = 10 - d - m;
+                    if (f < 1 || f > 3) continue;
+                    if (defPerfs.Count < d || midPerfs.Count < m || fwdPerfs.Count < f) continue;
+
+                    int score = PrefixPoints(defPerfs, d) + PrefixPoints(midPerfs, m) + PrefixPoints(fwdPerfs, f);
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        bestFormation = (d, m, f);
+                    }
+                }
+            }
+
+            if (bestScore < 0)
+            {
+                bestFormation = (
+                    Math.Min(5, Math.Max(0, defPerfs.Count)),
+                    Math.Min(5, Math.Max(0, midPerfs.Count)),
+                    Math.Min(3, Math.Max(0, fwdPerfs.Count))
+                );
+            }
+
+            vm.TotwGoalkeepers = gkPerfs.Take(1).ToList();
+            vm.TotwDefenders = defPerfs.Take(bestFormation.d).ToList();
+            vm.TotwMidfielders = midPerfs.Take(bestFormation.m).ToList();
+            vm.TotwForwards = fwdPerfs.Take(bestFormation.f).ToList();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

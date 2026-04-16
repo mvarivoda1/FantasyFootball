@@ -1,0 +1,96 @@
+@using FantasyFootball.Models.ViewModels
+@model DashboardViewModel
+
+<header class="ff-widget__header">
+    <h2 id="totw-title" class="ff-widget__title">
+        <span class="ff-widget__icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
+        Team of the Week
+    </h2>
+    <nav class="ff-totw-nav" aria-label="Team of the Week gameweek navigation">
+        @if (Model.TotwPrevGameweek.HasValue)
+        {
+            <a class="ff-totw-nav__arrow ff-totw-nav__arrow--ajax"
+               asp-controller="Home"
+               asp-action="Index"
+               asp-route-gw="@Model.TotwPrevGameweek"
+               data-gw="@Model.TotwPrevGameweek"
+               aria-label="Previous gameweek">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </a>
+        }
+        else
+        {
+            <span class="ff-totw-nav__arrow ff-totw-nav__arrow--disabled"
+                  aria-label="Previous gameweek"
+                  aria-disabled="true"
+                  tabindex="-1">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </span>
+        }
+        <span class="ff-widget__badge ff-totw-nav__label">GW @Model.TotwGameweekNumber</span>
+        @if (Model.TotwNextGameweek.HasValue)
+        {
+            <a class="ff-totw-nav__arrow ff-totw-nav__arrow--ajax"
+               asp-controller="Home"
+               asp-action="Index"
+               asp-route-gw="@Model.TotwNextGameweek"
+               data-gw="@Model.TotwNextGameweek"
+               aria-label="Next gameweek">
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+        }
+        else
+        {
+            <span class="ff-totw-nav__arrow ff-totw-nav__arrow--disabled"
+                  aria-label="Next gameweek"
+                  aria-disabled="true"
+                  tabindex="-1">
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </span>
+        }
+    </nav>
+</header>
+<div class="ff-widget__body">
+    <div class="ff-totw">
+        @if (Model.TotwForwards.Any())
+        {
+            <div class="ff-totw__row ff-totw__row--fwd">
+                @foreach (var perf in Model.TotwForwards)
+                {
+                    <partial name="_TotwPlayer" model="perf" />
+                }
+            </div>
+        }
+        @if (Model.TotwMidfielders.Any())
+        {
+            <div class="ff-totw__row ff-totw__row--mid">
+                @foreach (var perf in Model.TotwMidfielders)
+                {
+                    <partial name="_TotwPlayer" model="perf" />
+                }
+            </div>
+        }
+        @if (Model.TotwDefenders.Any())
+        {
+            <div class="ff-totw__row ff-totw__row--def">
+                @foreach (var perf in Model.TotwDefenders)
+                {
+                    <partial name="_TotwPlayer" model="perf" />
+                }
+            </div>
+        }
+        @if (Model.TotwGoalkeepers.Any())
+        {
+            <div class="ff-totw__row ff-totw__row--gk">
+                @foreach (var perf in Model.TotwGoalkeepers)
+                {
+                    <partial name="_TotwPlayer" model="perf" />
+                }
+            </div>
+        }
+        @if (!Model.TotwForwards.Any() && !Model.TotwMidfielders.Any() && !Model.TotwDefenders.Any() && !Model.TotwGoalkeepers.Any())
+        {
+            <p class="ff-widget__empty">No performances recorded.</p>
+        }
+    </div>
+</div>
