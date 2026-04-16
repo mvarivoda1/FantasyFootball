@@ -1,6 +1,71 @@
 // Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
 
+// --- Navbar: hide on scroll down, show on scroll up ---
+(function () {
+    'use strict';
+
+    var navbar = document.getElementById('ffNavbar');
+    if (!navbar) return;
+
+    var lastScrollY = window.pageYOffset || document.documentElement.scrollTop;
+    var ticking = false;
+    var threshold = 80;       // ne skrivaj u prvih 80px
+    var delta = 6;            // minimum delta za promjenu smjera (debounce)
+
+    function onScroll() {
+        var currentY = window.pageYOffset || document.documentElement.scrollTop;
+
+        // Scrolled class (za subtle shadow boost kad nije na vrhu)
+        if (currentY > 4) {
+            navbar.classList.add('ff-navbar--scrolled');
+        } else {
+            navbar.classList.remove('ff-navbar--scrolled');
+        }
+
+        // Ispod thresholda — uvijek prikazan
+        if (currentY <= threshold) {
+            navbar.classList.remove('ff-navbar--hidden');
+            lastScrollY = currentY;
+            ticking = false;
+            return;
+        }
+
+        // Ako je otvoren mobile collapse, ne skrivaj navbar
+        var collapse = document.getElementById('navbarMain');
+        if (collapse && collapse.classList.contains('show')) {
+            lastScrollY = currentY;
+            ticking = false;
+            return;
+        }
+
+        var diff = currentY - lastScrollY;
+        if (Math.abs(diff) < delta) {
+            ticking = false;
+            return;
+        }
+
+        if (diff > 0) {
+            // Scroll prema dolje — sakrij
+            navbar.classList.add('ff-navbar--hidden');
+        } else {
+            // Scroll prema gore — prikazi
+            navbar.classList.remove('ff-navbar--hidden');
+        }
+
+        lastScrollY = currentY;
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+        if (!ticking) {
+            window.requestAnimationFrame(onScroll);
+            ticking = true;
+        }
+    }, { passive: true });
+})();
+
+
 // --- Deadline Countdown ---
 (function () {
     'use strict';
