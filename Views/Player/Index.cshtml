@@ -345,8 +345,8 @@ $(function () {
         var posAbbr = d.playerPosAbbr;
         $('#lockerModalBadge').html('<span class="ff-badge ' + badgeCls + '">' + posAbbr + '</span>');
 
-        // Details link
-        $('#lockerModalDetailsLink').attr('href', '/Player/Details/' + d.playerId);
+        // Details link — Url.RouteUrl generates /igrac/0; replace /0 with the real id at runtime
+        $('#lockerModalDetailsLink').attr('href', '@Url.RouteUrl("PlayerDetails", new { id = 0 })'.replace('/0', '/' + d.playerId));
 
         // Fantasy teams
         var $teamsList = $('#lockerModalTeams');

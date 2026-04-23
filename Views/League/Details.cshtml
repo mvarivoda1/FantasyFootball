@@ -322,8 +322,8 @@
                 var posAbbr = d.playerPosAbbr;
                 $('#lockerModalBadge').html('<span class="ff-badge ' + badgeCls + '">' + posAbbr + '</span>');
 
-                // Details link
-                $('#lockerModalDetailsLink').attr('href', '/Player/Details/' + d.playerId);
+                // Details link — URL se generira iz routing sustava (attribute route "igrac/{id:int}")
+                $('#lockerModalDetailsLink').attr('href', '@Url.Action("Details", "Player", new { id = "__ID__" })'.replace('__ID__', d.playerId));
 
                 // Fantasy teams
                 var $teamsList = $('#lockerModalTeams');

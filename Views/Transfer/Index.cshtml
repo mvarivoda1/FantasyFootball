@@ -842,7 +842,7 @@ else
                 var badgeCls = d.playerBadge;
                 var posAbbr = d.playerPosAbbr;
                 $('#lockerModalBadge').html('<span class="ff-badge ' + badgeCls + '">' + posAbbr + '</span>');
-                $('#lockerModalDetailsLink').attr('href', '/Player/Details/' + d.playerId);
+                $('#lockerModalDetailsLink').attr('href', '@Url.Action("Details", "Player", new { id = "__ID__" })'.replace('__ID__', d.playerId));
 
                 var $teamsList = $('#lockerModalTeams');
                 $teamsList.empty();
