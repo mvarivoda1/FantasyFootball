@@ -12,6 +12,7 @@ namespace FantasyFootball.Controllers
             _transferRepo = transferRepo;
         }
 
+        [Route("transferi", Name = "TransferIndex")]
         public IActionResult Index()
         {
             var transfers = _transferRepo.GetAll();

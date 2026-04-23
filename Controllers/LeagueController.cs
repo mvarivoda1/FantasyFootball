@@ -12,12 +12,14 @@ namespace FantasyFootball.Controllers
             _leagueRepo = leagueRepo;
         }
 
+        [Route("lige", Name = "LeagueIndex")]
         public IActionResult Index()
         {
             var leagues = _leagueRepo.GetAll();
             return View(leagues);
         }
 
+        [Route("liga/{id:int}", Name = "LeagueDetails")]
         public IActionResult Details(int id)
         {
             var league = _leagueRepo.GetById(id);

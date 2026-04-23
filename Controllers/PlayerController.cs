@@ -12,12 +12,14 @@ namespace FantasyFootball.Controllers
             _playerRepo = playerRepo;
         }
 
+        [Route("igraci", Name = "PlayerIndex")]
         public IActionResult Index()
         {
             var players = _playerRepo.GetAll();
             return View(players);
         }
 
+        [Route("igrac/{id:int}", Name = "PlayerDetails")]
         public IActionResult Details(int id)
         {
             var player = _playerRepo.GetById(id);
