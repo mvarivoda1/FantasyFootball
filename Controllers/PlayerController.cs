@@ -5,9 +5,9 @@ namespace FantasyFootball.Controllers
 {
     public class PlayerController : Controller
     {
-        private readonly PlayerMockRepository _playerRepo;
+        private readonly PlayerRepository _playerRepo;
 
-        public PlayerController(PlayerMockRepository playerRepo)
+        public PlayerController(PlayerRepository playerRepo)
         {
             _playerRepo = playerRepo;
         }

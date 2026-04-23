@@ -5,9 +5,9 @@ namespace FantasyFootball.Controllers
 {
     public class TransferController : Controller
     {
-        private readonly TransferMockRepository _transferRepo;
+        private readonly TransferRepository _transferRepo;
 
-        public TransferController(TransferMockRepository transferRepo)
+        public TransferController(TransferRepository transferRepo)
         {
             _transferRepo = transferRepo;
         }

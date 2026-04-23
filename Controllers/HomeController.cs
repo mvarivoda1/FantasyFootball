@@ -8,18 +8,18 @@ namespace FantasyFootball.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly PlayerMockRepository _playerRepo;
-        private readonly LeagueMockRepository _leagueRepo;
-        private readonly FantasyTeamMockRepository _teamRepo;
-        private readonly GameweekMockRepository _gameweekRepo;
-        private readonly TransferMockRepository _transferRepo;
+        private readonly PlayerRepository _playerRepo;
+        private readonly LeagueRepository _leagueRepo;
+        private readonly FantasyTeamRepository _teamRepo;
+        private readonly GameweekRepository _gameweekRepo;
+        private readonly TransferRepository _transferRepo;
 
         public HomeController(
-            PlayerMockRepository playerRepo,
-            LeagueMockRepository leagueRepo,
-            FantasyTeamMockRepository teamRepo,
-            GameweekMockRepository gameweekRepo,
-            TransferMockRepository transferRepo)
+            PlayerRepository playerRepo,
+            LeagueRepository leagueRepo,
+            FantasyTeamRepository teamRepo,
+            GameweekRepository gameweekRepo,
+            TransferRepository transferRepo)
         {
             _playerRepo = playerRepo;
             _leagueRepo = leagueRepo;

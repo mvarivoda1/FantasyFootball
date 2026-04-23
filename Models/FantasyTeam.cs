@@ -1,7 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace FantasyFootball.Models
 {
     public class FantasyTeam
     {
+        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
         public string OwnerName { get; set; }
@@ -10,10 +14,12 @@ namespace FantasyFootball.Models
         public int TotalPoints { get; set; }
 
         // N-N: tim ima više igrača
-        public List<Player> Players { get; set; }
+        public virtual ICollection<Player> Players { get; set; }
 
         // 1-N: tim pripada jednoj ligi
-        public League League { get; set; }
+        [ForeignKey(nameof(League))]
+        public int? LeagueId { get; set; }
+        public virtual League? League { get; set; }
 
         public FantasyTeam()
         {

@@ -5,9 +5,9 @@ namespace FantasyFootball.Controllers
 {
     public class GameweekController : Controller
     {
-        private readonly GameweekMockRepository _gameweekRepo;
+        private readonly GameweekRepository _gameweekRepo;
 
-        public GameweekController(GameweekMockRepository gameweekRepo)
+        public GameweekController(GameweekRepository gameweekRepo)
         {
             _gameweekRepo = gameweekRepo;
         }

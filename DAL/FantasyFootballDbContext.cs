@@ -1,0 +1,79 @@
+using FantasyFootball.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace FantasyFootball.DAL
+{
+    public class FantasyFootballDbContext : DbContext
+    {
+        protected FantasyFootballDbContext() { }
+
+        public FantasyFootballDbContext(DbContextOptions<FantasyFootballDbContext> options) : base(options)
+        { }
+
+        public DbSet<Player> Players { get; set; }
+        public DbSet<FantasyTeam> FantasyTeams { get; set; }
+        public DbSet<League> Leagues { get; set; }
+        public DbSet<Transfer> Transfers { get; set; }
+        public DbSet<Gameweek> Gameweeks { get; set; }
+        public DbSet<MatchPerformance> MatchPerformances { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // N-N: Player <-> FantasyTeam (EF će kreirati join tablicu automatski)
+            modelBuilder.Entity<Player>()
+                .HasMany(p => p.FantasyTeams)
+                .WithMany(t => t.Players);
+
+            // 1-N: League -> FantasyTeam
+            modelBuilder.Entity<FantasyTeam>()
+                .HasOne(t => t.League)
+                .WithMany(l => l.Teams)
+                .HasForeignKey(t => t.LeagueId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // 1-N: League -> Transfer
+            modelBuilder.Entity<Transfer>()
+                .HasOne(t => t.League)
+                .WithMany(l => l.Transfers)
+                .HasForeignKey(t => t.LeagueId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // 1-N: Player -> Transfer
+            modelBuilder.Entity<Transfer>()
+                .HasOne(t => t.Player)
+                .WithMany()
+                .HasForeignKey(t => t.PlayerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Transfer.FromTeam (nullable)
+            modelBuilder.Entity<Transfer>()
+                .HasOne(t => t.FromTeam)
+                .WithMany()
+                .HasForeignKey(t => t.FromTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Transfer.ToTeam (required)
+            modelBuilder.Entity<Transfer>()
+                .HasOne(t => t.ToTeam)
+                .WithMany()
+                .HasForeignKey(t => t.ToTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 1-N: Gameweek -> MatchPerformance
+            modelBuilder.Entity<MatchPerformance>()
+                .HasOne(mp => mp.Gameweek)
+                .WithMany(g => g.Performances)
+                .HasForeignKey(mp => mp.GameweekId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 1-N: Player -> MatchPerformance
+            modelBuilder.Entity<MatchPerformance>()
+                .HasOne(mp => mp.Player)
+                .WithMany()
+                .HasForeignKey(mp => mp.PlayerId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+    }
+}

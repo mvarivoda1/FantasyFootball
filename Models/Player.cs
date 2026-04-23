@@ -1,7 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace FantasyFootball.Models
 {
     public class Player
     {
+        [Key]
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -16,7 +19,7 @@ namespace FantasyFootball.Models
         public int TotalPoints { get; set; }
 
         // N-N: igrač može biti u više fantasy timova
-        public List<FantasyTeam> FantasyTeams { get; set; }
+        public virtual ICollection<FantasyTeam> FantasyTeams { get; set; }
 
         public Player()
         {

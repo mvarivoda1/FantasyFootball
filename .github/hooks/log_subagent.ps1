@@ -1,5 +1,5 @@
 $rawInput = $input | Out-String
-$logPath = "C:\Users\marij_fr08pcq\source\repos\FantasyFootball\.github\hooks\agent_log.txt"
+$logPath = "C:\Users\marijan.varivoda\source\FantasyFootball\.github\hooks\agent_log.txt"
 
 try {
     $obj = $rawInput | ConvertFrom-Json

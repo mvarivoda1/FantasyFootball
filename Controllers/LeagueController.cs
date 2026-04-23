@@ -5,9 +5,9 @@ namespace FantasyFootball.Controllers
 {
     public class LeagueController : Controller
     {
-        private readonly LeagueMockRepository _leagueRepo;
+        private readonly LeagueRepository _leagueRepo;
 
-        public LeagueController(LeagueMockRepository leagueRepo)
+        public LeagueController(LeagueRepository leagueRepo)
         {
             _leagueRepo = leagueRepo;
         }
