@@ -12940,3 +12940,39 @@
     "tool_use_id":  "toolu_016voZ13ihKeRCqZkRpMWWNP"
 }
 
+{
+    "session_id":  "0553d2f7-72c1-4e7d-aedf-eb5fcf99a3bf",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\0553d2f7-72c1-4e7d-aedf-eb5fcf99a3bf.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "hook_event_name":  "UserPromptSubmit",
+    "prompt":  "@DAL/FantasyFootballDbContext.cs objasni detaljnije ovu klasu i sto zapravo rade metode u njoj"
+}
+
+{
+    "session_id":  "093e8030-6fce-448e-9e21-ee0ed94714b5",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\093e8030-6fce-448e-9e21-ee0ed94714b5.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "hook_event_name":  "UserPromptSubmit",
+    "prompt":  "/entity-framework"
+}
+
+{
+    "session_id":  "103f4419-681c-4c4f-9a9e-051e7a83315e",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\103f4419-681c-4c4f-9a9e-051e7a83315e.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "hook_event_name":  "UserPromptSubmit",
+    "prompt":  "<ide_selection>The user selected the lines 22 to 22 from c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\DAL\\FantasyFootballDbContext.cs:\n            base.OnModelCreating(modelBuilder);\n\nThis may or may not be related to the current task.</ide_selection>\notkud ovaj keyword base, sto to radi?"
+}
+
+{
+    "session_id":  "103f4419-681c-4c4f-9a9e-051e7a83315e",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\103f4419-681c-4c4f-9a9e-051e7a83315e.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "hook_event_name":  "UserPromptSubmit",
+    "prompt":  "<ide_selection>The user selected the lines 10 to 10 from c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\DAL\\FantasyFootballDbContext.cs:\n        public FantasyFootballDbContext(DbContextOptions<FantasyFootballDbContext> options) : base(options)\n\nThis may or may not be related to the current task.</ide_selection>\na ovdje"
+}
+
