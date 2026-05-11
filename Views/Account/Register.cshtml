@@ -1,0 +1,55 @@
+@model FantasyFootball.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Registracija";
+}
+
+<section class="ff-auth-shell" aria-label="Registracija">
+    <div class="ff-auth-card">
+        <form asp-controller="Account" asp-action="Register" method="post" class="ff-auth-form" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="ff-auth-alert" role="alert"></div>
+
+            <div class="ff-auth-field">
+                <label asp-for="Email" class="form-label ff-auth-label"></label>
+                <div class="ff-auth-input-wrap">
+                    <i class="bi bi-envelope ff-auth-input-icon" aria-hidden="true"></i>
+                    <input asp-for="Email" class="form-control ff-auth-input" autocomplete="email" placeholder="ime@primjer.com" />
+                </div>
+                <span asp-validation-for="Email" class="ff-auth-validation"></span>
+            </div>
+
+            <div class="ff-auth-field">
+                <label asp-for="Password" class="form-label ff-auth-label"></label>
+                <div class="ff-auth-input-wrap">
+                    <i class="bi bi-lock ff-auth-input-icon" aria-hidden="true"></i>
+                    <input asp-for="Password" class="form-control ff-auth-input" autocomplete="new-password" placeholder="Minimalno 6 znakova" />
+                </div>
+                <span asp-validation-for="Password" class="ff-auth-validation"></span>
+            </div>
+
+            <div class="ff-auth-field">
+                <label asp-for="ConfirmPassword" class="form-label ff-auth-label"></label>
+                <div class="ff-auth-input-wrap">
+                    <i class="bi bi-lock-fill ff-auth-input-icon" aria-hidden="true"></i>
+                    <input asp-for="ConfirmPassword" class="form-control ff-auth-input" autocomplete="new-password" placeholder="Ponovi lozinku" />
+                </div>
+                <span asp-validation-for="ConfirmPassword" class="ff-auth-validation"></span>
+            </div>
+
+            <button type="submit" class="ff-auth-btn ff-auth-btn--primary">
+                <i class="bi bi-person-plus" aria-hidden="true"></i>
+                <span>Registriraj se</span>
+            </button>
+
+            <p class="ff-auth-switch">
+                Već imaš račun?
+                <a asp-controller="Account" asp-action="Login" class="ff-auth-link">Prijavi se</a>
+            </p>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

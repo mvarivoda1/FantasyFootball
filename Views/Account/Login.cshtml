@@ -1,0 +1,60 @@
+@model FantasyFootball.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Prijava";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+
+<section class="ff-auth-shell" aria-label="Prijava">
+    <div class="ff-auth-card">
+        <form asp-controller="Account" asp-action="Login" asp-route-returnUrl="@returnUrl" method="post" class="ff-auth-form" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="ff-auth-alert" role="alert"></div>
+
+            <div class="ff-auth-field">
+                <label asp-for="Email" class="form-label ff-auth-label"></label>
+                <div class="ff-auth-input-wrap">
+                    <i class="bi bi-envelope ff-auth-input-icon" aria-hidden="true"></i>
+                    <input asp-for="Email" class="form-control ff-auth-input" autocomplete="email" placeholder="ime@primjer.com" />
+                </div>
+                <span asp-validation-for="Email" class="ff-auth-validation"></span>
+            </div>
+
+            <div class="ff-auth-field">
+                <label asp-for="Password" class="form-label ff-auth-label"></label>
+                <div class="ff-auth-input-wrap">
+                    <i class="bi bi-lock ff-auth-input-icon" aria-hidden="true"></i>
+                    <input asp-for="Password" class="form-control ff-auth-input" autocomplete="current-password" placeholder="Unesi lozinku" />
+                </div>
+                <span asp-validation-for="Password" class="ff-auth-validation"></span>
+            </div>
+
+            <div class="ff-auth-row">
+                <label class="ff-auth-check">
+                    <input asp-for="RememberMe" class="ff-auth-check__input" />
+                    <span class="ff-auth-check__box" aria-hidden="true"></span>
+                    <span class="ff-auth-check__label">@Html.DisplayNameFor(m => m.RememberMe)</span>
+                </label>
+            </div>
+
+            <button type="submit" class="ff-auth-btn ff-auth-btn--primary">
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                <span>Prijavi se</span>
+            </button>
+
+            <p class="ff-auth-switch">
+                Nemaš račun?
+                <a asp-controller="Account" asp-action="Register" class="ff-auth-link">Registriraj se</a>
+            </p>
+
+            <p class="ff-auth-demo">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+                Demo računi: <code>marko@gmail.com</code> / <code>markopass</code>
+            </p>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

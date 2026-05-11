@@ -1,5 +1,6 @@
 using FantasyFootball.Models;
 using FantasyFootball.Repositories;
+using FantasyFootball.Services;
 
 namespace FantasyFootball.DAL
 {
@@ -7,6 +8,8 @@ namespace FantasyFootball.DAL
     {
         public static void Seed(FantasyFootballDbContext context)
         {
+            SeedUsers(context);
+
             // Ako baza već ima podatke, preskoči seeding
             if (context.Players.Any())
                 return;
@@ -47,6 +50,46 @@ namespace FantasyFootball.DAL
             context.Gameweeks.AddRange(gameweeks);
 
             context.SaveChanges();
+
+            // Nakon što su timovi spremljeni i dobili Id, kreiraj korisničke račune
+            // za svaki postojeći OwnerName (npr. Marko -> marko@gmail.com / markopass).
+            SeedUsers(context);
+        }
+
+        private static void SeedUsers(FantasyFootballDbContext context)
+        {
+            var teams = context.FantasyTeams.ToList();
+            if (teams.Count == 0)
+                return;
+
+            var existingEmails = context.Users.Select(u => u.Email).ToHashSet();
+            var toAdd = new List<User>();
+
+            foreach (var team in teams)
+            {
+                if (string.IsNullOrWhiteSpace(team.OwnerName)) continue;
+
+                var slug = team.OwnerName.Trim().ToLowerInvariant();
+                var email = $"{slug}@gmail.com";
+                var password = $"{slug}pass";
+
+                if (existingEmails.Contains(email)) continue;
+
+                toAdd.Add(new User
+                {
+                    Email = email,
+                    PasswordHash = PasswordHasher.Hash(password),
+                    CreatedAt = DateTime.UtcNow,
+                    FantasyTeamId = team.Id
+                });
+                existingEmails.Add(email);
+            }
+
+            if (toAdd.Count > 0)
+            {
+                context.Users.AddRange(toAdd);
+                context.SaveChanges();
+            }
         }
     }
 }

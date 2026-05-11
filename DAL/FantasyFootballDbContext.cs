@@ -16,6 +16,7 @@ namespace FantasyFootball.DAL
         public DbSet<Transfer> Transfers { get; set; }
         public DbSet<Gameweek> Gameweeks { get; set; }
         public DbSet<MatchPerformance> MatchPerformances { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -74,6 +75,18 @@ namespace FantasyFootball.DAL
                 .WithMany()
                 .HasForeignKey(mp => mp.PlayerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // 1-1: User <-> FantasyTeam (User drži FK)
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.FantasyTeam)
+                .WithOne(t => t.Owner)
+                .HasForeignKey<User>(u => u.FantasyTeamId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Email mora biti jedinstven
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
         }
     }
 }

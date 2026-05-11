@@ -49,6 +49,36 @@
                             </a>
                         </li>
                     </ul>
+                    <ul class="navbar-nav ff-navbar__nav ff-navbar__auth">
+                        @if (User?.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item ff-nav-user">
+                                <i class="bi bi-person-circle"></i>
+                                <span>@User.Identity!.Name</span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="ff-nav-logout-form">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="nav-link ff-nav-link ff-nav-link--logout">
+                                        <i class="bi bi-box-arrow-right"></i> <span>Odjava</span>
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link ff-nav-link" asp-controller="Account" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right"></i> <span>Prijava</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link ff-nav-link ff-nav-link--cta" asp-controller="Account" asp-action="Register">
+                                    <i class="bi bi-person-plus"></i> <span>Registracija</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
                 </div>
             </div>
         </nav>

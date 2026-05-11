@@ -21,6 +21,9 @@ namespace FantasyFootball.Models
         public int? LeagueId { get; set; }
         public virtual League? League { get; set; }
 
+        // 1-1: tim ima vlasnika (korisnika)
+        public virtual User? Owner { get; set; }
+
         public FantasyTeam()
         {
             Players = new List<Player>();
