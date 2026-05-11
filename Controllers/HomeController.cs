@@ -1,6 +1,7 @@
 using FantasyFootball.Models;
 using FantasyFootball.Models.ViewModels;
 using FantasyFootball.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -305,6 +306,7 @@ namespace FantasyFootball.Controllers
             vm.TotwForwards = fwdPerfs.Take(bestFormation.f).ToList();
         }
 
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

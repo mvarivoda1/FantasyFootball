@@ -1,6 +1,7 @@
 using FantasyFootball.DAL;
 using FantasyFootball.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,14 @@ builder.Services
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
         options.SlidingExpiration = true;
     });
+
+// Globalna autorizacija — sve rute zahtijevaju prijavu osim onih označenih [AllowAnonymous]
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 // EF Core — DbContext
 builder.Services.AddDbContext<FantasyFootballDbContext>(options =>
@@ -55,7 +64,8 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
+// Static assets moraju biti dostupni neprijavljenima (CSS, JS, slike)
+app.MapStaticAssets().AllowAnonymous();
 
 app.MapControllerRoute(
     name: "default",
