@@ -16,8 +16,7 @@ namespace FantasyFootball.Repositories
         public List<Transfer> GetAll() =>
             _ctx.Transfers
                 .Include(t => t.Player)
-                .Include(t => t.FromTeam)
-                .Include(t => t.ToTeam)
+                .Include(t => t.Team)
                 .Include(t => t.League)
                 .AsNoTracking()
                 .ToList();
@@ -25,8 +24,7 @@ namespace FantasyFootball.Repositories
         public Transfer? GetById(int id) =>
             _ctx.Transfers
                 .Include(t => t.Player)
-                .Include(t => t.FromTeam)
-                .Include(t => t.ToTeam)
+                .Include(t => t.Team)
                 .Include(t => t.League)
                 .AsNoTracking()
                 .FirstOrDefault(t => t.Id == id);

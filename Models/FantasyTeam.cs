@@ -10,7 +10,7 @@ namespace FantasyFootball.Models
         public string Name { get; set; }
         public string OwnerName { get; set; }
         public DateTime CreatedAt { get; set; }
-        public double Budget { get; set; }
+        public double SquadValue { get; set; }
         public int TotalPoints { get; set; }
 
         // N-N: tim ima više igrača

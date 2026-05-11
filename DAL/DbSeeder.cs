@@ -80,6 +80,7 @@ namespace FantasyFootball.DAL
                     Email = email,
                     PasswordHash = PasswordHasher.Hash(password),
                     CreatedAt = DateTime.UtcNow,
+                    Budget = 100.0,
                     FantasyTeamId = team.Id
                 });
                 existingEmails.Add(email);

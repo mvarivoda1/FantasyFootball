@@ -28,9 +28,7 @@ namespace FantasyFootball.Repositories
                 .Include(l => l.Transfers)
                     .ThenInclude(tr => tr.Player)
                 .Include(l => l.Transfers)
-                    .ThenInclude(tr => tr.FromTeam)
-                .Include(l => l.Transfers)
-                    .ThenInclude(tr => tr.ToTeam)
+                    .ThenInclude(tr => tr.Team)
                 .AsNoTracking()
                 .FirstOrDefault(l => l.Id == id);
     }

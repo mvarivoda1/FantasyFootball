@@ -16,6 +16,9 @@ namespace FantasyFootball.Models
 
         public DateTime CreatedAt { get; set; }
 
+        // Transfer budžet — koliko korisnik može potrošiti na nove igrače
+        public double Budget { get; set; }
+
         // 1-1: korisnik ima (opcionalno) jedan fantasy tim
         [ForeignKey(nameof(FantasyTeam))]
         public int? FantasyTeamId { get; set; }

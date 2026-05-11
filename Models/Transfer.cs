@@ -10,19 +10,16 @@ namespace FantasyFootball.Models
 
         [ForeignKey(nameof(Player))]
         public int PlayerId { get; set; }
-        public virtual Player Player { get; set; }
+        public virtual Player Player { get; set; } = null!;
 
-        [ForeignKey(nameof(FromTeam))]
-        public int? FromTeamId { get; set; }
-        public virtual FantasyTeam? FromTeam { get; set; }
+        // Tim koji je izveo akciju (kupio ili prodao igrača)
+        [ForeignKey(nameof(Team))]
+        public int TeamId { get; set; }
+        public virtual FantasyTeam Team { get; set; } = null!;
 
-        [ForeignKey(nameof(ToTeam))]
-        public int ToTeamId { get; set; }
-        public virtual FantasyTeam ToTeam { get; set; }
-
+        public TransferDirection Direction { get; set; }
         public DateTime TransferDate { get; set; }
         public double Price { get; set; }
-        public TransferStatus Status { get; set; }
 
         // 1-N: transfer pripada jednoj ligi
         [ForeignKey(nameof(League))]

@@ -109,24 +109,17 @@
                             <thead>
                                 <tr>
                                     <th>Player</th>
-                                    <th>From</th>
-                                    <th>To</th>
+                                    <th>Team</th>
+                                    <th>Dir</th>
                                     <th class="text-end">Price</th>
                                     <th>Date</th>
-                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var transfer in Model.Transfers)
+                                @foreach (var transfer in Model.Transfers.OrderByDescending(t => t.TransferDate))
                                 {
-                                    string statusClass = transfer.Status switch
-                                    {
-                                        TransferStatus.Accepted => "ff-badge--accepted",
-                                        TransferStatus.Pending => "ff-badge--pending",
-                                        TransferStatus.Rejected => "ff-badge--rejected",
-                                        TransferStatus.Cancelled => "ff-badge--cancelled",
-                                        _ => "ff-badge--pending"
-                                    };
+                                    string dirClass = transfer.Direction == TransferDirection.In ? "ff-badge--in" : "ff-badge--out";
+                                    string dirLabel = transfer.Direction == TransferDirection.In ? "IN" : "OUT";
 
                                     string badgeClass = transfer.Player.Position switch
                                     {
@@ -172,25 +165,20 @@
                                             </a>
                                         </td>
                                         <td>
-                                            @if (transfer.FromTeam != null)
+                                            @if (transfer.Team != null)
                                             {
-                                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.FromTeam.Id">
-                                                    @transfer.FromTeam.Name
+                                                <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.Team.Id">
+                                                    @transfer.Team.Name
                                                 </a>
                                             }
                                             else
                                             {
-                                                <span class="ff-text-muted">Free Agent</span>
+                                                <span class="ff-text-muted">—</span>
                                             }
                                         </td>
-                                        <td>
-                                            <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@transfer.ToTeam.Id">
-                                                @transfer.ToTeam.Name
-                                            </a>
-                                        </td>
+                                        <td><span class="ff-badge @dirClass">@dirLabel</span></td>
                                         <td class="ff-num">€@transfer.Price.ToString("N0")</td>
                                         <td><span class="ff-text-muted ff-text-sm">@transfer.TransferDate.ToString("dd MMM yyyy")</span></td>
-                                        <td><span class="ff-badge @statusClass">@transfer.Status</span></td>
                                     </tr>
                                 }
                             </tbody>
@@ -323,7 +311,7 @@
                 $('#lockerModalBadge').html('<span class="ff-badge ' + badgeCls + '">' + posAbbr + '</span>');
 
                 // Details link — URL se generira iz routing sustava (attribute route "igrac/{id:int}")
-                $('#lockerModalDetailsLink').attr('href', '@Url.Action("Details", "Player", new { id = "__ID__" })'.replace('__ID__', d.playerId));
+                $('#lockerModalDetailsLink').attr('href', '@Url.RouteUrl("PlayerDetails", new { id = 0 })'.replace('/0', '/' + d.playerId));
 
                 // Fantasy teams
                 var $teamsList = $('#lockerModalTeams');

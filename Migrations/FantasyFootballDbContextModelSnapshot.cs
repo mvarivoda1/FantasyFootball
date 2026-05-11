@@ -30,9 +30,6 @@ namespace FantasyFootball.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("Budget")
-                        .HasColumnType("float");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -46,6 +43,9 @@ namespace FantasyFootball.Migrations
                     b.Property<string>("OwnerName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("SquadValue")
+                        .HasColumnType("float");
 
                     b.Property<int>("TotalPoints")
                         .HasColumnType("int");
@@ -219,7 +219,7 @@ namespace FantasyFootball.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("FromTeamId")
+                    b.Property<int>("Direction")
                         .HasColumnType("int");
 
                     b.Property<int?>("LeagueId")
@@ -231,10 +231,7 @@ namespace FantasyFootball.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ToTeamId")
+                    b.Property<int>("TeamId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("TransferDate")
@@ -242,13 +239,11 @@ namespace FantasyFootball.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FromTeamId");
-
                     b.HasIndex("LeagueId");
 
                     b.HasIndex("PlayerId");
 
-                    b.HasIndex("ToTeamId");
+                    b.HasIndex("TeamId");
 
                     b.ToTable("Transfers");
                 });
@@ -260,6 +255,9 @@ namespace FantasyFootball.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("Budget")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -334,11 +332,6 @@ namespace FantasyFootball.Migrations
 
             modelBuilder.Entity("FantasyFootball.Models.Transfer", b =>
                 {
-                    b.HasOne("FantasyFootball.Models.FantasyTeam", "FromTeam")
-                        .WithMany()
-                        .HasForeignKey("FromTeamId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("FantasyFootball.Models.League", "League")
                         .WithMany("Transfers")
                         .HasForeignKey("LeagueId")
@@ -350,19 +343,17 @@ namespace FantasyFootball.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FantasyFootball.Models.FantasyTeam", "ToTeam")
+                    b.HasOne("FantasyFootball.Models.FantasyTeam", "Team")
                         .WithMany()
-                        .HasForeignKey("ToTeamId")
+                        .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("FromTeam");
 
                     b.Navigation("League");
 
                     b.Navigation("Player");
 
-                    b.Navigation("ToTeam");
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("FantasyFootball.Models.User", b =>

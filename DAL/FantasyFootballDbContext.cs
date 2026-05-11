@@ -48,18 +48,11 @@ namespace FantasyFootball.DAL
                 .HasForeignKey(t => t.PlayerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Transfer.FromTeam (nullable)
+            // 1-N: FantasyTeam -> Transfer (tim koji je obavio akciju)
             modelBuilder.Entity<Transfer>()
-                .HasOne(t => t.FromTeam)
+                .HasOne(t => t.Team)
                 .WithMany()
-                .HasForeignKey(t => t.FromTeamId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Transfer.ToTeam (required)
-            modelBuilder.Entity<Transfer>()
-                .HasOne(t => t.ToTeam)
-                .WithMany()
-                .HasForeignKey(t => t.ToTeamId)
+                .HasForeignKey(t => t.TeamId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // 1-N: Gameweek -> MatchPerformance

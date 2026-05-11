@@ -70,11 +70,10 @@ namespace FantasyFootball.Controllers
                 : DateTime.Now.AddDays(3);
 
             // --- Transfers ---
-            var acceptedTransfers = _transferRepo.GetAll()
-                .Where(t => t.Status == TransferStatus.Accepted)
-                .ToList();
+            var allTransfers = _transferRepo.GetAll();
 
-            vm.TopTransfersIn = acceptedTransfers
+            vm.TopTransfersIn = allTransfers
+                .Where(t => t.Direction == TransferDirection.In)
                 .GroupBy(t => t.Player)
                 .Select(g => new TransferWidgetItem
                 {
@@ -87,11 +86,8 @@ namespace FantasyFootball.Controllers
                 .Take(5)
                 .ToList();
 
-            var outgoing = acceptedTransfers
-                .Where(t => t.FromTeam != null)
-                .ToList();
-
-            vm.TopTransfersOut = outgoing
+            vm.TopTransfersOut = allTransfers
+                .Where(t => t.Direction == TransferDirection.Out)
                 .GroupBy(t => t.Player)
                 .Select(g => new TransferWidgetItem
                 {
@@ -103,23 +99,6 @@ namespace FantasyFootball.Controllers
                 .ThenByDescending(x => x.LatestPrice)
                 .Take(5)
                 .ToList();
-
-            // Fallback: if no outgoing, use top performers as "most transferred" proxy
-            if (!vm.TopTransfersOut.Any())
-            {
-                vm.TopTransfersOut = _transferRepo.GetAll()
-                    .Where(t => t.FromTeam != null)
-                    .GroupBy(t => t.Player)
-                    .Select(g => new TransferWidgetItem
-                    {
-                        Player = g.Key,
-                        TransferCount = g.Count(),
-                        LatestPrice = g.OrderByDescending(t => t.TransferDate).First().Price
-                    })
-                    .OrderByDescending(x => x.TransferCount)
-                    .Take(5)
-                    .ToList();
-            }
 
             // --- Player of the Week ---
             vm.PlayerOfTheWeek = latest?.Performances

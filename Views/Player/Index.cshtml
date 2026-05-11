@@ -1,9 +1,36 @@
 @model List<Player>
 @{
     ViewData["Title"] = "Players";
+    var currentBudget = ViewData["CurrentBudget"] as double?;
+    var currentTeamId = ViewData["CurrentTeamId"] as int?;
+    bool hasTeam = currentTeamId.HasValue;
 }
 
 <h1 class="ff-page-title"><i class="bi bi-people"></i> Players</h1>
+
+@if (hasTeam)
+{
+    <div class="ff-budget-badge" aria-label="Current transfer budget">
+        <span class="ff-budget-badge__icon" aria-hidden="true"><i class="bi bi-cash-coin"></i></span>
+        <span>Budget:</span>
+        <span class="ff-budget-badge__amount">&euro;@(currentBudget.HasValue ? currentBudget.Value.ToString("N1") : "0")</span>
+    </div>
+}
+
+@if (TempData["TransferSuccess"] != null)
+{
+    <div class="ff-alert ff-alert--success" role="status">
+        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+        <span>@TempData["TransferSuccess"]</span>
+    </div>
+}
+@if (TempData["TransferError"] != null)
+{
+    <div class="ff-alert ff-alert--danger" role="alert">
+        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+        <span>@TempData["TransferError"]</span>
+    </div>
+}
 
 @if (Model == null || !Model.Any())
 {
@@ -81,6 +108,9 @@ else
         </button>
     </div>
 
+    <!-- Hidden AntiForgery token form for AJAX-free reuse -->
+    <form id="antiForgeryHolder" style="display:none;">@Html.AntiForgeryToken()</form>
+
     <!-- Locker Grid -->
     <div class="ff-locker-room">
         @foreach (var player in Model)
@@ -112,6 +142,10 @@ else
                 _ => "MID"
             };
 
+            bool playerOnTeam = hasTeam
+                && player.FantasyTeams != null
+                && player.FantasyTeams.Any(t => t.Id == currentTeamId.Value);
+
             <div class="ff-locker"
                  role="button"
                  tabindex="0"
@@ -125,10 +159,12 @@ else
                  data-player-badge="@badgeClass"
                  data-player-dob="@player.DateOfBirth.ToString("dd MMM yyyy")"
                  data-player-value="@player.MarketValue.ToString("N0")"
+                 data-player-value-raw="@player.MarketValue"
                  data-player-goals="@player.Goals"
                  data-player-assists="@player.Assists"
                  data-player-cleansheets="@player.CleanSheets"
                  data-player-points="@player.TotalPoints"
+                 data-player-on-team="@(playerOnTeam ? "true" : "false")"
                  data-player-teams='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(player.FantasyTeams?.Select(t => new { t.Id, t.Name, t.OwnerName, t.TotalPoints })))'>
                 <div class="ff-locker__door">
                     <!-- Position color stripe -->
@@ -166,7 +202,9 @@ else
     </div>
 
     <!-- Modal Backdrop (single reusable instance) -->
-    <div class="ff-locker-modal-backdrop" id="lockerModalBackdrop" aria-hidden="true">
+    <div class="ff-locker-modal-backdrop" id="lockerModalBackdrop" aria-hidden="true"
+         data-has-team="@(hasTeam ? "true" : "false")"
+         data-current-budget="@(currentBudget ?? 0)">
         <div class="ff-locker-modal" role="dialog" aria-modal="true" aria-labelledby="lockerModalName">
             <div class="ff-locker-modal__door-wrapper">
                 <!-- Animated door piece -->
@@ -240,11 +278,14 @@ else
                     </div>
 
                     <!-- Actions -->
-                    <div class="ff-locker-modal__actions">
+                    <div class="ff-locker-modal__actions" id="lockerModalActions">
                         <a href="#" class="ff-locker-modal__details-link" id="lockerModalDetailsLink">
                             Full Details <i class="bi bi-arrow-right"></i>
                         </a>
                     </div>
+
+                    <!-- Transfer Action (Buy/Sell) — populated by JS -->
+                    <div id="lockerModalTransferAction"></div>
                 </div>
             </div>
         </div>
@@ -300,7 +341,6 @@ $(function () {
             $lockerRoom.show();
         }
 
-        // Toggle the search clear button
         $searchClear.toggle(searchVal.length > 0);
     }
 
@@ -324,12 +364,70 @@ $(function () {
     /* ---- Locker Modal Logic ---- */
     var $backdrop = $('#lockerModalBackdrop');
     var $modal = $backdrop.find('.ff-locker-modal');
+    var hasTeam = $backdrop.data('has-team') === true || $backdrop.data('has-team') === 'true';
+    var currentBudget = parseFloat($backdrop.data('current-budget')) || 0;
+
+    // Read antiforgery token once
+    var antiForgeryToken = $('#antiForgeryHolder input[name="__RequestVerificationToken"]').val() || '';
+
+    function formatMoney(n) {
+        return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    }
+
+    function renderTransferAction(playerId, playerName, playerValueRaw, playerOnTeam) {
+        var $container = $('#lockerModalTransferAction');
+        $container.empty();
+
+        if (!hasTeam) {
+            return;
+        }
+
+        var safeName = $('<div>').text(playerName).html();
+
+        if (playerOnTeam) {
+            // SELL form
+            var sellHtml =
+                '<div class="ff-locker-modal__transfer-action">' +
+                    '<div class="ff-locker-modal__transfer-action-label">' +
+                        '<i class="bi bi-shield-fill-check"></i> In your squad' +
+                    '</div>' +
+                    '<form method="post" action="/Player/Sell/' + playerId + '">' +
+                        '<input type="hidden" name="__RequestVerificationToken" value="' + antiForgeryToken + '" />' +
+                        '<button type="submit" class="ff-btn ff-btn--danger ff-btn--block">' +
+                            '<i class="bi bi-box-arrow-up"></i> Sell ' + safeName +
+                        '</button>' +
+                    '</form>' +
+                '</div>';
+            $container.html(sellHtml);
+        } else {
+            // BUY form
+            var canAfford = currentBudget >= playerValueRaw;
+            var disabledAttr = canAfford ? '' : ' disabled';
+            var hint = canAfford
+                ? ''
+                : '<div class="ff-locker-modal__transfer-action-hint"><i class="bi bi-exclamation-circle"></i> Not enough budget (need &euro;' + formatMoney(playerValueRaw) + ', have &euro;' + formatMoney(currentBudget) + ')</div>';
+
+            var buyHtml =
+                '<div class="ff-locker-modal__transfer-action">' +
+                    '<div class="ff-locker-modal__transfer-action-label">' +
+                        '<i class="bi bi-cart-plus"></i> Available on the market' +
+                    '</div>' +
+                    '<form method="post" action="/Player/Buy/' + playerId + '">' +
+                        '<input type="hidden" name="__RequestVerificationToken" value="' + antiForgeryToken + '" />' +
+                        '<button type="submit" class="ff-btn ff-btn--success ff-btn--block"' + disabledAttr + '>' +
+                            '<i class="bi bi-cart-check"></i> Buy ' + safeName + ' &mdash; &euro;' + formatMoney(playerValueRaw) +
+                        '</button>' +
+                    '</form>' +
+                    hint +
+                '</div>';
+            $container.html(buyHtml);
+        }
+    }
 
     // Open locker modal
     function openLocker($locker) {
         var d = $locker.data();
 
-        // Populate modal fields
         $('#lockerModalName').text(d.playerName);
         $('#lockerModalClub').text(d.playerClub);
         $('#lockerModalNationality').text(d.playerNationality);
@@ -340,15 +438,12 @@ $(function () {
         $('#lockerModalValue').html('&euro;' + d.playerValue);
         $('#lockerModalDob').text(d.playerDob);
 
-        // Badge
         var badgeCls = d.playerBadge;
         var posAbbr = d.playerPosAbbr;
         $('#lockerModalBadge').html('<span class="ff-badge ' + badgeCls + '">' + posAbbr + '</span>');
 
-        // Details link — Url.RouteUrl generates /igrac/0; replace /0 with the real id at runtime
         $('#lockerModalDetailsLink').attr('href', '@Url.RouteUrl("PlayerDetails", new { id = 0 })'.replace('/0', '/' + d.playerId));
 
-        // Fantasy teams
         var $teamsList = $('#lockerModalTeams');
         $teamsList.empty();
 
@@ -375,21 +470,21 @@ $(function () {
             $teamsList.html('<div class="ff-locker-modal__no-teams"><i class="bi bi-shield"></i> Not in any fantasy team</div>');
         }
 
-        // Show modal
+        // Render buy/sell form
+        var playerOnTeam = (d.playerOnTeam === true || d.playerOnTeam === 'true');
+        var valueRaw = parseFloat(d.playerValueRaw) || 0;
+        renderTransferAction(d.playerId, d.playerName, valueRaw, playerOnTeam);
+
         $('body').addClass('ff-locker-modal-open');
         $backdrop.attr('aria-hidden', 'false');
-
-        // Force a reflow before adding class so transition fires
         $backdrop[0].offsetHeight;
         $backdrop.addClass('ff-locker-modal--visible');
 
-        // Focus close button
         setTimeout(function () {
             $('#lockerModalClose').focus();
         }, 100);
     }
 
-    // Close locker modal
     function closeLocker() {
         $backdrop.removeClass('ff-locker-modal--visible');
         $('body').removeClass('ff-locker-modal-open');
@@ -399,12 +494,10 @@ $(function () {
         }, 400);
     }
 
-    // Click on locker
     $('.ff-locker').on('click', function () {
         openLocker($(this));
     });
 
-    // Keyboard: Enter/Space on locker
     $('.ff-locker').on('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -412,20 +505,17 @@ $(function () {
         }
     });
 
-    // Close button
     $('#lockerModalClose').on('click', function (e) {
         e.stopPropagation();
         closeLocker();
     });
 
-    // Click outside modal (on backdrop)
     $backdrop.on('click', function (e) {
         if ($(e.target).closest('.ff-locker-modal').length === 0) {
             closeLocker();
         }
     });
 
-    // Escape key
     $(document).on('keydown', function (e) {
         if (e.key === 'Escape' && $backdrop.hasClass('ff-locker-modal--visible')) {
             closeLocker();

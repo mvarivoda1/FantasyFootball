@@ -61,7 +61,7 @@ else
                 {
                     var teamCount = league.Teams?.Count ?? 0;
                     var totalPoints = league.Teams?.Sum(t => t.TotalPoints) ?? 0;
-                    var acceptedTransfers = league.Transfers?.Count(t => t.Status == TransferStatus.Accepted) ?? 0;
+                    var acceptedTransfers = league.Transfers?.Count() ?? 0;
                     var detailsUrl = Url.Action("Details", "League", new { id = league.Id });
 
                     <tr class="ff-table__row--clickable"
