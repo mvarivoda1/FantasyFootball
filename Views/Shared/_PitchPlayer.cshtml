@@ -1,0 +1,37 @@
+@model FantasyFootball.Models.Player
+@{
+    var shirtVariant = Model.Position switch
+    {
+        Position.Goalkeeper => "gk",
+        Position.Defender => "def",
+        Position.Midfielder => "mid",
+        Position.Forward => "fwd",
+        _ => "def"
+    };
+    var posCode = shirtVariant.ToUpperInvariant();
+    var isStarter = ViewData["IsStarter"] as bool? ?? true;
+    var clubShort = string.IsNullOrEmpty(Model.Club)
+        ? string.Empty
+        : new string(Model.Club.Where(char.IsLetterOrDigit).Take(3).ToArray()).ToUpperInvariant();
+}
+
+<button type="button"
+        class="ff-pitch-player ff-totw-player ff-pitch-player--@(isStarter ? "starter" : "bench")"
+        data-player-id="@Model.Id"
+        data-position="@posCode"
+        data-starter="@(isStarter ? "true" : "false")"
+        data-name="@Model.LastName"
+        data-full-name="@Model.FullName"
+        data-club="@clubShort"
+        data-points="@Model.TotalPoints"
+        data-goals="@Model.Goals"
+        data-assists="@Model.Assists"
+        aria-pressed="false"
+        title="@Model.FullName — @Model.TotalPoints pts">
+    <span class="ff-pitch-player__pos-tag ff-pitch-player__pos-tag--@shirtVariant" aria-hidden="true">@posCode</span>
+    <div class="ff-totw-player__shirt ff-totw-player__shirt--@shirtVariant">
+        <span class="ff-totw-player__points">@Model.TotalPoints</span>
+    </div>
+    <div class="ff-totw-player__name">@Model.LastName</div>
+    <div class="ff-totw-player__stat">@Model.Goals G &middot; @Model.Assists A</div>
+</button>

@@ -23,6 +23,14 @@
                                 <i class="bi bi-house-door"></i> <span>Home</span>
                             </a>
                         </li>
+                        @if (User?.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "FantasyTeamId"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link ff-nav-link" asp-controller="FantasyTeam" asp-action="MyTeam">
+                                    <i class="bi bi-shield-fill-check"></i> <span>My Team</span>
+                                </a>
+                            </li>
+                        }
                         <li class="nav-item">
                             <a class="nav-link ff-nav-link" asp-controller="Player" asp-action="Index">
                                 <i class="bi bi-people"></i> <span>Players</span>

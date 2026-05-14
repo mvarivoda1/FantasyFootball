@@ -1,0 +1,141 @@
+@model FantasyFootball.Models.ViewModels.MyTeamViewModel
+@{
+    ViewData["Title"] = "My Team";
+    var savedMsg = TempData["LineupSaved"] as string;
+}
+
+<section class="ff-myteam"
+         data-min-gk="@Model.MinGk" data-max-gk="@Model.MaxGk"
+         data-min-def="@Model.MinDef" data-max-def="@Model.MaxDef"
+         data-min-mid="@Model.MinMid" data-max-mid="@Model.MaxMid"
+         data-min-fwd="@Model.MinFwd" data-max-fwd="@Model.MaxFwd"
+         data-starters-count="@Model.StartersCount">
+
+    <header class="ff-myteam__hero">
+        <div class="ff-myteam__hero-bg" aria-hidden="true"></div>
+        <div class="ff-myteam__hero-inner">
+            <div class="ff-myteam__hero-text">
+                <h1 class="ff-myteam__title">@Model.TeamName</h1>
+                <p class="ff-myteam__subtitle">
+                    Posloži svoj početni sastav. Klikni igrača na terenu, pa klikni drugog za zamjenu.
+                </p>
+            </div>
+            <div class="ff-myteam__hero-meta">
+                <div class="ff-myteam__formation-card">
+                    <span class="ff-myteam__formation-label">Formacija</span>
+                    <span class="ff-myteam__formation-value" data-role="formation-label">@Model.FormationLabel</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    @if (!string.IsNullOrEmpty(savedMsg))
+    {
+        <div class="ff-myteam-toast ff-myteam-toast--success" role="status" aria-live="polite">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>@savedMsg</span>
+            <button type="button" class="ff-myteam-toast__close" aria-label="Zatvori" data-dismiss-toast>
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+    }
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="ff-myteam-alert ff-myteam-alert--danger" role="alert">
+            <div class="ff-myteam-alert__head">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                <strong>Sastav nije moguće spremiti</strong>
+            </div>
+            <ul class="ff-myteam-alert__list">
+                @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@err.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="ff-myteam-feedback" data-role="swap-feedback" aria-live="polite"></div>
+
+    <form asp-controller="FantasyTeam" asp-action="SaveLineup" method="post"
+          class="ff-myteam__form" id="ffMyTeamForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="teamId" value="@Model.TeamId" />
+
+        <div class="ff-myteam__stage">
+
+            <div class="ff-pitch" data-role="pitch" aria-label="Početni sastav">
+                <div class="ff-pitch__lines" aria-hidden="true">
+                    <span class="ff-pitch__line ff-pitch__line--center"></span>
+                    <span class="ff-pitch__line ff-pitch__circle"></span>
+                    <span class="ff-pitch__line ff-pitch__spot ff-pitch__spot--center"></span>
+                    <span class="ff-pitch__line ff-pitch__box ff-pitch__box--top"></span>
+                    <span class="ff-pitch__line ff-pitch__box ff-pitch__box--top-six"></span>
+                    <span class="ff-pitch__line ff-pitch__box ff-pitch__box--bottom"></span>
+                    <span class="ff-pitch__line ff-pitch__box ff-pitch__box--bottom-six"></span>
+                    <span class="ff-pitch__line ff-pitch__spot ff-pitch__spot--top"></span>
+                    <span class="ff-pitch__line ff-pitch__spot ff-pitch__spot--bottom"></span>
+                </div>
+
+                <div class="ff-pitch__rows">
+                    <div class="ff-pitch__row ff-pitch__row--fwd ff-totw__row" data-row="FWD">
+                        @foreach (var p in Model.StarterForwards)
+                        {
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                        }
+                    </div>
+                    <div class="ff-pitch__row ff-pitch__row--mid ff-totw__row" data-row="MID">
+                        @foreach (var p in Model.StarterMidfielders)
+                        {
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                        }
+                    </div>
+                    <div class="ff-pitch__row ff-pitch__row--def ff-totw__row" data-row="DEF">
+                        @foreach (var p in Model.StarterDefenders)
+                        {
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                        }
+                    </div>
+                    <div class="ff-pitch__row ff-pitch__row--gk ff-totw__row" data-row="GK">
+                        @foreach (var p in Model.StarterGoalkeepers)
+                        {
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <aside class="ff-bench" aria-label="Klupa">
+                <div class="ff-bench__header">
+                    <span class="ff-bench__label">BENCH</span>
+                    <span class="ff-bench__hint">@Model.BenchCount rezervi</span>
+                </div>
+                <div class="ff-bench__row" data-role="bench">
+                    @foreach (var p in Model.Bench)
+                    {
+                        <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = false }' />
+                    }
+                </div>
+            </aside>
+
+        </div>
+
+        <div class="ff-myteam-save-bar">
+            <div class="ff-myteam-save-bar__info">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+                <span>Spremi sastav prije starta sljedećeg kola.</span>
+            </div>
+            <button type="submit" class="ff-myteam-save-btn" data-role="save-lineup">
+                <span>Save Lineup</span>
+            </button>
+        </div>
+
+        <div data-role="starters-hidden"></div>
+    </form>
+
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

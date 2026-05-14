@@ -4777,3 +4777,495 @@ body:has(.ff-build) {
     .ff-totw-player__name { font-size: 0.65rem; }
     .ff-build__hero { margin-bottom: 1.25rem; }
 }
+
+/* ============================================
+   MY TEAM (pitch view, bench, swap, save)
+   ============================================ */
+.ff-myteam {
+    --ff-myteam-bg: #0e1722;
+    --ff-myteam-surface: #14223a;
+    --ff-myteam-line: rgba(255, 255, 255, 0.16);
+    --ff-myteam-accent: #00ff87;
+    --ff-myteam-accent-deep: #00c46a;
+    --ff-myteam-danger: #ff4757;
+    --ff-myteam-warn: #ffb547;
+    --ff-myteam-text: #e6edf7;
+    --ff-myteam-text-dim: #95a3b8;
+    color: var(--ff-myteam-text);
+    display: block;
+    margin: 0.5rem 0 2.5rem;
+}
+
+/* --- Hero --- */
+.ff-myteam__hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    padding: 1.6rem 1.4rem;
+    background:
+        radial-gradient(900px 320px at 100% 0%, rgba(0, 255, 135, 0.14), transparent 60%),
+        radial-gradient(700px 300px at 0% 100%, rgba(123, 97, 255, 0.18), transparent 65%),
+        linear-gradient(135deg, #16213a 0%, #0d1525 100%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 1.25rem;
+}
+.ff-myteam__hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0 10px, transparent 10px 20px);
+    pointer-events: none;
+}
+.ff-myteam__hero-inner {
+    position: relative;
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+.ff-myteam__hero-text { min-width: 0; flex: 1 1 280px; }
+.ff-myteam__title {
+    color: #fff;
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin: 0.7rem 0 0.25rem;
+    line-height: 1.05;
+}
+.ff-myteam__subtitle {
+    margin: 0;
+    color: var(--ff-myteam-text-dim);
+    font-size: 0.92rem;
+    max-width: 56ch;
+}
+.ff-myteam__hero-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex: 0 0 auto;
+}
+.ff-myteam__formation-card {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 0.6rem 0.9rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0, 255, 135, 0.18), rgba(45, 255, 205, 0.06));
+    border: 1px solid rgba(0, 255, 135, 0.28);
+    min-width: 130px;
+}
+.ff-myteam__formation-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ff-myteam-text-dim);
+}
+.ff-myteam__formation-value {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+}
+
+/* --- Toast / alerts --- */
+.ff-myteam-toast {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, rgba(0, 255, 135, 0.15), rgba(0, 255, 135, 0.04));
+    border: 1px solid rgba(0, 255, 135, 0.3);
+    color: #c8ffe4;
+    box-shadow: 0 8px 20px rgba(0, 255, 135, 0.08);
+    animation: ff-myteam-toast-in 0.35s ease;
+}
+.ff-myteam-toast--success i { color: var(--ff-myteam-accent); font-size: 1.15rem; }
+.ff-myteam-toast__close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+.ff-myteam-toast__close:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+@keyframes ff-myteam-toast-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.ff-myteam-alert {
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    background: rgba(255, 71, 87, 0.08);
+    border: 1px solid rgba(255, 71, 87, 0.35);
+    color: #ffd2d7;
+}
+.ff-myteam-alert__head {
+    display: flex; align-items: center; gap: 0.5rem;
+    color: #ffbac1; margin-bottom: 0.3rem;
+}
+.ff-myteam-alert__list { margin: 0; padding-left: 1.2rem; font-size: 0.9rem; }
+.ff-myteam-feedback {
+    min-height: 0;
+    margin-bottom: 0.75rem;
+}
+.ff-myteam-feedback:not(:empty) {
+    min-height: auto;
+    padding: 0.6rem 0.85rem;
+    border-radius: 10px;
+    background: rgba(255, 71, 87, 0.1);
+    border: 1px solid rgba(255, 71, 87, 0.32);
+    color: #ffc6cc;
+    font-size: 0.86rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: ff-myteam-toast-in 0.25s ease;
+}
+
+/* --- Stage layout ---
+   Pitch i bench dijele isti "stadion" panel: bez gapa izmedu njih,
+   donji rub pitcha bez radiusa, gornji rub bencha bez radiusa. */
+.ff-myteam__stage {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+}
+@media (min-width: 992px) {
+    .ff-myteam__stage {
+        grid-template-columns: minmax(0, 1fr) 320px;
+        column-gap: 1.25rem;
+        row-gap: 0;
+        align-items: start;
+    }
+}
+
+/* --- Pitch --- */
+.ff-pitch {
+    position: relative;
+    border-radius: 18px 18px 0 0;
+    padding: 0;
+    overflow: hidden;
+    aspect-ratio: 5 / 7.6;
+    min-height: 560px;
+    max-height: 880px;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(0, 255, 135, 0.08), transparent 55%),
+        repeating-linear-gradient(
+            180deg,
+            #0e6b32 0px,
+            #0e6b32 60px,
+            #117a3a 60px,
+            #117a3a 120px
+        );
+    box-shadow:
+        inset 0 2px 14px rgba(0, 0, 0, 0.45),
+        inset 0 0 0 2px rgba(255, 255, 255, 0.06),
+        0 18px 40px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: none;
+}
+@media (min-width: 992px) {
+    .ff-pitch {
+        aspect-ratio: auto;
+        min-height: 780px;
+        height: 100%;
+        border-radius: 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+}
+
+/* Field lines drawn purely with CSS */
+.ff-pitch__lines { position: absolute; inset: 8px; pointer-events: none; }
+.ff-pitch__line { position: absolute; border-color: rgba(255, 255, 255, 0.32); }
+.ff-pitch__line--center {
+    left: 0; right: 0; top: 50%;
+    height: 0; border-top: 1.5px solid rgba(255, 255, 255, 0.32);
+}
+.ff-pitch__circle {
+    left: 50%; top: 50%;
+    width: 22%; aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border: 1.5px solid rgba(255, 255, 255, 0.32);
+    border-radius: 50%;
+}
+.ff-pitch__spot {
+    background: rgba(255, 255, 255, 0.5);
+    width: 6px; height: 6px; border-radius: 50%;
+}
+.ff-pitch__spot--center { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.ff-pitch__spot--top    { left: 50%; top: 17%;  transform: translate(-50%, -50%); }
+.ff-pitch__spot--bottom { left: 50%; bottom: 17%; transform: translate(-50%, 50%); }
+.ff-pitch__box {
+    left: 18%; right: 18%;
+    border: 1.5px solid rgba(255, 255, 255, 0.32);
+    background: transparent;
+}
+.ff-pitch__box--top    { top: 0; height: 20%; border-top: none; }
+.ff-pitch__box--bottom { bottom: 0; height: 20%; border-bottom: none; }
+.ff-pitch__box--top-six,
+.ff-pitch__box--bottom-six {
+    left: 32%; right: 32%;
+    border: 1.5px solid rgba(255, 255, 255, 0.32);
+}
+.ff-pitch__box--top-six    { top: 0; height: 8%; border-top: none; }
+.ff-pitch__box--bottom-six { bottom: 0; height: 8%; border-bottom: none; }
+
+.ff-pitch__rows {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+}
+.ff-pitch__row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    padding: 0 0.5rem;
+}
+/* Vertikalna distribucija po linijama terena.
+   Koordinate odgovaraju ucrtanim box-evima:
+   - top penal area: 0% - 20%
+   - centar: 50%
+   - bottom penal area: 80% - 100% */
+.ff-pitch__row--fwd { top: 16%; }   /* napadaci u protivnickoj polovici, ispod gornjeg penal areaa */
+.ff-pitch__row--mid { top: 40%; }   /* vezni oko centarske linije (lagano iznad) */
+.ff-pitch__row--def { top: 64%; }   /* obrambeni izmedu centra i donjeg sesnaesterca */
+.ff-pitch__row--gk  { top: 87%; }   /* golman unutar donjeg penal areaa (80%-100%) */
+
+/* --- Pitch / bench player tile --- */
+.ff-pitch-player {
+    position: relative;
+    background: transparent;
+    border: none;
+    padding: 0.35rem 0.35rem 0.4rem;
+    border-radius: 12px;
+    cursor: pointer;
+    color: inherit;
+    font-family: inherit;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    max-width: 90px;
+    flex: 0 1 auto;
+}
+.ff-pitch-player:hover { transform: translateY(-3px); }
+.ff-pitch-player:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ff-myteam-accent), 0 6px 18px rgba(0, 255, 135, 0.25);
+    background: rgba(0, 255, 135, 0.05);
+}
+.ff-pitch-player__pos-tag {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    font-size: 0.55rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 2px 6px;
+    border-radius: 999px;
+    color: #0d1117;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+    z-index: 1;
+}
+.ff-pitch-player__pos-tag--gk  { background: linear-gradient(135deg, #ffd60a, #f5a524); }
+.ff-pitch-player__pos-tag--def { background: linear-gradient(135deg, #22c55e, #0d8a3e); color: #fff; }
+.ff-pitch-player__pos-tag--mid { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
+.ff-pitch-player__pos-tag--fwd { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
+
+/* selected (first click) */
+.ff-pitch-player.is-selected {
+    background: rgba(0, 255, 135, 0.1);
+    box-shadow: 0 0 0 2px var(--ff-myteam-accent), 0 10px 24px rgba(0, 255, 135, 0.3);
+    transform: translateY(-4px) scale(1.04);
+}
+.ff-pitch-player.is-selected .ff-totw-player__shirt {
+    filter: brightness(1.1);
+}
+/* valid swap target */
+.ff-pitch-player.is-valid-target {
+    background: rgba(0, 255, 135, 0.07);
+    box-shadow: 0 0 0 1px rgba(0, 255, 135, 0.55);
+}
+.ff-pitch-player.is-valid-target::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 14px;
+    border: 1px dashed rgba(0, 255, 135, 0.6);
+    pointer-events: none;
+    animation: ff-myteam-pulse 1.6s ease-in-out infinite;
+}
+@keyframes ff-myteam-pulse {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 1; }
+}
+/* invalid swap target */
+.ff-pitch-player--invalid-target {
+    animation: ff-myteam-shake 0.4s ease;
+}
+@keyframes ff-myteam-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+/* --- Bench ---
+   Mobile: produzetak terena (tunel) - spaja se s pitchom bez gapa,
+           zaobljen samo na dnu, gornji rub naslanja se na pitch.
+   Desktop: samostalni panel s punim radius-om. */
+.ff-bench {
+    background: linear-gradient(135deg, #0c1424 0%, #07101c 100%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    padding: 1rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    position: relative;
+}
+.ff-bench::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--ff-myteam-accent, #00f5a0) 50%,
+        transparent 100%);
+    opacity: 0.35;
+}
+@media (min-width: 992px) {
+    .ff-bench {
+        background: linear-gradient(135deg, #101a2e 0%, #0a1320 100%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+    }
+    .ff-bench::before { display: none; }
+}
+.ff-bench__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+}
+.ff-bench__label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.28em;
+    color: var(--ff-myteam-accent);
+    text-transform: uppercase;
+}
+.ff-bench__hint {
+    font-size: 0.72rem;
+    color: var(--ff-myteam-text-dim);
+}
+.ff-bench__row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+@media (min-width: 992px) {
+    .ff-bench__row {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.6rem;
+    }
+}
+
+/* --- Save bar --- */
+.ff-myteam-save-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    margin-top: 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(20, 34, 58, 0.95), rgba(10, 19, 32, 0.95));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.ff-myteam-save-bar__info {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--ff-myteam-text-dim);
+    font-size: 0.85rem;
+}
+.ff-myteam-save-btn {
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.7rem 1.4rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #00ff87 0%, #2dffcd 100%);
+    color: #0a1320;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow:
+        0 8px 18px rgba(0, 255, 135, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+.ff-myteam-save-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(0, 255, 135, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    filter: brightness(1.05);
+}
+.ff-myteam-save-btn:disabled,
+.ff-myteam-save-btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    filter: grayscale(0.6) brightness(0.85);
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+/* --- Responsive tweaks --- */
+@media (max-width: 575px) {
+    .ff-myteam__hero { padding: 1.1rem 1rem; }
+    .ff-myteam__hero-meta { width: 100%; align-items: stretch; }
+    .ff-myteam__formation-card { align-items: flex-start; }
+    .ff-pitch { padding: 0; min-height: 500px; }
+    .ff-pitch__row { padding: 0 0.25rem; gap: 0.25rem; }
+    .ff-pitch-player { max-width: 64px; padding: 0.25rem; }
+    .ff-pitch-player .ff-totw-player__shirt { width: 38px; height: 42px; }
+    .ff-pitch-player .ff-totw-player__name { font-size: 0.62rem; }
+    .ff-pitch-player .ff-totw-player__stat { font-size: 0.55rem; }
+    .ff-pitch-player__pos-tag { font-size: 0.5rem; padding: 1px 4px; }
+    .ff-myteam-save-bar { flex-direction: column; align-items: stretch; }
+    .ff-myteam-save-btn { justify-content: center; }
+}

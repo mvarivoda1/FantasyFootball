@@ -13,6 +13,9 @@ namespace FantasyFootball.Models
         public double SquadValue { get; set; }
         public int TotalPoints { get; set; }
 
+        // CSV ID-jeva igrača u početnom sastavu (11 starters); ostalih 4 su klupa
+        public string? StartingLineupIds { get; set; }
+
         // N-N: tim ima više igrača
         public virtual ICollection<Player> Players { get; set; }
 

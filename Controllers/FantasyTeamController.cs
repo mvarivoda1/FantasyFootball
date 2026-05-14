@@ -20,6 +20,14 @@ namespace FantasyFootball.Controllers
         public const int SquadSize = RequiredGk + RequiredDef + RequiredMid + RequiredFwd;
         public const int MaxPerClub = 3;
 
+        public const int StartingXISize = 11;
+        public const int BenchSize = SquadSize - StartingXISize;
+        public const int MinStartGk = 1;
+        public const int MinStartDef = 3;
+        public const int MinStartMid = 2;
+        public const int MinStartFwd = 1;
+        public const int MaxStartGk = 1;
+
         private readonly FantasyFootballDbContext _ctx;
         private readonly FantasyTeamRepository _teamRepo;
         private readonly PlayerRepository _playerRepo;
@@ -136,6 +144,147 @@ namespace FantasyFootball.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> MyTeam()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            if (user == null) return RedirectToAction("Login", "Account");
+            if (!user.FantasyTeamId.HasValue) return RedirectToAction("Build");
+
+            var team = await _ctx.FantasyTeams
+                .Include(t => t.Players)
+                .FirstOrDefaultAsync(t => t.Id == user.FantasyTeamId.Value);
+            if (team == null) return RedirectToAction("Build");
+
+            var allPlayers = team.Players.ToList();
+            var starterIds = ParseLineupIds(team.StartingLineupIds);
+
+            List<Player> starters;
+            List<Player> bench;
+            if (starterIds.Count == StartingXISize && starterIds.All(id => allPlayers.Any(p => p.Id == id)))
+            {
+                starters = starterIds.Select(id => allPlayers.First(p => p.Id == id)).ToList();
+                bench = allPlayers.Where(p => !starterIds.Contains(p.Id)).ToList();
+            }
+            else
+            {
+                (starters, bench) = BuildDefaultLineup(allPlayers);
+            }
+
+            var vm = BuildMyTeamViewModel(team, starters, bench);
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveLineup(int teamId, List<int> starterIds)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            if (user == null) return RedirectToAction("Login", "Account");
+            if (user.FantasyTeamId != teamId) return Forbid();
+
+            var team = await _ctx.FantasyTeams
+                .Include(t => t.Players)
+                .FirstOrDefaultAsync(t => t.Id == teamId);
+            if (team == null) return NotFound();
+
+            var distinct = (starterIds ?? new List<int>()).Distinct().ToList();
+            var squadIds = team.Players.Select(p => p.Id).ToHashSet();
+
+            if (distinct.Count != StartingXISize)
+                ModelState.AddModelError(string.Empty, $"Početni sastav mora imati točno {StartingXISize} igrača.");
+
+            if (!distinct.All(id => squadIds.Contains(id)))
+                ModelState.AddModelError(string.Empty, "Svi odabrani igrači moraju biti dio tvoje momčadi.");
+
+            var selected = team.Players.Where(p => distinct.Contains(p.Id)).ToList();
+            var gk = selected.Count(p => p.Position == Position.Goalkeeper);
+            var def = selected.Count(p => p.Position == Position.Defender);
+            var mid = selected.Count(p => p.Position == Position.Midfielder);
+            var fwd = selected.Count(p => p.Position == Position.Forward);
+
+            if (gk != MaxStartGk)
+                ModelState.AddModelError(string.Empty, $"Početni sastav mora imati točno {MaxStartGk} vratara (trenutno: {gk}).");
+            if (def < MinStartDef)
+                ModelState.AddModelError(string.Empty, $"Početni sastav mora imati najmanje {MinStartDef} obrambena igrača (trenutno: {def}).");
+            if (mid < MinStartMid)
+                ModelState.AddModelError(string.Empty, $"Početni sastav mora imati najmanje {MinStartMid} vezna igrača (trenutno: {mid}).");
+            if (fwd < MinStartFwd)
+                ModelState.AddModelError(string.Empty, $"Početni sastav mora imati najmanje {MinStartFwd} napadača (trenutno: {fwd}).");
+
+            if (!ModelState.IsValid)
+            {
+                var startersFallback = team.Players.Where(p => distinct.Contains(p.Id)).ToList();
+                var benchFallback = team.Players.Where(p => !distinct.Contains(p.Id)).ToList();
+                if (startersFallback.Count != StartingXISize)
+                    (startersFallback, benchFallback) = BuildDefaultLineup(team.Players.ToList());
+
+                var vm = BuildMyTeamViewModel(team, startersFallback, benchFallback);
+                return View(nameof(MyTeam), vm);
+            }
+
+            team.StartingLineupIds = string.Join(",", distinct);
+            await _ctx.SaveChangesAsync();
+
+            TempData["LineupSaved"] = "Početni sastav uspješno spremljen.";
+            return RedirectToAction(nameof(MyTeam));
+        }
+
+        private static List<int> ParseLineupIds(string? csv)
+        {
+            if (string.IsNullOrWhiteSpace(csv)) return new List<int>();
+            return csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(s => int.TryParse(s, out var id) ? id : 0)
+                .Where(id => id > 0)
+                .ToList();
+        }
+
+        private static (List<Player> starters, List<Player> bench) BuildDefaultLineup(List<Player> squad)
+        {
+            var byPos = squad
+                .GroupBy(p => p.Position)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(p => p.TotalPoints).ThenByDescending(p => p.MarketValue).ToList());
+
+            List<Player> Pick(Position pos, int n)
+            {
+                if (!byPos.TryGetValue(pos, out var list)) return new List<Player>();
+                return list.Take(n).ToList();
+            }
+
+            // Default formacija 1-4-4-2
+            var starters = new List<Player>();
+            starters.AddRange(Pick(Position.Goalkeeper, 1));
+            starters.AddRange(Pick(Position.Defender, 4));
+            starters.AddRange(Pick(Position.Midfielder, 4));
+            starters.AddRange(Pick(Position.Forward, 2));
+
+            var starterIds = starters.Select(p => p.Id).ToHashSet();
+            var bench = squad.Where(p => !starterIds.Contains(p.Id)).ToList();
+            return (starters, bench);
+        }
+
+        private static MyTeamViewModel BuildMyTeamViewModel(FantasyTeam team, List<Player> starters, List<Player> bench) => new()
+        {
+            TeamId = team.Id,
+            TeamName = team.Name,
+            Starters = starters,
+            Bench = bench,
+            MinGk = MinStartGk,
+            MinDef = MinStartDef,
+            MinMid = MinStartMid,
+            MinFwd = MinStartFwd,
+            MaxGk = MaxStartGk,
+            MaxDef = RequiredDef,
+            MaxMid = RequiredMid,
+            MaxFwd = RequiredFwd
+        };
 
         private BuildFantasyTeamViewModel BuildEmptyViewModel() => new()
         {
