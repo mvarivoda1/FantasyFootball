@@ -59,6 +59,10 @@ namespace FantasyFootball.DAL
             // unutar budžeta i max 3 po klubu. Mock timovi imaju 11 — dopunjavamo.
             EnsureFullSquads(teams, players);
 
+            // Sinkroniziraj N-N back-reference: player.FantasyTeams mora odgovarati
+            // team.Players kako EF ne bi spremio "duhove" iz originalnog mock seta.
+            ResyncTeamPlayerBackrefs(teams, players);
+
             foreach (var t in teams)
                 t.SquadValue = Math.Round(t.Players.Sum(p => p.MarketValue), 1);
 
@@ -137,6 +141,15 @@ namespace FantasyFootball.DAL
             [Position.Midfielder] = 5,
             [Position.Forward]    = 3,
         };
+
+        private static void ResyncTeamPlayerBackrefs(List<FantasyTeam> teams, List<Player> allPlayers)
+        {
+            foreach (var p in allPlayers) p.FantasyTeams.Clear();
+            foreach (var team in teams)
+                foreach (var p in team.Players)
+                    if (!p.FantasyTeams.Contains(team))
+                        p.FantasyTeams.Add(team);
+        }
 
         private static void EnsureFullSquads(List<FantasyTeam> teams, List<Player> allPlayers)
         {
