@@ -4069,3 +4069,711 @@ body.ff-locker-modal-open {
         align-items: stretch;
     }
 }
+
+/* ============================================
+   Build Fantasy Team — Dark Stadium Theme
+   ============================================ */
+
+/* Build page — light theme (eksplicitan zahtjev korisnika: bijela/svijetla pozadina prevladava).
+   Scope-ano na :has(.ff-build) tako da utječe samo na Build viewport, ostale stranice ostaju netaknute. */
+body:has(.ff-build) {
+    background: #f8fafc;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: #0f172a;
+    min-height: 100vh;
+}
+
+.ff-build {
+    --ffb-bg: #ffffff;
+    --ffb-surface: #ffffff;
+    --ffb-surface-2: #f1f5f9;
+    --ffb-border: rgba(15, 23, 42, 0.08);
+    --ffb-border-strong: rgba(15, 23, 42, 0.18);
+    --ffb-accent: #00c882;
+    --ffb-accent-2: #00d9f5;
+    --ffb-violet: #7b61ff;
+    --ffb-violet-soft: rgba(123, 97, 255, 0.1);
+    --ffb-danger: #ef4444;
+    --ffb-text: #0f172a;
+    --ffb-muted: #64748b;
+    --ffb-space-sm: 0.5rem;
+    --ffb-space-md: 1rem;
+    --ffb-space-lg: 1.5rem;
+
+    padding: 1.5rem 0 2.5rem;
+    color: var(--ffb-text);
+}
+
+.ff-build * { box-sizing: border-box; }
+
+.ff-build__hero {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 0 0.5rem;
+}
+
+.ff-build__hero-eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #007a52;
+    background: rgba(0, 200, 130, 0.08);
+    border: 1px solid rgba(0, 200, 130, 0.4);
+    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    margin-bottom: 0.9rem;
+    font-weight: 700;
+}
+
+.ff-build__hero-title {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: #0f172a;
+    margin: 0 0 0.6rem;
+    background: none;
+    -webkit-text-fill-color: #0f172a;
+}
+
+.ff-build__hero-lead {
+    max-width: 640px;
+    margin: 0 auto;
+    color: var(--ffb-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.ff-build__hero-lead strong {
+    color: var(--ffb-text);
+    font-weight: 700;
+}
+
+.ff-build__errors {
+    background: rgba(255, 71, 87, 0.08);
+    border: 1px solid rgba(255, 71, 87, 0.35);
+    color: #ffb4bc;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.9rem;
+}
+.ff-build__errors:empty { display: none; }
+.ff-build__errors ul { margin: 0; padding-left: 1.2rem; }
+
+.ff-build__layout {
+    align-items: flex-start;
+}
+
+/* --- Pitch card (left column) --- */
+.ff-build__pitch-card {
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+}
+
+.ff-build__name-wrap {
+    margin-bottom: 1.1rem;
+}
+
+.ff-build__name-label {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ffb-muted);
+    margin-bottom: 0.35rem;
+    font-weight: 700;
+}
+
+.ff-build__name-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(15, 23, 42, 0.12);
+    color: #0f172a;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 0.5rem 0.1rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    font-family: inherit;
+}
+
+.ff-build__name-input::placeholder {
+    color: rgba(15, 23, 42, 0.3);
+    font-weight: 500;
+}
+
+.ff-build__name-input:focus {
+    border-bottom-color: var(--ffb-accent);
+    box-shadow: 0 4px 12px -8px var(--ffb-accent);
+}
+
+.ff-build__name-error {
+    display: block;
+    color: var(--ffb-danger);
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+}
+
+.ff-build__pitch {
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 245, 160, 0.08);
+    margin-bottom: 1rem;
+}
+
+/* Empty slot shirt — grey placeholder with + icon */
+.ff-totw-player__shirt--empty {
+    background: linear-gradient(180deg, #3a3f4a 0%, #22252c 100%);
+    color: rgba(255, 255, 255, 0.55);
+    border-color: rgba(0, 0, 0, 0.35);
+    opacity: 0.7;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35), inset 0 -6px 10px rgba(0, 0, 0, 0.25);
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.ff-totw-player--empty { cursor: default; }
+
+.ff-totw-player__name--empty {
+    background: rgba(0, 0, 0, 0.35);
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+/* Filled slot — make whole tile clickable button-style */
+.ff-build-slot {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.ff-build-slot--filled:hover .ff-totw-player__shirt {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.ff-build-slot__remove {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--ffb-danger);
+    color: #fff;
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.ff-build-slot--filled:hover .ff-build-slot__remove,
+.ff-build-slot--filled:focus-visible .ff-build-slot__remove {
+    opacity: 1;
+}
+
+/* Kratica kluba na dresu (umjesto bodova) */
+.ff-build-slot__club {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.ff-build-slot:focus-visible {
+    outline: none;
+}
+.ff-build-slot:focus-visible .ff-totw-player__shirt {
+    box-shadow: 0 0 0 2px var(--ffb-accent), 0 3px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* --- Status bar --- */
+.ff-build__status {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    margin: 1rem 0;
+}
+
+@media (min-width: 576px) {
+    .ff-build__status:not(.ff-build__status--single) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.ff-build__status--single {
+    margin: 0.8rem 0 0.2rem;
+}
+
+.ff-build__status-item {
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.ff-build__status-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ffb-muted);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.ff-build__status-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ffb-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.ff-build__status-item--valid {
+    border-color: rgba(0, 200, 130, 0.45);
+    background: rgba(0, 200, 130, 0.08);
+}
+.ff-build__status-item--valid .ff-build__status-value {
+    color: #007a52;
+}
+
+.ff-build__status-item--invalid {
+    border-color: rgba(239, 68, 68, 0.45);
+    background: rgba(239, 68, 68, 0.08);
+}
+.ff-build__status-item--invalid .ff-build__status-value {
+    color: #b91c1c;
+}
+
+/* --- Complete CTA --- */
+.ff-build__actions {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.6rem;
+    align-items: stretch;
+}
+
+.ff-build__complete,
+.ff-build__autocomplete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    border: none;
+    line-height: 1.1;
+}
+
+.ff-build__complete {
+    flex: 1 1 auto;
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    color: #94a3b8;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.ff-build__complete:disabled {
+    cursor: not-allowed;
+}
+
+.ff-build__complete--ready {
+    background: linear-gradient(135deg, #00f5a0 0%, #00d9f5 100%);
+    color: #0a0e17;
+    box-shadow: 0 6px 20px rgba(0, 200, 130, 0.3);
+    cursor: pointer;
+}
+
+.ff-build__complete--ready:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 26px rgba(0, 200, 130, 0.4);
+}
+
+.ff-build__complete--ready:active {
+    transform: translateY(0);
+}
+
+.ff-build__autocomplete {
+    flex: 0 0 auto;
+    background: rgba(123, 97, 255, 0.1);
+    color: #5b3fd4;
+    border: 1px solid rgba(123, 97, 255, 0.35);
+}
+
+.ff-build__autocomplete:hover {
+    background: rgba(123, 97, 255, 0.18);
+    border-color: rgba(123, 97, 255, 0.6);
+    color: #4a2fb8;
+    transform: translateY(-1px);
+}
+
+.ff-build__autocomplete:active {
+    transform: translateY(0);
+}
+
+.ff-build__complete i,
+.ff-build__autocomplete i {
+    font-size: 1rem;
+}
+
+.ff-build__club-error {
+    color: #b91c1c;
+    font-size: 0.82rem;
+    margin-top: 0.35rem;
+    line-height: 1.35;
+}
+
+/* --- Picker (right column) --- */
+.ff-build__picker {
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+    position: sticky;
+    top: 90px;
+    max-height: calc(100vh - 110px);
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 991px) {
+    .ff-build__picker {
+        position: static;
+        max-height: none;
+    }
+}
+
+.ff-build__filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+}
+
+.ff-build__filter-group {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.ff-build__filter-btn {
+    flex: 1 1 auto;
+    min-width: 50px;
+    background: #f8fafc;
+    color: var(--ffb-muted);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 50px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.ff-build__filter-btn:hover {
+    border-color: rgba(15, 23, 42, 0.18);
+    color: var(--ffb-text);
+    background: #f1f5f9;
+}
+
+.ff-build__filter-btn--active {
+    background: linear-gradient(135deg, rgba(0, 200, 130, 0.14) 0%, rgba(0, 217, 245, 0.1) 100%);
+    border-color: var(--ffb-accent);
+    color: #007a52;
+    box-shadow: 0 0 12px -4px rgba(0, 200, 130, 0.4);
+}
+
+.ff-build__filter-btn:focus-visible {
+    outline: 2px solid var(--ffb-accent);
+    outline-offset: 2px;
+}
+
+.ff-build__filter-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.ff-build__search {
+    flex: 1 1 auto;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.ff-build__search i {
+    position: absolute;
+    left: 0.7rem;
+    color: var(--ffb-muted);
+    pointer-events: none;
+    font-size: 0.85rem;
+}
+
+.ff-build__search-input {
+    width: 100%;
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 8px;
+    color: var(--ffb-text);
+    padding: 0.5rem 0.6rem 0.5rem 2rem;
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ff-build__search-input::placeholder {
+    color: var(--ffb-muted);
+}
+
+.ff-build__search-input:focus {
+    border-color: var(--ffb-accent);
+    box-shadow: 0 0 0 3px rgba(0, 200, 130, 0.15);
+    background: #ffffff;
+}
+
+.ff-build__sort {
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    color: var(--ffb-text);
+    border-radius: 8px;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    min-width: 110px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ff-build__sort:focus {
+    border-color: var(--ffb-accent);
+    box-shadow: 0 0 0 3px rgba(0, 200, 130, 0.15);
+    background: #ffffff;
+}
+
+.ff-build__sort option {
+    background: #ffffff;
+    color: var(--ffb-text);
+}
+
+.ff-build__list-meta {
+    font-size: 0.75rem;
+    color: var(--ffb-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    padding: 0.3rem 0.25rem 0.55rem;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    margin-bottom: 0.4rem;
+}
+
+.ff-build__list-meta span {
+    color: #007a52;
+}
+
+.ff-build__list {
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 240px;
+    max-height: 560px;
+    padding-right: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 245, 160, 0.3) transparent;
+}
+
+.ff-build__list::-webkit-scrollbar { width: 6px; }
+.ff-build__list::-webkit-scrollbar-track { background: transparent; }
+.ff-build__list::-webkit-scrollbar-thumb {
+    background: rgba(0, 200, 130, 0.35);
+    border-radius: 4px;
+}
+
+/* --- Player row card --- */
+.ff-build-player-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-family: inherit;
+    color: var(--ffb-text);
+    width: 100%;
+}
+
+.ff-build-player-row:hover:not(:disabled) {
+    border-color: var(--ffb-accent);
+    background: rgba(0, 200, 130, 0.06);
+    transform: translateX(2px);
+    box-shadow: 0 4px 12px rgba(0, 200, 130, 0.12);
+}
+
+.ff-build-player-row:focus-visible {
+    outline: none;
+    border-color: var(--ffb-accent);
+    box-shadow: 0 0 0 3px rgba(0, 200, 130, 0.25);
+}
+
+.ff-build-player-row--selected {
+    background: linear-gradient(90deg, rgba(0, 200, 130, 0.12) 0%, rgba(0, 217, 245, 0.05) 100%);
+    border-color: rgba(0, 200, 130, 0.55);
+}
+
+.ff-build-player-row--selected:hover {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: var(--ffb-danger);
+    transform: translateX(2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+}
+
+.ff-build-player-row--disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+}
+.ff-build-player-row--disabled:hover {
+    transform: none;
+    background: #ffffff;
+    border-color: rgba(15, 23, 42, 0.08);
+    box-shadow: none;
+}
+
+.ff-build-player-row__pos {
+    flex: 0 0 auto;
+    min-width: 38px;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    padding: 0.22rem 0.45rem;
+    border-radius: 6px;
+    color: #0a0e17;
+    background: var(--ffb-accent);
+}
+
+.ff-build-player-row__pos--gk { background: #ffd60a; color: #1a1a1a; }
+.ff-build-player-row__pos--def { background: #22c55e; color: #0a1a10; }
+.ff-build-player-row__pos--mid { background: #3b82f6; color: #fff; }
+.ff-build-player-row__pos--fwd { background: #ef4444; color: #fff; }
+
+.ff-build-player-row__info {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.ff-build-player-row__last {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--ffb-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ff-build-player-row__meta {
+    font-size: 0.72rem;
+    color: var(--ffb-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ff-build-player-row__stats {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.1rem;
+    text-align: right;
+}
+
+.ff-build-player-row__price {
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: var(--ffb-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.ff-build-player-row__points {
+    font-size: 0.7rem;
+    color: var(--ffb-muted);
+    font-weight: 600;
+}
+
+.ff-build-player-row__points i {
+    color: #ffd60a;
+    font-size: 0.65rem;
+}
+
+.ff-build-player-row__indicator {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    color: var(--ffb-muted);
+    font-size: 0.85rem;
+    transition: all 0.18s ease;
+}
+
+.ff-build-player-row--selected .ff-build-player-row__indicator {
+    background: linear-gradient(135deg, #00f5a0 0%, #00d9f5 100%);
+    border-color: transparent;
+    color: #0a0e17;
+    font-weight: 800;
+}
+
+.ff-build-player-row:hover:not(:disabled) .ff-build-player-row__indicator {
+    background: var(--ffb-accent);
+    color: #0a0e17;
+    border-color: var(--ffb-accent);
+}
+
+/* --- Responsive tweaks --- */
+@media (max-width: 575px) {
+    .ff-build { padding: 1.25rem 0.75rem 2rem; }
+    .ff-build__pitch-card,
+    .ff-build__picker { padding: 0.85rem; }
+    .ff-totw-player__shirt { width: 36px; height: 40px; }
+    .ff-totw-player__name { font-size: 0.65rem; }
+    .ff-build__hero { margin-bottom: 1.25rem; }
+}

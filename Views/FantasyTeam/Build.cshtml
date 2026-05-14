@@ -1,0 +1,653 @@
+@model FantasyFootball.Models.ViewModels.BuildFantasyTeamViewModel
+@{
+    ViewData["Title"] = "Sastavi momčad";
+    Layout = "_Layout";
+
+    var clubShortMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Manchester City"]   = "MCI",
+        ["Manchester United"] = "MUN",
+        ["Liverpool"]         = "LIV",
+        ["Arsenal"]           = "ARS",
+        ["Chelsea"]           = "CHE",
+        ["Newcastle"]         = "NEW",
+        ["Aston Villa"]       = "AVL"
+    };
+
+    string ClubShort(string club)
+    {
+        if (string.IsNullOrWhiteSpace(club)) return "—";
+        if (clubShortMap.TryGetValue(club, out var s)) return s;
+        // Fallback: prva tri velika slova iz riječi (npr. "Brighton Hove Albion" -> "BHA")
+        var parts = club.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return string.Concat(parts.Take(3).Select(p => char.ToUpperInvariant(p[0])));
+        return club.Substring(0, Math.Min(3, club.Length)).ToUpperInvariant();
+    }
+}
+
+<section class="ff-build" aria-labelledby="ff-build-title">
+    <header class="ff-build__hero">
+        <h1 id="ff-build-title" class="ff-build__hero-title">Sastavi svoju momčad</h1>
+    </header>
+
+    <form asp-controller="FantasyTeam" asp-action="Build" method="post" id="ffBuildForm" novalidate>
+        @Html.AntiForgeryToken()
+
+        <div class="row g-4 ff-build__layout">
+            <!-- LEFT: pitch + status -->
+            <div class="col-lg-7">
+                <div class="ff-build__pitch-card">
+                    <div class="ff-build__name-wrap">
+                        <label class="ff-build__name-label" for="TeamName">Naziv tima</label>
+                        <input asp-for="TeamName"
+                               id="TeamName"
+                               class="ff-build__name-input"
+                               placeholder="npr. Stadionski lavovi"
+                               maxlength="80"
+                               autocomplete="off" />
+                        <span asp-validation-for="TeamName" class="ff-build__name-error"></span>
+                        <div id="ffClubError" class="ff-build__name-error ff-build__club-error" role="alert" aria-live="polite" hidden></div>
+                    </div>
+
+                    <div class="ff-totw ff-build__pitch" aria-label="Nogometni teren — sastav tima">
+                        <div class="ff-totw__row ff-totw__row--fwd" data-pitch-row="fwd"></div>
+                        <div class="ff-totw__row ff-totw__row--mid" data-pitch-row="mid"></div>
+                        <div class="ff-totw__row ff-totw__row--def" data-pitch-row="def"></div>
+                        <div class="ff-totw__row ff-totw__row--gk" data-pitch-row="gk"></div>
+                    </div>
+
+                    <div id="ffSelectedInputs"></div>
+
+                    <div class="ff-build__status ff-build__status--single" role="status" aria-live="polite">
+                        <div class="ff-build__status-item" data-status="budget">
+                            <span class="ff-build__status-label"><i class="bi bi-cash-coin" aria-hidden="true"></i> Preostali budžet</span>
+                            <span class="ff-build__status-value" id="ffStatusBudget">100.0 / 100.0M</span>
+                        </div>
+                    </div>
+
+                    <div class="ff-build__actions">
+                        <button type="button"
+                                id="ffAutocompleteBtn"
+                                class="ff-build__autocomplete">
+                            <i class="bi bi-shuffle" aria-hidden="true"></i>
+                            <span>Auto-popuni</span>
+                        </button>
+                        <button type="submit"
+                                id="ffCompleteBtn"
+                                class="ff-build__complete"
+                                disabled>
+                            <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                            <span>Završi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: player picker -->
+            <div class="col-lg-5">
+                <div class="ff-build__picker">
+                    <div class="ff-build__filters" role="toolbar" aria-label="Filteri igrača">
+                        <div class="ff-build__filter-group" role="group" aria-label="Filtriraj po poziciji">
+                            <button type="button" class="ff-build__filter-btn ff-build__filter-btn--active" data-filter-pos="ALL" aria-pressed="true">Svi</button>
+                            <button type="button" class="ff-build__filter-btn" data-filter-pos="GK" aria-pressed="false">GK</button>
+                            <button type="button" class="ff-build__filter-btn" data-filter-pos="DEF" aria-pressed="false">DEF</button>
+                            <button type="button" class="ff-build__filter-btn" data-filter-pos="MID" aria-pressed="false">MID</button>
+                            <button type="button" class="ff-build__filter-btn" data-filter-pos="FWD" aria-pressed="false">FWD</button>
+                        </div>
+
+                        <div class="ff-build__filter-row">
+                            <div class="ff-build__search">
+                                <i class="bi bi-search" aria-hidden="true"></i>
+                                <input type="search"
+                                       id="ffSearchInput"
+                                       class="ff-build__search-input"
+                                       placeholder="Pretraži po imenu ili klubu..."
+                                       aria-label="Pretraži igrače" />
+                            </div>
+                            <select id="ffClubSelect" class="ff-build__sort" aria-label="Filtriraj po klubu">
+                                <option value="ALL">Svi klubovi</option>
+                                @foreach (var club in Model.AvailablePlayers
+                                    .Select(p => p.Club)
+                                    .Where(c => !string.IsNullOrWhiteSpace(c))
+                                    .Distinct()
+                                    .OrderBy(c => c))
+                                {
+                                    <option value="@club">@club</option>
+                                }
+                            </select>
+                            <select id="ffSortSelect" class="ff-build__sort" aria-label="Sortiraj igrače">
+                                <option value="price-asc">Cijena &uarr;</option>
+                                <option value="price-desc">Cijena &darr;</option>
+                                <option value="points-desc">Bodovi &darr;</option>
+                                <option value="name-asc">Ime A &rarr; Z</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="ff-build__list-meta">
+                        <span id="ffListCount">@Model.AvailablePlayers.Count</span> dostupnih igrača
+                    </div>
+
+                    <div class="ff-build__list" id="ffPlayerList" role="list" aria-label="Lista dostupnih igrača"></div>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            'use strict';
+
+            // --- Data injected from server ---
+            var allPlayers = @Html.Raw(Json.Serialize(Model.AvailablePlayers.Select(p => new {
+                id = p.Id,
+                firstName = p.FirstName,
+                lastName = p.LastName,
+                fullName = p.FullName,
+                position = (int)p.Position,
+                club = p.Club,
+                clubShort = ClubShort(p.Club),
+                marketValue = p.MarketValue,
+                totalPoints = p.TotalPoints
+            })));
+
+            var BUDGET = @Model.Budget;
+            var REQ = {
+                0: @Model.RequiredGk,   // Goalkeeper
+                1: @Model.RequiredDef,  // Defender
+                2: @Model.RequiredMid,  // Midfielder
+                3: @Model.RequiredFwd   // Forward
+            };
+            var MAX_PER_CLUB = @Model.MaxPerClub;
+            var SQUAD_SIZE = REQ[0] + REQ[1] + REQ[2] + REQ[3];
+
+            var POS_LABEL = { 0: 'GK', 1: 'DEF', 2: 'MID', 3: 'FWD' };
+            var POS_VARIANT = { 0: 'gk', 1: 'def', 2: 'mid', 3: 'fwd' };
+            var POS_NAME = { 0: 'vratara', 1: 'braniča', 2: 'veznog', 3: 'napadača' };
+
+            // --- State ---
+            var selectedIds = new Set();
+            // Preserve add-order so slots fill predictably:
+            var selectionOrder = [];
+            var filterPos = 'ALL';
+            var filterClub = 'ALL';
+            var sortMode = 'price-asc';
+            var searchTerm = '';
+
+            var byId = {};
+            allPlayers.forEach(function (p) { byId[p.id] = p; });
+
+            // --- DOM refs ---
+            var pitchRows = {
+                0: document.querySelector('[data-pitch-row="gk"]'),
+                1: document.querySelector('[data-pitch-row="def"]'),
+                2: document.querySelector('[data-pitch-row="mid"]'),
+                3: document.querySelector('[data-pitch-row="fwd"]')
+            };
+            var listEl = document.getElementById('ffPlayerList');
+            var inputsEl = document.getElementById('ffSelectedInputs');
+            var completeBtn = document.getElementById('ffCompleteBtn');
+            var autocompleteBtn = document.getElementById('ffAutocompleteBtn');
+            var clubErrorEl = document.getElementById('ffClubError');
+            var budgetEl = document.getElementById('ffStatusBudget');
+            var listCountEl = document.getElementById('ffListCount');
+            var searchInput = document.getElementById('ffSearchInput');
+            var sortSelect = document.getElementById('ffSortSelect');
+            var clubSelect = document.getElementById('ffClubSelect');
+
+            // --- Helpers ---
+            function selectedPlayers() {
+                return selectionOrder.map(function (id) { return byId[id]; });
+            }
+
+            function countByPosition() {
+                var c = { 0: 0, 1: 0, 2: 0, 3: 0 };
+                selectedPlayers().forEach(function (p) { c[p.position]++; });
+                return c;
+            }
+
+            function countByClub() {
+                var c = {};
+                selectedPlayers().forEach(function (p) {
+                    c[p.club] = (c[p.club] || 0) + 1;
+                });
+                return c;
+            }
+
+            function totalCost() {
+                return selectedPlayers().reduce(function (sum, p) { return sum + p.marketValue; }, 0);
+            }
+
+            function canAdd(player) {
+                if (selectedIds.has(player.id)) return { ok: false, reason: 'already' };
+                var posCount = countByPosition();
+                if (posCount[player.position] >= REQ[player.position]) return { ok: false, reason: 'pos-full' };
+                if (totalCost() + player.marketValue > BUDGET + 1e-6) return { ok: false, reason: 'budget' };
+                var clubCount = countByClub();
+                if ((clubCount[player.club] || 0) >= MAX_PER_CLUB) return { ok: false, reason: 'club' };
+                return { ok: true };
+            }
+
+            // --- Mutations ---
+            function addPlayer(id) {
+                var p = byId[id];
+                if (!p) return;
+                var check = canAdd(p);
+                if (!check.ok) return;
+                selectedIds.add(id);
+                selectionOrder.push(id);
+                render();
+            }
+
+            function removePlayer(id) {
+                if (!selectedIds.has(id)) return;
+                selectedIds.delete(id);
+                selectionOrder = selectionOrder.filter(function (x) { return x !== id; });
+                render();
+            }
+
+            function togglePlayer(id) {
+                if (selectedIds.has(id)) removePlayer(id);
+                else addPlayer(id);
+            }
+
+            // --- Rendering ---
+            function renderPitch() {
+                // Group selected by position, preserving selection order
+                var grouped = { 0: [], 1: [], 2: [], 3: [] };
+                selectionOrder.forEach(function (id) {
+                    var p = byId[id];
+                    grouped[p.position].push(p);
+                });
+
+                [0, 1, 2, 3].forEach(function (pos) {
+                    var row = pitchRows[pos];
+                    if (!row) return;
+                    row.innerHTML = '';
+                    var slots = REQ[pos];
+                    for (var i = 0; i < slots; i++) {
+                        var player = grouped[pos][i];
+                        if (player) {
+                            row.appendChild(buildFilledSlot(player));
+                        } else {
+                            row.appendChild(buildEmptySlot(pos));
+                        }
+                    }
+                });
+            }
+
+            function buildFilledSlot(player) {
+                var variant = POS_VARIANT[player.position];
+                var wrap = document.createElement('button');
+                wrap.type = 'button';
+                wrap.className = 'ff-totw-player ff-build-slot ff-build-slot--filled';
+                wrap.setAttribute('aria-label', 'Ukloni ' + player.fullName + ' iz tima');
+                wrap.title = player.fullName + ' — klikni za uklanjanje';
+                wrap.addEventListener('click', function () { removePlayer(player.id); });
+
+                var shirt = document.createElement('div');
+                shirt.className = 'ff-totw-player__shirt ff-totw-player__shirt--' + variant;
+                var clubTag = document.createElement('span');
+                clubTag.className = 'ff-totw-player__points ff-build-slot__club';
+                clubTag.textContent = player.clubShort || '';
+                shirt.appendChild(clubTag);
+
+                var remove = document.createElement('span');
+                remove.className = 'ff-build-slot__remove';
+                remove.setAttribute('aria-hidden', 'true');
+                remove.innerHTML = '<i class="bi bi-x-lg"></i>';
+                shirt.appendChild(remove);
+
+                wrap.appendChild(shirt);
+
+                var name = document.createElement('div');
+                name.className = 'ff-totw-player__name';
+                name.textContent = player.lastName;
+                wrap.appendChild(name);
+
+                var stat = document.createElement('div');
+                stat.className = 'ff-totw-player__stat';
+                stat.textContent = player.marketValue.toFixed(1) + 'M';
+                wrap.appendChild(stat);
+
+                return wrap;
+            }
+
+            function buildEmptySlot(pos) {
+                var wrap = document.createElement('div');
+                wrap.className = 'ff-totw-player ff-totw-player--empty ff-build-slot ff-build-slot--empty';
+                wrap.setAttribute('aria-label', 'Prazno mjesto za ' + POS_NAME[pos]);
+
+                var shirt = document.createElement('div');
+                shirt.className = 'ff-totw-player__shirt ff-totw-player__shirt--empty';
+                shirt.innerHTML = '<i class="bi bi-plus" aria-hidden="true"></i>';
+                wrap.appendChild(shirt);
+
+                var name = document.createElement('div');
+                name.className = 'ff-totw-player__name ff-totw-player__name--empty';
+                name.textContent = POS_LABEL[pos];
+                wrap.appendChild(name);
+
+                return wrap;
+            }
+
+            function renderInputs() {
+                inputsEl.innerHTML = '';
+                selectionOrder.forEach(function (id) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'SelectedPlayerIds';
+                    input.value = id;
+                    inputsEl.appendChild(input);
+                });
+            }
+
+            function renderStatus() {
+                var cost = totalCost();
+                var posCount = countByPosition();
+                var clubCount = countByClub();
+                var posFull = posCount[0] === REQ[0] && posCount[1] === REQ[1] && posCount[2] === REQ[2] && posCount[3] === REQ[3];
+
+                // Budget widget: prikazuje preostali budžet
+                var remaining = BUDGET - cost;
+                budgetEl.textContent = remaining.toFixed(1) + ' / ' + BUDGET.toFixed(1) + 'M';
+                var budgetItem = budgetEl.closest('.ff-build__status-item');
+                if (budgetItem) {
+                    var overBudget = cost > BUDGET + 1e-6;
+                    budgetItem.classList.toggle('ff-build__status-item--invalid', overBudget);
+                    budgetItem.classList.toggle('ff-build__status-item--valid', !overBudget && cost > 0);
+                }
+
+                // Klub error ispod naziva tima
+                var overClubs = Object.keys(clubCount).filter(function (k) { return clubCount[k] > MAX_PER_CLUB; });
+                if (overClubs.length > 0) {
+                    clubErrorEl.textContent =
+                        'Maksimalno ' + MAX_PER_CLUB + ' igrača iz istog kluba — prekoračeno: ' +
+                        overClubs.map(function (c) { return c + ' (' + clubCount[c] + ')'; }).join(', ');
+                    clubErrorEl.hidden = false;
+                } else {
+                    clubErrorEl.textContent = '';
+                    clubErrorEl.hidden = true;
+                }
+
+                // Complete gumb
+                var teamName = (document.getElementById('TeamName').value || '').trim();
+                var ok = posFull && cost <= BUDGET + 1e-6 && overClubs.length === 0 && teamName.length >= 2 && selectionOrder.length === SQUAD_SIZE;
+                completeBtn.disabled = !ok;
+                completeBtn.classList.toggle('ff-build__complete--ready', ok);
+            }
+
+            function renderList() {
+                var filtered = allPlayers.slice();
+
+                // Filter by position
+                if (filterPos !== 'ALL') {
+                    var posInt = { 'GK': 0, 'DEF': 1, 'MID': 2, 'FWD': 3 }[filterPos];
+                    filtered = filtered.filter(function (p) { return p.position === posInt; });
+                }
+
+                // Filter by club
+                if (filterClub !== 'ALL') {
+                    filtered = filtered.filter(function (p) { return p.club === filterClub; });
+                }
+
+                // Search
+                if (searchTerm) {
+                    var q = searchTerm.toLowerCase();
+                    filtered = filtered.filter(function (p) {
+                        return (p.fullName && p.fullName.toLowerCase().indexOf(q) !== -1) ||
+                               (p.club && p.club.toLowerCase().indexOf(q) !== -1);
+                    });
+                }
+
+                // Sort
+                filtered.sort(function (a, b) {
+                    switch (sortMode) {
+                        case 'price-asc': return a.marketValue - b.marketValue;
+                        case 'price-desc': return b.marketValue - a.marketValue;
+                        case 'points-desc': return b.totalPoints - a.totalPoints;
+                        case 'name-asc': return (a.lastName || '').localeCompare(b.lastName || '');
+                        default: return 0;
+                    }
+                });
+
+                listCountEl.textContent = filtered.length;
+
+                listEl.innerHTML = '';
+                var frag = document.createDocumentFragment();
+                filtered.forEach(function (p) {
+                    frag.appendChild(buildPlayerRow(p));
+                });
+                listEl.appendChild(frag);
+            }
+
+            function buildPlayerRow(p) {
+                var isSelected = selectedIds.has(p.id);
+                var addCheck = canAdd(p);
+                var isDisabled = !isSelected && !addCheck.ok;
+
+                var row = document.createElement('button');
+                row.type = 'button';
+                row.className = 'ff-build-player-row';
+                row.setAttribute('data-pid', p.id);
+                if (isSelected) row.classList.add('ff-build-player-row--selected');
+                if (isDisabled) {
+                    row.classList.add('ff-build-player-row--disabled');
+                    row.disabled = true;
+                    var reasonText = '';
+                    if (addCheck.reason === 'pos-full') reasonText = 'Pozicija je popunjena';
+                    else if (addCheck.reason === 'budget') reasonText = 'Prelazi budžet';
+                    else if (addCheck.reason === 'club') reasonText = 'Maks. ' + MAX_PER_CLUB + ' iz kluba';
+                    row.title = reasonText;
+                    row.setAttribute('aria-label', p.fullName + ' — ' + reasonText);
+                } else {
+                    row.setAttribute('aria-label',
+                        (isSelected ? 'Ukloni ' : 'Dodaj ') + p.fullName + ' (' + POS_LABEL[p.position] + ', ' + p.club + ', ' + p.marketValue.toFixed(1) + 'M)');
+                }
+                row.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+
+                var pos = document.createElement('span');
+                pos.className = 'ff-build-player-row__pos ff-build-player-row__pos--' + POS_VARIANT[p.position];
+                pos.textContent = POS_LABEL[p.position];
+                row.appendChild(pos);
+
+                var info = document.createElement('div');
+                info.className = 'ff-build-player-row__info';
+                var nameLast = document.createElement('div');
+                nameLast.className = 'ff-build-player-row__last';
+                nameLast.textContent = p.lastName;
+                var meta = document.createElement('div');
+                meta.className = 'ff-build-player-row__meta';
+                meta.textContent = (p.firstName ? p.firstName + ' · ' : '') + p.club;
+                info.appendChild(nameLast);
+                info.appendChild(meta);
+                row.appendChild(info);
+
+                var stats = document.createElement('div');
+                stats.className = 'ff-build-player-row__stats';
+                var price = document.createElement('span');
+                price.className = 'ff-build-player-row__price';
+                price.textContent = p.marketValue.toFixed(1) + 'M';
+                var points = document.createElement('span');
+                points.className = 'ff-build-player-row__points';
+                points.innerHTML = '<i class="bi bi-star-fill" aria-hidden="true"></i> ' + p.totalPoints;
+                stats.appendChild(price);
+                stats.appendChild(points);
+                row.appendChild(stats);
+
+                var indicator = document.createElement('span');
+                indicator.className = 'ff-build-player-row__indicator';
+                indicator.innerHTML = isSelected
+                    ? '<i class="bi bi-check-lg" aria-hidden="true"></i>'
+                    : '<i class="bi bi-plus-lg" aria-hidden="true"></i>';
+                row.appendChild(indicator);
+
+                row.addEventListener('click', function () { togglePlayer(p.id); });
+
+                return row;
+            }
+
+            function render() {
+                renderPitch();
+                renderInputs();
+                renderStatus();
+                renderList();
+            }
+
+            // --- Auto-popuni ---
+            // Weighted random pick — bira težinski blizu željenog targeta s plitkim padom,
+            // tako da svi valjani kandidati imaju nezanemarivu vjerojatnost biti izabrani.
+            function pickTowardTarget(candidates, target) {
+                var weights = candidates.map(function (pl) {
+                    // 1 / (0.4 + |delta|) — plitki vrh, dugačke repove → stvarna raznolikost
+                    return 1 / (0.4 + Math.abs(pl.marketValue - target));
+                });
+                var total = weights.reduce(function (s, w) { return s + w; }, 0);
+                var r = Math.random() * total;
+                var acc = 0;
+                for (var i = 0; i < weights.length; i++) {
+                    acc += weights[i];
+                    if (r <= acc) return candidates[i];
+                }
+                return candidates[candidates.length - 1];
+            }
+
+            function autocompleteTeam() {
+                var MIN_PRICE = 4.5;
+                var byPos = { 0: [], 1: [], 2: [], 3: [] };
+                allPlayers.forEach(function (pl) { byPos[pl.position].push(pl); });
+
+                var picks = [];
+                for (var pos = 0; pos <= 3; pos++) {
+                    for (var n = 0; n < REQ[pos]; n++) picks.push(pos);
+                }
+
+                function tryBuild() {
+                    var chosenList = [];
+                    var chosenIds = {};
+                    var clubCount = {};
+                    var cost = 0;
+
+                    for (var k = 0; k < picks.length; k++) {
+                        var posIdx = picks[k];
+                        var remainingSlots = picks.length - k;
+                        var remainingAfter = remainingSlots - 1;
+                        var maxAllowed = BUDGET - cost - remainingAfter * MIN_PRICE;
+                        var targetAvg = (BUDGET - cost) / remainingSlots;
+                        // Mali random jitter na target (±0.8M) da ni dvije identične situacije
+                        // ne daju identičan ishod.
+                        var jitter = (Math.random() - 0.5) * 1.6;
+                        var target = targetAvg + jitter;
+
+                        var candidates = byPos[posIdx].filter(function (pl) {
+                            return !chosenIds[pl.id] &&
+                                   pl.marketValue <= maxAllowed + 1e-6 &&
+                                   (clubCount[pl.club] || 0) < MAX_PER_CLUB;
+                        });
+
+                        if (candidates.length === 0) return null;
+
+                        var pick = pickTowardTarget(candidates, target);
+                        chosenList.push(pick);
+                        chosenIds[pick.id] = true;
+                        clubCount[pick.club] = (clubCount[pick.club] || 0) + 1;
+                        cost += pick.marketValue;
+                    }
+                    return chosenList;
+                }
+
+                // Faza 1: target-average weighted random — daje raznolike, budžet-svjesne timove
+                var result = null;
+                for (var attempt = 0; attempt < 500 && !result; attempt++) {
+                    result = tryBuild();
+                }
+
+                // Faza 2: ako (vrlo rijetko) sve padne, čista uniformna random distribucija
+                // — i dalje daje raznolikost (ne deterministički isti tim kao prije).
+                if (!result) {
+                    for (var attempt2 = 0; attempt2 < 200 && !result; attempt2++) {
+                        result = (function () {
+                            var chosenList = [];
+                            var chosenIds = {};
+                            var clubCount = {};
+                            var cost = 0;
+                            for (var k = 0; k < picks.length; k++) {
+                                var posIdx = picks[k];
+                                var remainingAfter = picks.length - k - 1;
+                                var maxAllowed = BUDGET - cost - remainingAfter * MIN_PRICE;
+                                var candidates = byPos[posIdx].filter(function (pl) {
+                                    return !chosenIds[pl.id] &&
+                                           pl.marketValue <= maxAllowed + 1e-6 &&
+                                           (clubCount[pl.club] || 0) < MAX_PER_CLUB;
+                                });
+                                if (candidates.length === 0) return null;
+                                var pick = candidates[Math.floor(Math.random() * candidates.length)];
+                                chosenList.push(pick);
+                                chosenIds[pick.id] = true;
+                                clubCount[pick.club] = (clubCount[pick.club] || 0) + 1;
+                                cost += pick.marketValue;
+                            }
+                            return chosenList;
+                        })();
+                    }
+                }
+
+                if (!result) {
+                    console.warn('Auto-popuni: nije moguće složiti valjanu momčad u zadanim pravilima.');
+                    return false;
+                }
+
+                selectedIds = new Set();
+                selectionOrder = [];
+                result.forEach(function (pl) {
+                    selectedIds.add(pl.id);
+                    selectionOrder.push(pl.id);
+                });
+                render();
+                return true;
+            }
+
+            // --- Event wiring ---
+            document.querySelectorAll('[data-filter-pos]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('[data-filter-pos]').forEach(function (b) {
+                        b.classList.remove('ff-build__filter-btn--active');
+                        b.setAttribute('aria-pressed', 'false');
+                    });
+                    btn.classList.add('ff-build__filter-btn--active');
+                    btn.setAttribute('aria-pressed', 'true');
+                    filterPos = btn.getAttribute('data-filter-pos');
+                    renderList();
+                });
+            });
+
+            searchInput.addEventListener('input', function () {
+                searchTerm = searchInput.value.trim();
+                renderList();
+            });
+
+            sortSelect.addEventListener('change', function () {
+                sortMode = sortSelect.value;
+                renderList();
+            });
+
+            clubSelect.addEventListener('change', function () {
+                filterClub = clubSelect.value;
+                renderList();
+            });
+
+            document.getElementById('TeamName').addEventListener('input', renderStatus);
+
+            autocompleteBtn.addEventListener('click', function () {
+                autocompleteTeam();
+            });
+
+            // Initial render
+            render();
+        })();
+    </script>
+}

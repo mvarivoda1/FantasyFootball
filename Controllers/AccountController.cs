@@ -50,6 +50,9 @@ namespace FantasyFootball.Controllers
 
             await SignInAsync(user, model.RememberMe);
 
+            if (!user.FantasyTeamId.HasValue)
+                return RedirectToAction("Build", "FantasyTeam");
+
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);
 
@@ -90,7 +93,7 @@ namespace FantasyFootball.Controllers
             await _ctx.SaveChangesAsync();
 
             await SignInAsync(user, isPersistent: false);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Build", "FantasyTeam");
         }
 
         [HttpPost]

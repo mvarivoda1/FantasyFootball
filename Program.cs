@@ -1,4 +1,5 @@
 using FantasyFootball.DAL;
+using FantasyFootball.Filters;
 using FantasyFootball.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,11 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // Globalno preusmjeravanje korisnika bez fantasy tima na Build stranicu
+    options.Filters.Add<RequireFantasyTeamFilter>();
+});
 
 // Cookie autentifikacija
 builder.Services
