@@ -19,6 +19,20 @@
                 <p class="ff-myteam__subtitle">
                     Posloži svoj početni sastav. Klikni igrača na terenu, pa klikni drugog za zamjenu.
                 </p>
+                <div class="ff-row-actions" style="margin-top:0.7rem;">
+                    <a asp-controller="FantasyTeam" asp-action="Edit" asp-route-id="@Model.TeamId"
+                       class="ff-row-action"
+                       title="Uredi tim"
+                       aria-label="Uredi tim">
+                        <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                    </a>
+                    <a asp-controller="FantasyTeam" asp-action="Delete" asp-route-id="@Model.TeamId"
+                       class="ff-row-action ff-row-action--danger"
+                       title="Obriši tim"
+                       aria-label="Obriši tim">
+                        <i class="bi bi-trash3-fill" aria-hidden="true"></i>
+                    </a>
+                </div>
             </div>
             <div class="ff-myteam__hero-meta">
                 <div class="ff-myteam__formation-card">

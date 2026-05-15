@@ -1,0 +1,69 @@
+@model FantasyFootball.Models.ViewModels.EditFantasyTeamViewModel
+@{
+    ViewData["Title"] = "Uredi tim";
+}
+
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="FantasyTeam" asp-action="MyTeam">Moj tim</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Uredi</li>
+</ul>
+
+<section class="ff-form-shell" aria-labelledby="editTeamTitle">
+    <div class="ff-form-card">
+        <header class="ff-form-card__header">
+            <h1 class="ff-form-card__title" id="editTeamTitle">
+                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                <span>Uredi tim</span>
+            </h1>
+            <p class="ff-form-card__subtitle">
+                Promijeni naziv tima ili ime vlasnika.
+            </p>
+        </header>
+
+        <form asp-controller="FantasyTeam" asp-action="Edit" method="post" class="ff-form" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="ff-form-alert" role="alert"></div>
+
+            <div class="ff-form-field">
+                <label asp-for="Name" class="ff-form-label"></label>
+                <input asp-for="Name"
+                       class="ff-form-input"
+                       autocomplete="off"
+                       maxlength="60"
+                       placeholder="npr. Galaktikosi" />
+                <span asp-validation-for="Name" class="ff-form-validation"></span>
+                <p class="ff-form-hint">Između 2 i 60 znakova.</p>
+            </div>
+
+            <div class="ff-form-field">
+                <label asp-for="OwnerName" class="ff-form-label"></label>
+                <input asp-for="OwnerName"
+                       class="ff-form-input"
+                       autocomplete="off"
+                       maxlength="100"
+                       placeholder="Ime i prezime vlasnika" />
+                <span asp-validation-for="OwnerName" class="ff-form-validation"></span>
+                <p class="ff-form-hint">Između 2 i 100 znakova.</p>
+            </div>
+
+            <div class="ff-form-actions">
+                <button type="submit" class="ff-form-submit">
+                    <i class="bi bi-save-fill" aria-hidden="true"></i>
+                    <span>Spremi promjene</span>
+                </button>
+                <a asp-controller="FantasyTeam" asp-action="MyTeam" class="ff-form-cancel">
+                    Odustani
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

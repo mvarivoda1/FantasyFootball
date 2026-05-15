@@ -1,0 +1,84 @@
+@model FantasyFootball.Models.ViewModels.GameweekFormViewModel
+@{
+    ViewData["Title"] = $"Uredi kolo {Model.WeekNumber}";
+}
+
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="Gameweek" asp-action="Index">Gameweeks</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Uredi kolo @Model.WeekNumber</li>
+</ul>
+
+<section class="ff-form-shell" aria-labelledby="editGwTitle">
+    <div class="ff-form-card" style="max-width: 640px;">
+        <header class="ff-form-card__header">
+            <h1 class="ff-form-card__title" id="editGwTitle">
+                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                <span>Uredi kolo @Model.WeekNumber</span>
+            </h1>
+            <p class="ff-form-card__subtitle">
+                Promijeni broj kola ili datume.
+            </p>
+        </header>
+
+        <form asp-controller="Gameweek" asp-action="Edit" asp-route-id="@Model.Id" method="post" class="ff-form" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="ff-form-alert" role="alert"></div>
+
+            <div class="ff-form-field">
+                <label asp-for="WeekNumber" class="ff-form-label"></label>
+                <input asp-for="WeekNumber" type="number" min="1" max="60" class="ff-form-input" inputmode="numeric" />
+                <span asp-validation-for="WeekNumber" class="ff-form-validation"></span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="ff-form-field">
+                        <label asp-for="StartDate" class="ff-form-label"></label>
+                        @{
+                            var startDp = new FantasyFootball.Models.ViewModels.DatePickerInputModel
+                            {
+                                Name = nameof(Model.StartDate),
+                                Id = "StartDate",
+                                Value = Model.StartDate,
+                                IncludeTime = true,
+                                Required = true
+                            };
+                        }
+                        <partial name="_DatePicker" model="startDp" />
+                        <span asp-validation-for="StartDate" class="ff-form-validation"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="ff-form-field">
+                        <label asp-for="EndDate" class="ff-form-label"></label>
+                        @{
+                            var endDp = new FantasyFootball.Models.ViewModels.DatePickerInputModel
+                            {
+                                Name = nameof(Model.EndDate),
+                                Id = "EndDate",
+                                Value = Model.EndDate,
+                                IncludeTime = true,
+                                Required = true
+                            };
+                        }
+                        <partial name="_DatePicker" model="endDp" />
+                        <span asp-validation-for="EndDate" class="ff-form-validation"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ff-form-actions">
+                <button type="submit" class="ff-form-submit">
+                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                    <span>Spremi promjene</span>
+                </button>
+                <a asp-controller="Gameweek" asp-action="Details" asp-route-id="@Model.Id" class="ff-form-cancel">Odustani</a>
+            </div>
+        </form>
+    </div>
+</section>

@@ -7,24 +7,29 @@ namespace FantasyFootball.Models
     {
         [Key]
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string OwnerName { get; set; }
+
+        [Required(ErrorMessage = "Naziv tima je obavezan.")]
+        [StringLength(60, MinimumLength = 2, ErrorMessage = "Naziv tima mora imati između 2 i 60 znakova.")]
+        [Display(Name = "Naziv tima")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ime vlasnika je obavezno.")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "Ime vlasnika mora imati između 2 i 100 znakova.")]
+        [Display(Name = "Vlasnik")]
+        public string OwnerName { get; set; } = string.Empty;
+
         public DateTime CreatedAt { get; set; }
         public double SquadValue { get; set; }
         public int TotalPoints { get; set; }
 
-        // CSV ID-jeva igrača u početnom sastavu (11 starters); ostalih 4 su klupa
         public string? StartingLineupIds { get; set; }
 
-        // N-N: tim ima više igrača
         public virtual ICollection<Player> Players { get; set; }
 
-        // 1-N: tim pripada jednoj ligi
         [ForeignKey(nameof(League))]
         public int? LeagueId { get; set; }
         public virtual League? League { get; set; }
 
-        // 1-1: tim ima vlasnika (korisnika)
         public virtual User? Owner { get; set; }
 
         public FantasyTeam()

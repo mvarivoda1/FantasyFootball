@@ -1,0 +1,77 @@
+@model League
+@{
+    ViewData["Title"] = "Obriši ligu";
+    var teamCount = Model.Teams?.Count ?? 0;
+}
+
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="League" asp-action="Index">Lige</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item">
+        <a asp-controller="League" asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a>
+    </li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Brisanje</li>
+</ul>
+
+<section class="ff-form-shell" aria-labelledby="deleteLeagueTitle">
+    <div class="ff-form-card">
+        <header class="ff-form-card__header">
+            <h1 class="ff-form-card__title" id="deleteLeagueTitle">
+                <i class="bi bi-trash3-fill" aria-hidden="true" style="color:#e90052;"></i>
+                <span>Obriši ligu</span>
+            </h1>
+            <p class="ff-form-card__subtitle">
+                Provjeri detalje prije nego potvrdiš. Ova akcija se ne može poništiti.
+            </p>
+        </header>
+
+        <div class="ff-delete-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            <div>
+                <strong>Pažnja:</strong> Brisanjem lige uklanjaju se i sve poveznice s
+                ekipama u ligi (@teamCount @(teamCount == 1 ? "ekipa" : "ekipa")), kao i povezana
+                tablica i povijest transfera. Ekipe same po sebi neće biti obrisane.
+            </div>
+        </div>
+
+        <div class="ff-readonly-grid" role="group" aria-label="Detalji lige">
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Naziv</span>
+                <span class="ff-readonly-grid__value">@Model.Name</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Sezona</span>
+                <span class="ff-readonly-grid__value">@Model.Season</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Šifra</span>
+                <span class="ff-readonly-grid__value ff-readonly-grid__value--mono">@Model.JoinCode</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Ekipa</span>
+                <span class="ff-readonly-grid__value">@teamCount / @Model.MaxTeams</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Kreirano</span>
+                <span class="ff-readonly-grid__value">@Model.CreatedAt.ToString("dd.MM.yyyy")</span>
+            </div>
+        </div>
+
+        <form asp-controller="League" asp-action="Delete" asp-route-id="@Model.Id" method="post" class="ff-form">
+            @Html.AntiForgeryToken()
+
+            <div class="ff-form-actions">
+                <button type="submit" class="ff-form-submit ff-form-submit--danger">
+                    <i class="bi bi-trash3-fill" aria-hidden="true"></i>
+                    <span>Obriši ligu</span>
+                </button>
+                <a asp-controller="League" asp-action="Details" asp-route-id="@Model.Id" class="ff-form-cancel">
+                    Odustani
+                </a>
+            </div>
+        </form>
+    </div>
+</section>

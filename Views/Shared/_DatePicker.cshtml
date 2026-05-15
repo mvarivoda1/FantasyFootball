@@ -1,0 +1,70 @@
+@model FantasyFootball.Models.ViewModels.DatePickerInputModel
+@using System.Globalization
+@{
+    // Auto-detect locale za format ako nije zadano izvana.
+    var culture = CultureInfo.CurrentCulture;
+    bool isCroatian = culture.Name.StartsWith("hr", StringComparison.OrdinalIgnoreCase);
+    string localeCode = isCroatian ? "hr" : "en";
+    string displayFormat = isCroatian
+        ? (Model.IncludeTime ? "dd.MM.yyyy HH:mm" : "dd.MM.yyyy")
+        : (Model.IncludeTime ? "MM/dd/yyyy hh:mm tt" : "MM/dd/yyyy");
+
+    string rootId = string.IsNullOrEmpty(Model.Id)
+        ? $"ffdp_{Guid.NewGuid().ToString("N").Substring(0, 8)}"
+        : Model.Id;
+
+    // ISO vrijednost za hidden input (sigurno za MVC model binding).
+    string isoValue = "";
+    string displayValue = "";
+    if (Model.Value.HasValue)
+    {
+        var v = Model.Value.Value;
+        isoValue = Model.IncludeTime
+            ? v.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture)
+            : v.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        displayValue = v.ToString(displayFormat, culture);
+    }
+
+    string placeholder = string.IsNullOrEmpty(Model.Placeholder) ? displayFormat : Model.Placeholder;
+}
+
+<div class="ff-dp @Model.CssClass"
+     id="@rootId"
+     data-ff-datepicker
+     data-locale="@localeCode"
+     data-format="@displayFormat"
+     data-include-time="@(Model.IncludeTime ? "true" : "false")"
+     data-target-name="@Model.Name">
+
+    @if (!string.IsNullOrEmpty(Model.LabelText))
+    {
+        <label class="ff-form-label" for="@(rootId)_visible">@Model.LabelText</label>
+    }
+
+    <div class="ff-dp__field-wrap">
+        <i class="bi bi-calendar-event ff-dp__icon" aria-hidden="true"></i>
+        <input type="text"
+               class="ff-form-input ff-dp__input"
+               id="@(rootId)_visible"
+               value="@displayValue"
+               placeholder="@placeholder"
+               autocomplete="off"
+               role="combobox"
+               aria-haspopup="dialog"
+               aria-expanded="false"
+               aria-label="@(string.IsNullOrEmpty(Model.LabelText) ? "Odaberi datum" : Model.LabelText)" />
+        <button type="button"
+                class="ff-dp__toggle"
+                tabindex="-1"
+                aria-label="Otvori kalendar"
+                data-ff-dp-toggle>
+            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <input type="hidden"
+           name="@Model.Name"
+           id="@(rootId)_hidden"
+           value="@isoValue"
+           @(Model.Required ? "data-required=\"true\"" : "") />
+</div>

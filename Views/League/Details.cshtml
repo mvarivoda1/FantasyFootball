@@ -4,6 +4,8 @@
     var sortedTeams = Model.Teams.OrderByDescending(t => t.TotalPoints).ToList();
     var transferCount = Model.Transfers?.Count() ?? 0;
     var standingsCount = sortedTeams.Count;
+    // Kontroler postavlja ViewData["IsCreator"] = bool; ako nije postavljeno, sakrijemo akcije.
+    bool isCreator = (ViewData["IsCreator"] as bool?) ?? false;
 }
 
 <!-- Breadcrumb -->
@@ -44,6 +46,19 @@
     @if (!string.IsNullOrEmpty(Model.Description))
     {
         <p class="ff-page-header__description">@Model.Description</p>
+    }
+    @if (isCreator)
+    {
+        <div class="ff-action-bar__buttons" style="margin-top:0.85rem;">
+            <a asp-controller="League" asp-action="Edit" asp-route-id="@Model.Id" class="ff-action-btn ff-action-btn--primary">
+                <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                <span>Uredi ligu</span>
+            </a>
+            <a asp-controller="League" asp-action="Delete" asp-route-id="@Model.Id" class="ff-action-btn ff-action-btn--danger">
+                <i class="bi bi-trash3-fill" aria-hidden="true"></i>
+                <span>Obriši ligu</span>
+            </a>
+        </div>
     }
 </header>
 

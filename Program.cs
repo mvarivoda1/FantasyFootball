@@ -1,8 +1,10 @@
+using System.Globalization;
 using FantasyFootball.DAL;
 using FantasyFootball.Filters;
 using FantasyFootball.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -65,6 +67,20 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+// Lokalizacija — podržani jezici hr i en, default hr
+var supportedCultures = new[]
+{
+    new CultureInfo("hr-HR"),
+    new CultureInfo("en-US")
+};
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("hr-HR"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

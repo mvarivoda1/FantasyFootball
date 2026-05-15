@@ -8,6 +8,18 @@
 
 <h1 class="ff-page-title"><i class="bi bi-people"></i> Players</h1>
 
+<div class="ff-action-bar" role="region" aria-label="Akcije za igrače">
+    <span class="ff-action-bar__label">
+        Pregled svih registriranih igrača — pretraži, filtriraj i upravljaj njima.
+    </span>
+    <div class="ff-action-bar__buttons">
+        <a asp-controller="Player" asp-action="Create" class="ff-action-btn ff-action-btn--primary">
+            <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+            <span>Dodaj igrača</span>
+        </a>
+    </div>
+</div>
+
 @if (hasTeam)
 {
     <div class="ff-budget-badge" aria-label="Current transfer budget">
@@ -282,6 +294,20 @@ else
                         <a href="#" class="ff-locker-modal__details-link" id="lockerModalDetailsLink">
                             Full Details <i class="bi bi-arrow-right"></i>
                         </a>
+                        <span class="ff-row-actions" style="margin-left:auto;">
+                            <a href="#" id="lockerModalEditLink"
+                               class="ff-row-action"
+                               title="Uredi igrača"
+                               aria-label="Uredi igrača">
+                                <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                            </a>
+                            <a href="#" id="lockerModalDeleteLink"
+                               class="ff-row-action ff-row-action--danger"
+                               title="Obriši igrača"
+                               aria-label="Obriši igrača">
+                                <i class="bi bi-trash3-fill" aria-hidden="true"></i>
+                            </a>
+                        </span>
                     </div>
 
                     <!-- Transfer Action (Buy/Sell) — populated by JS -->
@@ -346,7 +372,68 @@ $(function () {
 
     $clubFilter.on('change', applyFilters);
     $positionFilter.on('change', applyFilters);
-    $searchFilter.on('input', applyFilters);
+
+    /* ---- AJAX live search: koristi /Player/Search za server-side filter, fallback na client-side ---- */
+    var serverSearchTimer = null;
+    var lastServerQuery = '';
+
+    function serverSideSearch(q) {
+        $.ajax({
+            url: '/Player/Search',
+            method: 'GET',
+            data: { q: q },
+            dataType: 'json',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .done(function (results) {
+            var idSet = {};
+            (Array.isArray(results) ? results : []).forEach(function (item) {
+                var id = (item && item.id != null) ? item.id : item;
+                idSet[id] = true;
+            });
+            var clubVal = $clubFilter.val().toLowerCase();
+            var positionVal = $positionFilter.val();
+            var visibleCount = 0;
+            $lockers.each(function () {
+                var $locker = $(this);
+                var pid = parseInt($locker.data('player-id'), 10);
+                var playerClub = ($locker.data('player-club') || '').toString().toLowerCase();
+                var playerPosition = ($locker.data('player-position') || '').toString();
+                var matchesClub = !clubVal || playerClub === clubVal;
+                var matchesPosition = !positionVal || playerPosition === positionVal;
+                var matchesSearch = idSet[pid];
+                if (matchesClub && matchesPosition && matchesSearch) {
+                    $locker.show(); visibleCount++;
+                } else {
+                    $locker.hide();
+                }
+            });
+            $filterCount.html('Showing <strong>' + visibleCount + '</strong> of <strong>' + totalCount + '</strong> players');
+            if (visibleCount === 0 && totalCount > 0) {
+                $emptyState.show(); $lockerRoom.hide();
+            } else {
+                $emptyState.hide(); $lockerRoom.show();
+            }
+            $searchClear.toggle(true);
+        })
+        .fail(function () {
+            // Fallback: client-side filter
+            applyFilters();
+        });
+    }
+
+    $searchFilter.on('input', function () {
+        var q = $searchFilter.val().trim();
+        if (!q) {
+            lastServerQuery = '';
+            applyFilters();
+            return;
+        }
+        if (q === lastServerQuery) return;
+        lastServerQuery = q;
+        clearTimeout(serverSearchTimer);
+        serverSearchTimer = setTimeout(function () { serverSideSearch(q); }, 250);
+    });
 
     $searchClear.on('click', function () {
         $searchFilter.val('');
@@ -443,6 +530,8 @@ $(function () {
         $('#lockerModalBadge').html('<span class="ff-badge ' + badgeCls + '">' + posAbbr + '</span>');
 
         $('#lockerModalDetailsLink').attr('href', '@Url.RouteUrl("PlayerDetails", new { id = 0 })'.replace('/0', '/' + d.playerId));
+        $('#lockerModalEditLink').attr('href', '/Player/Edit/' + d.playerId);
+        $('#lockerModalDeleteLink').attr('href', '/Player/Delete/' + d.playerId);
 
         var $teamsList = $('#lockerModalTeams');
         $teamsList.empty();

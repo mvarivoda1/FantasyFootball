@@ -1,0 +1,52 @@
+@model FantasyFootball.Models.ViewModels.AutocompleteInputModel
+@{
+    string rootId = string.IsNullOrEmpty(Model.Id)
+        ? $"ffac_{Guid.NewGuid().ToString("N").Substring(0, 8)}"
+        : Model.Id;
+}
+
+<div class="ff-ac @Model.CssClass"
+     id="@rootId"
+     data-ff-autocomplete
+     data-endpoint="@Model.Endpoint"
+     data-free-text="@(Model.FreeText ? "true" : "false")"
+     data-target-name="@Model.Name">
+
+    @if (!string.IsNullOrEmpty(Model.LabelText))
+    {
+        <label class="ff-form-label" for="@(rootId)_visible">@Model.LabelText</label>
+    }
+
+    <div class="ff-ac__field-wrap">
+        <i class="bi bi-search ff-ac__icon" aria-hidden="true"></i>
+        <input type="text"
+               class="ff-form-input ff-ac__input"
+               id="@(rootId)_visible"
+               value="@Model.InitialLabel"
+               placeholder="@Model.Placeholder"
+               autocomplete="off"
+               role="combobox"
+               aria-haspopup="listbox"
+               aria-expanded="false"
+               aria-autocomplete="list"
+               aria-label="@(string.IsNullOrEmpty(Model.LabelText) ? "Pretraga" : Model.LabelText)" />
+        <button type="button"
+                class="ff-ac__clear"
+                aria-label="Obriši odabir"
+                data-ff-ac-clear
+                style="@(string.IsNullOrEmpty(Model.InitialLabel) ? "display:none;" : "")">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <div class="ff-ac__popup" role="listbox" aria-label="Rezultati pretrage" hidden>
+        <div class="ff-ac__status" data-ff-ac-status>Počni tipkati za pretragu...</div>
+        <ul class="ff-ac__list" data-ff-ac-list></ul>
+    </div>
+
+    <input type="hidden"
+           name="@Model.Name"
+           id="@(rootId)_hidden"
+           value="@Model.InitialValue"
+           @(Model.Required ? "data-required=\"true\"" : "") />
+</div>

@@ -26,6 +26,7 @@ namespace FantasyFootball.Controllers
         public IActionResult Index()
         {
             var leagues = _leagueRepo.GetAll();
+            ViewData["CurrentUserId"] = GetCurrentUserId();
             return View(leagues);
         }
 
@@ -34,6 +35,9 @@ namespace FantasyFootball.Controllers
         {
             var league = _leagueRepo.GetById(id);
             if (league == null) return NotFound();
+            var userId = GetCurrentUserId();
+            ViewData["CurrentUserId"] = userId;
+            ViewData["IsCreator"] = league.CreatorUserId.HasValue && league.CreatorUserId == userId;
             return View(league);
         }
 
@@ -153,6 +157,146 @@ namespace FantasyFootball.Controllers
 
             TempData["JoinInfo"] = $"Uspješno si se pridružio ligi '{league.Name}'.";
             return RedirectToAction(nameof(Details), new { id = league.Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var league = await _ctx.Leagues.AsNoTracking().FirstOrDefaultAsync(l => l.Id == id);
+            if (league == null) return NotFound();
+
+            var userId = GetCurrentUserId();
+            if (league.CreatorUserId != userId) return Forbid();
+
+            var vm = new EditLeagueViewModel
+            {
+                Id = league.Id,
+                Name = league.Name,
+                MaxTeams = league.MaxTeams,
+                Description = league.Description,
+                Season = league.Season,
+                JoinCode = league.JoinCode,
+                TeamsCount = await _ctx.FantasyTeams.CountAsync(t => t.LeagueId == league.Id)
+            };
+            return View(vm);
+        }
+
+        [HttpPost, ActionName("Edit")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditPost(int id)
+        {
+            var league = await _ctx.Leagues.FirstOrDefaultAsync(l => l.Id == id);
+            if (league == null) return NotFound();
+
+            var userId = GetCurrentUserId();
+            if (league.CreatorUserId != userId) return Forbid();
+
+            var teamsCount = await _ctx.FantasyTeams.CountAsync(t => t.LeagueId == league.Id);
+
+            // Premapiraj samo dopuštena polja kroz ViewModel + TryUpdateModel pattern
+            var vm = new EditLeagueViewModel
+            {
+                Id = league.Id,
+                Season = league.Season,
+                JoinCode = league.JoinCode,
+                TeamsCount = teamsCount,
+                Name = league.Name,
+                MaxTeams = league.MaxTeams,
+                Description = league.Description
+            };
+
+            var ok = await TryUpdateModelAsync(vm, string.Empty,
+                v => v.Name, v => v.MaxTeams, v => v.Description);
+
+            if (!ok || !ModelState.IsValid)
+                return View(vm);
+
+            if (vm.MaxTeams < teamsCount)
+            {
+                ModelState.AddModelError(nameof(vm.MaxTeams),
+                    $"Liga već ima {teamsCount} timova — maksimum ne može biti manji od toga.");
+                return View(vm);
+            }
+
+            league.Name = vm.Name.Trim();
+            league.MaxTeams = vm.MaxTeams;
+            league.Description = vm.Description?.Trim() ?? string.Empty;
+
+            await _ctx.SaveChangesAsync();
+            TempData["LeagueInfo"] = $"Liga '{league.Name}' je uspješno ažurirana.";
+            return RedirectToAction(nameof(Details), new { id = league.Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var league = await _ctx.Leagues
+                .Include(l => l.Teams)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(l => l.Id == id);
+            if (league == null) return NotFound();
+
+            var userId = GetCurrentUserId();
+            if (league.CreatorUserId != userId) return Forbid();
+
+            return View(league);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var league = await _ctx.Leagues
+                .Include(l => l.Teams)
+                .Include(l => l.Transfers)
+                .FirstOrDefaultAsync(l => l.Id == id);
+            if (league == null) return NotFound();
+
+            var userId = GetCurrentUserId();
+            if (league.CreatorUserId != userId) return Forbid();
+
+            // Odveži timove i transfere od lige (set null) prije brisanja
+            foreach (var team in league.Teams)
+                team.LeagueId = null;
+            foreach (var transfer in league.Transfers)
+                transfer.LeagueId = null;
+
+            _ctx.Leagues.Remove(league);
+            await _ctx.SaveChangesAsync();
+
+            TempData["LeagueInfo"] = $"Liga '{league.Name}' je obrisana.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // AJAX pretraga liga po nazivu — za autocomplete i live search na Index-u
+        [HttpGet]
+        [Route("League/Search")]
+        public async Task<IActionResult> Search(string? q, int take = 10)
+        {
+            take = Math.Clamp(take, 1, 50);
+            var query = _ctx.Leagues.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var term = q.Trim();
+                query = query.Where(l => l.Name.Contains(term) || l.JoinCode.Contains(term));
+            }
+
+            var results = await query
+                .OrderBy(l => l.Name)
+                .Take(take)
+                .Select(l => new
+                {
+                    id = l.Id,
+                    name = l.Name,
+                    season = l.Season,
+                    joinCode = l.JoinCode,
+                    maxTeams = l.MaxTeams,
+                    teamsCount = _ctx.FantasyTeams.Count(t => t.LeagueId == l.Id)
+                })
+                .ToListAsync();
+
+            return Json(results);
         }
 
         private async Task<string> GenerateUniqueJoinCodeAsync()

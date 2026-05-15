@@ -5940,3 +5940,631 @@ body:has(.ff-build) {
         text-align: center;
     }
 }
+
+/* ============================================================
+   === Datepicker ===
+   Custom popup calendar (no native browser control).
+   ============================================================ */
+.ff-dp {
+    position: relative;
+    width: 100%;
+}
+
+.ff-dp__field-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.ff-dp__icon {
+    position: absolute;
+    left: 0.85rem;
+    color: var(--fpl-purple);
+    font-size: 1rem;
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+.ff-dp__input {
+    padding-left: 2.3rem !important;
+    padding-right: 2.4rem !important;
+    cursor: pointer;
+}
+
+.ff-dp__toggle {
+    position: absolute;
+    right: 0.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--fpl-purple);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--fpl-transition);
+}
+
+.ff-dp__toggle:hover {
+    background: rgba(55, 0, 60, 0.08);
+}
+
+.ff-dp--open .ff-dp__toggle {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.ff-dp__popup {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 1100;
+    width: 280px;
+    background: var(--fpl-white);
+    border-radius: calc(var(--fpl-radius) * 1.25);
+    border: 1px solid rgba(55, 0, 60, 0.1);
+    box-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.08),
+        0 18px 40px -10px rgba(55, 0, 60, 0.28);
+    padding: 0.9rem;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    overflow: hidden;
+}
+
+.ff-dp__popup::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--fpl-purple) 0%, var(--fpl-green) 100%);
+}
+
+.ff-dp__popup--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ff-dp__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+    padding-top: 0.2rem;
+}
+
+.ff-dp__title {
+    font-weight: 700;
+    color: var(--fpl-purple);
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+.ff-dp__nav-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(55, 0, 60, 0.05);
+    border: none;
+    color: var(--fpl-purple);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--fpl-transition);
+}
+
+.ff-dp__nav-btn:hover {
+    background: var(--fpl-purple);
+    color: var(--fpl-green);
+}
+
+.ff-dp__weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
+}
+
+.ff-dp__weekday {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--fpl-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 0;
+}
+
+.ff-dp__days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.ff-dp__day {
+    aspect-ratio: 1 / 1;
+    background: transparent;
+    border: none;
+    border-radius: var(--fpl-radius-sm);
+    color: var(--fpl-text);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ff-dp__day:hover,
+.ff-dp__day:focus-visible {
+    background: rgba(0, 255, 135, 0.18);
+    color: var(--fpl-purple);
+    outline: none;
+    transform: scale(1.05);
+}
+
+.ff-dp__day--other {
+    color: var(--fpl-text-muted);
+    opacity: 0.5;
+}
+
+.ff-dp__day--today {
+    border: 1.5px dashed var(--fpl-green-dark);
+}
+
+.ff-dp__day--selected,
+.ff-dp__day--selected:hover {
+    background: linear-gradient(135deg, var(--fpl-purple) 0%, var(--fpl-purple-light) 100%);
+    color: var(--fpl-green);
+}
+
+.ff-dp__time {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.7rem;
+    padding: 0.5rem 0.6rem;
+    background: rgba(55, 0, 60, 0.04);
+    border-radius: var(--fpl-radius-sm);
+}
+
+.ff-dp__time-label {
+    color: var(--fpl-purple);
+    font-size: 0.95rem;
+    margin-right: 0.2rem;
+}
+
+.ff-dp__time-input {
+    width: 56px;
+    padding: 0.3rem 0.4rem;
+    background: var(--fpl-white);
+    border: 1px solid rgba(55, 0, 60, 0.18);
+    border-radius: var(--fpl-radius-sm);
+    text-align: center;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--fpl-purple);
+    -moz-appearance: textfield;
+}
+.ff-dp__time-input::-webkit-inner-spin-button,
+.ff-dp__time-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.ff-dp__time-input:focus {
+    outline: none;
+    border-color: var(--fpl-purple);
+    box-shadow: 0 0 0 3px rgba(55, 0, 60, 0.1);
+}
+
+.ff-dp__time-sep {
+    font-weight: 800;
+    color: var(--fpl-purple);
+}
+
+.ff-dp__footer {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.7rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed rgba(55, 0, 60, 0.12);
+}
+
+.ff-dp__action {
+    flex: 1 1 auto;
+    background: rgba(55, 0, 60, 0.06);
+    border: none;
+    color: var(--fpl-purple);
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.45rem 0.6rem;
+    border-radius: var(--fpl-radius-sm);
+    cursor: pointer;
+    transition: var(--fpl-transition);
+}
+
+.ff-dp__action:hover {
+    background: var(--fpl-purple);
+    color: var(--fpl-green);
+}
+
+@media (max-width: 575.98px) {
+    .ff-dp__popup {
+        width: 100%;
+        left: 0;
+        right: 0;
+    }
+}
+
+/* ============================================================
+   === Autocomplete ===
+   AJAX dropdown s pretragom.
+   ============================================================ */
+.ff-ac {
+    position: relative;
+    width: 100%;
+}
+
+.ff-ac__field-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.ff-ac__icon {
+    position: absolute;
+    left: 0.85rem;
+    color: var(--fpl-purple);
+    font-size: 0.95rem;
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+.ff-ac__input {
+    padding-left: 2.3rem !important;
+    padding-right: 2.4rem !important;
+}
+
+.ff-ac__clear {
+    position: absolute;
+    right: 0.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--fpl-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--fpl-transition);
+    font-size: 0.85rem;
+}
+
+.ff-ac__clear:hover {
+    background: rgba(233, 0, 82, 0.08);
+    color: #e90052;
+}
+
+.ff-ac__popup {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 1100;
+    background: var(--fpl-white);
+    border-radius: calc(var(--fpl-radius) * 1.25);
+    border: 1px solid rgba(55, 0, 60, 0.1);
+    box-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.08),
+        0 18px 40px -10px rgba(55, 0, 60, 0.28);
+    max-height: 300px;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.ff-ac__popup::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--fpl-green) 0%, var(--fpl-purple) 100%);
+}
+
+.ff-ac__popup--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ff-ac__status {
+    padding: 0.7rem 0.9rem;
+    color: var(--fpl-text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+    border-bottom: 1px solid rgba(55, 0, 60, 0.06);
+}
+
+.ff-ac__list {
+    list-style: none;
+    margin: 0;
+    padding: 0.3rem 0;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.ff-ac__item {
+    padding: 0.55rem 0.9rem;
+    cursor: pointer;
+    font-size: 0.92rem;
+    color: var(--fpl-text);
+    transition: background 0.12s ease, color 0.12s ease;
+    border-left: 3px solid transparent;
+}
+
+.ff-ac__item:hover,
+.ff-ac__item--active {
+    background: linear-gradient(90deg, rgba(0, 255, 135, 0.12) 0%, rgba(55, 0, 60, 0.04) 100%);
+    border-left-color: var(--fpl-green);
+    color: var(--fpl-purple);
+}
+
+.ff-ac__mark {
+    background: rgba(0, 255, 135, 0.45);
+    color: var(--fpl-purple);
+    padding: 0 2px;
+    border-radius: 3px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   === Index AJAX Search Bar ===
+   Konzistentni search bar na Index stranicama.
+   ============================================================ */
+.ff-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0 0 1.25rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--fpl-white);
+    border: 1px solid rgba(55, 0, 60, 0.06);
+    border-radius: var(--fpl-radius);
+    box-shadow: var(--fpl-shadow-card);
+    position: relative;
+}
+
+.ff-search-bar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--fpl-green) 0%, var(--fpl-purple) 100%);
+    border-radius: var(--fpl-radius) 0 0 var(--fpl-radius);
+}
+
+.ff-search-bar__icon {
+    color: var(--fpl-purple);
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-left: 0.3rem;
+}
+
+.ff-search-bar__input {
+    flex: 1 1 auto;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0.5rem 0.2rem;
+    font-size: 0.95rem;
+    color: var(--fpl-text);
+    font-family: var(--fpl-font);
+    min-width: 0;
+}
+
+.ff-search-bar__input::placeholder {
+    color: var(--fpl-text-muted);
+}
+
+.ff-search-bar__clear {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--fpl-text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--fpl-transition);
+}
+
+.ff-search-bar__clear:hover {
+    background: rgba(233, 0, 82, 0.08);
+    color: #e90052;
+}
+
+.ff-search-bar__status {
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--fpl-text-muted);
+    padding-right: 0.4rem;
+}
+
+.ff-search-bar--loading .ff-search-bar__icon {
+    animation: ffSearchPulse 0.9s ease-in-out infinite;
+    color: var(--fpl-green-dark);
+}
+
+@keyframes ffSearchPulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.95); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Table empty state row (for AJAX "no results") */
+.ff-table__empty-row td {
+    padding: 1.5rem 1rem !important;
+    text-align: center;
+    color: var(--fpl-text-muted);
+    font-style: italic;
+    background: var(--fpl-bg) !important;
+}
+
+/* ============================================================
+   === Row Action Buttons (Edit / Delete in table rows) ===
+   ============================================================ */
+.ff-row-actions {
+    display: inline-flex;
+    gap: 0.35rem;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.ff-row-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--fpl-radius-sm);
+    background: rgba(55, 0, 60, 0.06);
+    color: var(--fpl-purple);
+    border: none;
+    text-decoration: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--fpl-transition);
+}
+
+.ff-row-action:hover {
+    background: var(--fpl-purple);
+    color: var(--fpl-green);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.ff-row-action--danger {
+    background: rgba(233, 0, 82, 0.08);
+    color: #b80042;
+}
+
+.ff-row-action--danger:hover {
+    background: #e90052;
+    color: var(--fpl-white);
+}
+
+/* ============================================================
+   === Action Button — Danger variant + Form variant ===
+   ============================================================ */
+.ff-action-btn--danger {
+    background: linear-gradient(135deg, #e90052 0%, #ff4757 100%);
+    color: var(--fpl-white);
+    box-shadow: 0 6px 18px -6px rgba(233, 0, 82, 0.45);
+}
+
+.ff-action-btn--danger:hover {
+    color: var(--fpl-white);
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px -6px rgba(233, 0, 82, 0.55);
+}
+
+/* Form submit — danger variant for delete confirmation */
+.ff-form-submit--danger {
+    background: linear-gradient(135deg, #e90052 0%, #ff4757 100%);
+    color: var(--fpl-white);
+    box-shadow: 0 6px 18px -6px rgba(233, 0, 82, 0.5);
+}
+
+.ff-form-submit--danger:hover {
+    color: var(--fpl-white);
+    box-shadow: 0 10px 22px -6px rgba(233, 0, 82, 0.6);
+}
+
+/* ============================================================
+   === Delete confirmation shell ===
+   ============================================================ */
+.ff-delete-warning {
+    margin: 0 0 1rem;
+    padding: 0.85rem 1rem;
+    background: linear-gradient(135deg, rgba(233, 0, 82, 0.08) 0%, rgba(255, 71, 87, 0.05) 100%);
+    border: 1px solid rgba(233, 0, 82, 0.18);
+    border-left: 4px solid #e90052;
+    border-radius: var(--fpl-radius-sm);
+    color: #8a0036;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+}
+
+.ff-delete-warning i {
+    color: #e90052;
+    font-size: 1.15rem;
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.ff-delete-warning strong {
+    color: #8a0036;
+}
+
+.ff-readonly-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.7rem 1rem;
+    margin: 0 0 1rem;
+    padding: 0.85rem 1rem;
+    background: var(--fpl-bg);
+    border: 1px solid rgba(55, 0, 60, 0.06);
+    border-radius: var(--fpl-radius);
+}
+
+.ff-readonly-grid__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.ff-readonly-grid__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--fpl-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ff-readonly-grid__value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--fpl-purple);
+    word-break: break-word;
+}
+
+.ff-readonly-grid__value--mono {
+    font-family: 'Consolas', 'Monaco', monospace;
+    letter-spacing: 0.1em;
+}

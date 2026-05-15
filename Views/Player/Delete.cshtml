@@ -1,0 +1,95 @@
+@model Player
+@{
+    ViewData["Title"] = $"Obriši {Model.FullName}";
+    int teamCount = Model.FantasyTeams?.Count ?? 0;
+    string posLabel = Model.Position switch
+    {
+        Position.Goalkeeper => "Vratar",
+        Position.Defender   => "Branič",
+        Position.Midfielder => "Vezni",
+        Position.Forward    => "Napadač",
+        _ => "Igrač"
+    };
+}
+
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="Player" asp-action="Index">Igrači</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Obriši: @Model.FullName</li>
+</ul>
+
+<section class="ff-form-shell" aria-labelledby="deletePlayerTitle">
+    <div class="ff-form-card">
+        <header class="ff-form-card__header">
+            <h1 class="ff-form-card__title" id="deletePlayerTitle">
+                <i class="bi bi-trash3-fill" aria-hidden="true" style="color:#e90052;"></i>
+                <span>Obriši igrača</span>
+            </h1>
+            <p class="ff-form-card__subtitle">
+                Provjeri detalje prije nego potvrdiš. Ova akcija se ne može poništiti.
+            </p>
+        </header>
+
+        <div class="ff-delete-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            <div>
+                @if (teamCount > 0)
+                {
+                    <strong>Pažnja:</strong> @:Igrač je trenutno u @teamCount @(teamCount == 1 ? "fantasy ekipi" : "fantasy ekipa").
+                    @:Brisanjem igrača bit će uklonjen i iz svih tih ekipa.
+                }
+                else
+                {
+                    <strong>Pažnja:</strong> @:Ovaj igrač trenutno nije ni u jednoj fantasy ekipi.
+                }
+            </div>
+        </div>
+
+        <div class="ff-readonly-grid" role="group" aria-label="Detalji igrača">
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Ime i prezime</span>
+                <span class="ff-readonly-grid__value">@Model.FullName</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Pozicija</span>
+                <span class="ff-readonly-grid__value">@posLabel</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Klub</span>
+                <span class="ff-readonly-grid__value">@Model.Club</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Nacionalnost</span>
+                <span class="ff-readonly-grid__value">@Model.Nationality</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Vrijednost</span>
+                <span class="ff-readonly-grid__value">€@Model.MarketValue.ToString("N1")M</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Ukupni bodovi</span>
+                <span class="ff-readonly-grid__value">@Model.TotalPoints</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">U ekipama</span>
+                <span class="ff-readonly-grid__value">@teamCount</span>
+            </div>
+        </div>
+
+        <form asp-controller="Player" asp-action="Delete" asp-route-id="@Model.Id" method="post" class="ff-form">
+            @Html.AntiForgeryToken()
+
+            <div class="ff-form-actions">
+                <button type="submit" class="ff-form-submit ff-form-submit--danger">
+                    <i class="bi bi-trash3-fill" aria-hidden="true"></i>
+                    <span>Obriši igrača</span>
+                </button>
+                <a asp-controller="Player" asp-action="Index" class="ff-form-cancel">
+                    Odustani
+                </a>
+            </div>
+        </form>
+    </div>
+</section>

@@ -1,0 +1,75 @@
+@model Gameweek
+@{
+    ViewData["Title"] = $"Obriši kolo {Model.WeekNumber}";
+    int perfCount = Model.Performances?.Count ?? 0;
+    bool hasPerformances = perfCount > 0;
+}
+
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="Gameweek" asp-action="Index">Gameweeks</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Obriši</li>
+</ul>
+
+<section class="ff-form-shell" aria-labelledby="deleteGwTitle">
+    <div class="ff-form-card ff-delete-warning" style="max-width: 640px;">
+        <header class="ff-form-card__header">
+            <h1 class="ff-form-card__title" id="deleteGwTitle">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                <span>Brisanje kola @Model.WeekNumber</span>
+            </h1>
+            <p class="ff-form-card__subtitle">
+                Jesi li siguran/sigurna da želiš obrisati ovo kolo? Akciju nije moguće poništiti.
+            </p>
+        </header>
+
+        @if (TempData["GameweekError"] != null)
+        {
+            <div class="ff-form-alert" role="alert">
+                <i class="bi bi-x-circle-fill" aria-hidden="true"></i>
+                <span>@TempData["GameweekError"]</span>
+            </div>
+        }
+
+        <div class="ff-readonly-grid">
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Broj kola</span>
+                <span class="ff-readonly-grid__value">@Model.WeekNumber</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Početak</span>
+                <span class="ff-readonly-grid__value">@Model.StartDate.ToString("dd.MM.yyyy HH:mm")</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Završetak</span>
+                <span class="ff-readonly-grid__value">@Model.EndDate.ToString("dd.MM.yyyy HH:mm")</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Performansi</span>
+                <span class="ff-readonly-grid__value">@perfCount</span>
+            </div>
+        </div>
+
+        @if (hasPerformances)
+        {
+            <div class="ff-form-alert" role="alert" style="margin-top: 1rem;">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                <span>Ovo kolo ima @perfCount povezanih performansi i ne može se obrisati.</span>
+            </div>
+        }
+
+        <form asp-controller="Gameweek" asp-action="Delete" asp-route-id="@Model.Id" method="post" class="ff-form" style="margin-top: 1.5rem;">
+            @Html.AntiForgeryToken()
+
+            <div class="ff-form-actions">
+                <button type="submit" class="ff-form-submit ff-form-submit--danger" @(hasPerformances ? "disabled" : "")>
+                    <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                    <span>Obriši kolo</span>
+                </button>
+                <a asp-controller="Gameweek" asp-action="Details" asp-route-id="@Model.Id" class="ff-form-cancel">Odustani</a>
+            </div>
+        </form>
+    </div>
+</section>

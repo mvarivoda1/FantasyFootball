@@ -237,6 +237,103 @@ namespace FantasyFootball.Controllers
             return RedirectToAction(nameof(MyTeam));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var team = await _ctx.FantasyTeams.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+            if (team == null) return NotFound();
+
+            // Samo vlasnik smije uređivati tim
+            var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId.Value);
+            if (user?.FantasyTeamId != team.Id) return Forbid();
+
+            var vm = new EditFantasyTeamViewModel
+            {
+                Id = team.Id,
+                Name = team.Name,
+                OwnerName = team.OwnerName
+            };
+            return View(vm);
+        }
+
+        [HttpPost, ActionName("Edit")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditPost(int id)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var team = await _ctx.FantasyTeams.FirstOrDefaultAsync(t => t.Id == id);
+            if (team == null) return NotFound();
+
+            var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId.Value);
+            if (user?.FantasyTeamId != team.Id) return Forbid();
+
+            var vm = new EditFantasyTeamViewModel { Id = team.Id };
+            var ok = await TryUpdateModelAsync(vm, string.Empty,
+                v => v.Name, v => v.OwnerName);
+
+            if (!ok || !ModelState.IsValid)
+                return View(vm);
+
+            team.Name = vm.Name.Trim();
+            team.OwnerName = vm.OwnerName.Trim();
+
+            await _ctx.SaveChangesAsync();
+            TempData["TeamInfo"] = $"Tim '{team.Name}' je uspješno ažuriran.";
+            return RedirectToAction(nameof(MyTeam));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var team = await _ctx.FantasyTeams
+                .Include(t => t.Players)
+                .Include(t => t.League)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == id);
+            if (team == null) return NotFound();
+
+            var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId.Value);
+            if (user?.FantasyTeamId != team.Id) return Forbid();
+
+            return View(team);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var team = await _ctx.FantasyTeams
+                .Include(t => t.Players)
+                .FirstOrDefaultAsync(t => t.Id == id);
+            if (team == null) return NotFound();
+
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            if (user?.FantasyTeamId != team.Id) return Forbid();
+
+            team.Players.Clear();
+            user.FantasyTeamId = null;
+            user.Budget = InitialBudget;
+
+            _ctx.FantasyTeams.Remove(team);
+            await _ctx.SaveChangesAsync();
+
+            await ResignInWithTeamClaimAsync(user);
+
+            TempData["TeamInfo"] = $"Tim '{team.Name}' je obrisan. Možeš kreirati novi tim.";
+            return RedirectToAction(nameof(Build));
+        }
+
         private static List<int> ParseLineupIds(string? csv)
         {
             if (string.IsNullOrWhiteSpace(csv)) return new List<int>();

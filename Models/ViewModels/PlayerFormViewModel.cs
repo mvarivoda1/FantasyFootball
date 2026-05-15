@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace FantasyFootball.Models
+namespace FantasyFootball.Models.ViewModels
 {
-    public class Player
+    public class PlayerFormViewModel
     {
-        [Key]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Ime je obavezno.")]
@@ -34,35 +33,26 @@ namespace FantasyFootball.Models
         [Required(ErrorMessage = "Datum rođenja je obavezan.")]
         [DataType(DataType.Date)]
         [Display(Name = "Datum rođenja")]
-        public DateTime DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; } = new DateTime(2000, 1, 1);
 
         [Range(0.1, 200.0, ErrorMessage = "Tržišna vrijednost mora biti između 0.1 i 200 milijuna.")]
-        [Display(Name = "Tržišna vrijednost (M)")]
-        public double MarketValue { get; set; }
+        [Display(Name = "Tržišna vrijednost (M €)")]
+        public double MarketValue { get; set; } = 1.0;
 
-        [Range(0, 1000, ErrorMessage = "Broj golova mora biti između 0 i 1000.")]
+        [Range(0, 1000, ErrorMessage = "Vrijednost mora biti između 0 i 1000.")]
         [Display(Name = "Golovi")]
         public int Goals { get; set; }
 
-        [Range(0, 1000, ErrorMessage = "Broj asistencija mora biti između 0 i 1000.")]
+        [Range(0, 1000, ErrorMessage = "Vrijednost mora biti između 0 i 1000.")]
         [Display(Name = "Asistencije")]
         public int Assists { get; set; }
 
-        [Range(0, 1000, ErrorMessage = "Broj clean sheetova mora biti između 0 i 1000.")]
+        [Range(0, 1000, ErrorMessage = "Vrijednost mora biti između 0 i 1000.")]
         [Display(Name = "Clean sheets")]
         public int CleanSheets { get; set; }
 
-        [Range(0, 10000, ErrorMessage = "Ukupni bodovi moraju biti između 0 i 10000.")]
+        [Range(0, 10000, ErrorMessage = "Vrijednost mora biti između 0 i 10000.")]
         [Display(Name = "Ukupni bodovi")]
         public int TotalPoints { get; set; }
-
-        public virtual ICollection<FantasyTeam> FantasyTeams { get; set; }
-
-        public Player()
-        {
-            FantasyTeams = new List<FantasyTeam>();
-        }
-
-        public string FullName => $"{FirstName} {LastName}";
     }
 }

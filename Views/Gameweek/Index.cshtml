@@ -5,24 +5,56 @@
 
 <h1 class="ff-page-title"><i class="bi bi-calendar-week-fill"></i> Gameweeks</h1>
 
+@if (TempData["GameweekInfo"] != null)
+{
+    <div class="ff-info-banner" role="status">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@TempData["GameweekInfo"]</span>
+    </div>
+}
+
+<div class="ff-action-bar" role="region" aria-label="Akcije za kola">
+    <span class="ff-action-bar__label">Upravljaj kolima sezone — kreiraj nova, uredi postojeća.</span>
+    <div class="ff-action-bar__buttons">
+        <a asp-controller="Gameweek" asp-action="Create" class="ff-action-btn ff-action-btn--primary">
+            <i class="bi bi-plus-circle-fill" aria-hidden="true"></i>
+            <span>Kreiraj kolo</span>
+        </a>
+    </div>
+</div>
+
+<div class="ff-search-bar" role="search">
+    <i class="bi bi-search ff-search-bar__icon" aria-hidden="true"></i>
+    <input type="text"
+           class="ff-search-bar__input"
+           id="ffGwSearch"
+           placeholder="Pretraži po broju kola..."
+           inputmode="numeric"
+           autocomplete="off"
+           aria-label="Pretraži kola" />
+    <button type="button" class="ff-search-bar__clear" id="ffGwSearchClear" aria-label="Očisti pretragu">
+        <i class="bi bi-x-lg"></i>
+    </button>
+</div>
+
 @if (Model == null || !Model.Any())
 {
-    <div class="ff-empty">
+    <div class="ff-empty" id="ffGwEmpty">
         <div class="ff-empty__icon"><i class="bi bi-calendar-week"></i></div>
         <div class="ff-empty__text">No gameweeks found.</div>
     </div>
 }
 else
 {
-    <div class="row g-4">
+    <div class="row g-4" id="ffGwGrid">
         @foreach (var gw in Model)
         {
             int totalGoals = gw.Performances?.Sum(p => p.Goals) ?? 0;
             int perfCount = gw.Performances?.Count ?? 0;
 
-            <div class="col-lg-4 col-md-6 col-12">
-                <a asp-controller="Gameweek" asp-action="Details" asp-route-id="@gw.Id" style="text-decoration:none; color:inherit;">
-                    <div class="ff-card">
+            <div class="col-lg-4 col-md-6 col-12 ff-gw-card-wrap" data-week="@gw.WeekNumber">
+                <div class="ff-card ff-gw-card">
+                    <a asp-controller="Gameweek" asp-action="Details" asp-route-id="@gw.Id" style="text-decoration:none; color:inherit;">
                         <div class="ff-card__title">
                             <i class="bi bi-calendar-event ff-text-accent"></i> Gameweek @gw.WeekNumber
                         </div>
@@ -39,17 +71,80 @@ else
                                 <span class="ff-card__value">@perfCount</span> Performances
                             </span>
                         </div>
-                        <div class="ff-card__footer">
-                            <span class="ff-text-muted ff-text-sm">
-                                @gw.StartDate.ToString("ddd") &ndash; @gw.EndDate.ToString("ddd")
-                            </span>
-                            <span class="ff-btn ff-btn--outline ff-btn--sm">
-                                View <i class="bi bi-arrow-right"></i>
-                            </span>
-                        </div>
+                    </a>
+                    <div class="ff-card__footer" style="display:flex; gap:.5rem; align-items:center; justify-content:space-between;">
+                        <span class="ff-text-muted ff-text-sm">
+                            @gw.StartDate.ToString("ddd") &ndash; @gw.EndDate.ToString("ddd")
+                        </span>
+                        <span style="display:inline-flex; gap:.35rem;">
+                            <a asp-controller="Gameweek" asp-action="Edit" asp-route-id="@gw.Id"
+                               class="ff-row-action ff-row-action--edit" title="Uredi" aria-label="Uredi kolo @gw.WeekNumber">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <a asp-controller="Gameweek" asp-action="Delete" asp-route-id="@gw.Id"
+                               class="ff-row-action ff-row-action--delete" title="Obriši" aria-label="Obriši kolo @gw.WeekNumber">
+                                <i class="bi bi-trash-fill"></i>
+                            </a>
+                        </span>
                     </div>
-                </a>
+                </div>
             </div>
         }
     </div>
+
+    <div class="ff-empty" id="ffGwEmptyResult" style="display:none;">
+        <div class="ff-empty__icon"><i class="bi bi-search"></i></div>
+        <div class="ff-empty__text">Nema rezultata pretrage.</div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            'use strict';
+            var input = document.getElementById('ffGwSearch');
+            var clearBtn = document.getElementById('ffGwSearchClear');
+            var grid = document.getElementById('ffGwGrid');
+            var emptyResult = document.getElementById('ffGwEmptyResult');
+            if (!input || !grid) return;
+
+            var debounceTimer = null;
+            var currentAbort = null;
+
+            function clientFilter(term) {
+                var t = (term || '').trim();
+                var wraps = grid.querySelectorAll('.ff-gw-card-wrap');
+                var visible = 0;
+                wraps.forEach(function (w) {
+                    var week = w.getAttribute('data-week') || '';
+                    var match = t === '' || week.indexOf(t) !== -1;
+                    w.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                if (emptyResult) emptyResult.style.display = visible === 0 ? '' : 'none';
+            }
+
+            function doSearch(term) {
+                clientFilter(term);
+                // Pokušaj i server-side AJAX za demonstraciju (rezultati su ionako client-filterirani)
+                if (currentAbort) currentAbort.abort();
+                currentAbort = new AbortController();
+                fetch('/Gameweek/Search?q=' + encodeURIComponent(term || ''), { signal: currentAbort.signal })
+                    .then(function (r) { return r.ok ? r.json() : []; })
+                    .catch(function () { return []; });
+            }
+
+            input.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                var v = input.value;
+                debounceTimer = setTimeout(function () { doSearch(v); }, 250);
+            });
+
+            clearBtn && clearBtn.addEventListener('click', function () {
+                input.value = '';
+                clientFilter('');
+                input.focus();
+            });
+        })();
+    </script>
 }

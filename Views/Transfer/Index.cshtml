@@ -93,6 +93,25 @@
 }
 else
 {
+    <!-- AJAX search bar -->
+    <div class="ff-search-bar" id="ffTransferSearchBar" role="search">
+        <i class="bi bi-search ff-search-bar__icon" aria-hidden="true"></i>
+        <input type="text"
+               id="ffTransferSearchInput"
+               class="ff-search-bar__input"
+               placeholder="Filtriraj po imenu igrača..."
+               autocomplete="off"
+               aria-label="Pretraga transfera" />
+        <span class="ff-search-bar__status" id="ffTransferSearchStatus"></span>
+        <button type="button"
+                id="ffTransferSearchClear"
+                class="ff-search-bar__clear"
+                aria-label="Obriši pretragu"
+                style="display:none;">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+    </div>
+
     // ---------- Local render helper: builds a .ff-player-link anchor ----------
     Microsoft.AspNetCore.Html.IHtmlContent PlayerLink(Player p)
     {
@@ -452,5 +471,64 @@ else
                 }
             });
         });
+    </script>
+
+    <script>
+        /* =====================================================
+           Transfer Index — live search across widgets
+           Filtrira redove i list-iteme po imenu igrača.
+           ===================================================== */
+        (function () {
+            'use strict';
+            var input = document.getElementById('ffTransferSearchInput');
+            var clearBtn = document.getElementById('ffTransferSearchClear');
+            var statusEl = document.getElementById('ffTransferSearchStatus');
+            var bar = document.getElementById('ffTransferSearchBar');
+            if (!input) return;
+
+            // Pronađi sve "redove" koji imaju player-link unutar (radi za <tr> i <li>).
+            function collectTargets() {
+                var links = document.querySelectorAll('.ff-player-link[data-player-name]');
+                var targets = [];
+                Array.prototype.forEach.call(links, function (l) {
+                    var row = l.closest('tr, li');
+                    if (row) {
+                        targets.push({
+                            row: row,
+                            name: (l.getAttribute('data-player-name') || '').toLowerCase()
+                        });
+                    }
+                });
+                return targets;
+            }
+            var targets = collectTargets();
+
+            var debounceTimer = null;
+
+            function filter(q) {
+                var qLow = q.toLowerCase();
+                var visible = 0;
+                targets.forEach(function (t) {
+                    var match = !qLow || t.name.indexOf(qLow) !== -1;
+                    t.row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                statusEl.textContent = q ? (visible + ' rez.') : '';
+            }
+
+            input.addEventListener('input', function () {
+                var q = input.value.trim();
+                clearBtn.style.display = q ? '' : 'none';
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function () { filter(q); }, 200);
+            });
+
+            clearBtn.addEventListener('click', function () {
+                input.value = '';
+                clearBtn.style.display = 'none';
+                filter('');
+                input.focus();
+            });
+        })();
     </script>
 }

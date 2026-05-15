@@ -1,5 +1,9 @@
+@{
+    var currentCulture = System.Globalization.CultureInfo.CurrentCulture.Name;
+    var htmlLang = currentCulture.StartsWith("hr", System.StringComparison.OrdinalIgnoreCase) ? "hr" : "en";
+}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@htmlLang">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -107,6 +111,9 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/ff-datepicker.js" asp-append-version="true"></script>
+    <script src="~/js/ff-autocomplete.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

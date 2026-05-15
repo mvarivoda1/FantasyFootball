@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace FantasyFootball.Models
+namespace FantasyFootball.Models.ViewModels
 {
-    public class Gameweek : IValidatableObject
+    public class GameweekFormViewModel : IValidatableObject
     {
-        [Key]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Broj kola je obavezan.")]
@@ -15,19 +14,12 @@ namespace FantasyFootball.Models
         [Required(ErrorMessage = "Datum početka je obavezan.")]
         [DataType(DataType.DateTime)]
         [Display(Name = "Datum početka")]
-        public DateTime StartDate { get; set; }
+        public DateTime StartDate { get; set; } = DateTime.Today;
 
         [Required(ErrorMessage = "Datum završetka je obavezan.")]
         [DataType(DataType.DateTime)]
         [Display(Name = "Datum završetka")]
-        public DateTime EndDate { get; set; }
-
-        public virtual ICollection<MatchPerformance> Performances { get; set; }
-
-        public Gameweek()
-        {
-            Performances = new List<MatchPerformance>();
-        }
+        public DateTime EndDate { get; set; } = DateTime.Today.AddDays(7);
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

@@ -1,0 +1,74 @@
+@model FantasyTeam
+@{
+    ViewData["Title"] = $"Obriši tim {Model.Name}";
+    int playerCount = Model.Players?.Count ?? 0;
+    double squadValue = Model.Players?.Sum(p => p.MarketValue) ?? 0;
+}
+
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="FantasyTeam" asp-action="MyTeam">Moj tim</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Obriši</li>
+</ul>
+
+<section class="ff-form-shell" aria-labelledby="deleteTeamTitle">
+    <div class="ff-form-card">
+        <header class="ff-form-card__header">
+            <h1 class="ff-form-card__title" id="deleteTeamTitle">
+                <i class="bi bi-trash3-fill" aria-hidden="true" style="color:#e90052;"></i>
+                <span>Obriši tim</span>
+            </h1>
+            <p class="ff-form-card__subtitle">
+                Ovaj korak je nepovratan — pažljivo provjeri detalje.
+            </p>
+        </header>
+
+        <div class="ff-delete-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            <div>
+                <strong>Pažnja:</strong> Brisanjem tima trajno gubiš cijeli sastav,
+                bodove i povijest transfera. Igrači sami po sebi neće biti obrisani,
+                ali više neće biti dio ovog tima. Ova akcija se ne može poništiti.
+            </div>
+        </div>
+
+        <div class="ff-readonly-grid" role="group" aria-label="Detalji tima">
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Naziv tima</span>
+                <span class="ff-readonly-grid__value">@Model.Name</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Vlasnik</span>
+                <span class="ff-readonly-grid__value">@Model.OwnerName</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Igrača</span>
+                <span class="ff-readonly-grid__value">@playerCount</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Vrijednost</span>
+                <span class="ff-readonly-grid__value">€@squadValue.ToString("N1")M</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Ukupni bodovi</span>
+                <span class="ff-readonly-grid__value">@Model.TotalPoints</span>
+            </div>
+        </div>
+
+        <form asp-controller="FantasyTeam" asp-action="Delete" asp-route-id="@Model.Id" method="post" class="ff-form">
+            @Html.AntiForgeryToken()
+
+            <div class="ff-form-actions">
+                <button type="submit" class="ff-form-submit ff-form-submit--danger">
+                    <i class="bi bi-trash3-fill" aria-hidden="true"></i>
+                    <span>Obriši tim</span>
+                </button>
+                <a asp-controller="FantasyTeam" asp-action="MyTeam" class="ff-form-cancel">
+                    Odustani
+                </a>
+            </div>
+        </form>
+    </div>
+</section>

@@ -1,0 +1,163 @@
+@model FantasyFootball.Models.ViewModels.PlayerFormViewModel
+@{
+    ViewData["Title"] = "Uredi igrača";
+}
+
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="Player" asp-action="Index">Igrači</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">@Model.FirstName @Model.LastName</li>
+</ul>
+
+<section class="ff-form-shell" aria-labelledby="editPlayerTitle">
+    <div class="ff-form-card" style="max-width: 720px;">
+        <header class="ff-form-card__header">
+            <h1 class="ff-form-card__title" id="editPlayerTitle">
+                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                <span>Uredi igrača</span>
+            </h1>
+            <p class="ff-form-card__subtitle">
+                Promijeni podatke ili statistiku igrača @Model.FirstName @Model.LastName.
+            </p>
+        </header>
+
+        <form asp-controller="Player" asp-action="Edit" method="post" class="ff-form" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="ff-form-alert" role="alert"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="ff-form-field">
+                        <label asp-for="FirstName" class="ff-form-label"></label>
+                        <input asp-for="FirstName" class="ff-form-input" autocomplete="off" maxlength="50" />
+                        <span asp-validation-for="FirstName" class="ff-form-validation"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="ff-form-field">
+                        <label asp-for="LastName" class="ff-form-label"></label>
+                        <input asp-for="LastName" class="ff-form-input" autocomplete="off" maxlength="50" />
+                        <span asp-validation-for="LastName" class="ff-form-validation"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="ff-form-field">
+                        <label asp-for="Position" class="ff-form-label"></label>
+                        <select asp-for="Position" class="ff-form-input"
+                                asp-items="Html.GetEnumSelectList<FantasyFootball.Models.Position>()">
+                        </select>
+                        <span asp-validation-for="Position" class="ff-form-validation"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="ff-form-field">
+                        <label asp-for="Club" class="ff-form-label"></label>
+                        @{
+                            var clubAc = new FantasyFootball.Models.ViewModels.AutocompleteInputModel
+                            {
+                                Name = nameof(Model.Club),
+                                Id = "Club",
+                                InitialValue = Model.Club,
+                                InitialLabel = Model.Club,
+                                Endpoint = "/Player/Clubs",
+                                Placeholder = "Pretraži ili upiši novi klub...",
+                                Required = true,
+                                FreeText = true
+                            };
+                        }
+                        <partial name="_Autocomplete" model="clubAc" />
+                        <span asp-validation-for="Club" class="ff-form-validation"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="ff-form-field">
+                        <label asp-for="Nationality" class="ff-form-label"></label>
+                        <input asp-for="Nationality" class="ff-form-input" autocomplete="off" maxlength="60" />
+                        <span asp-validation-for="Nationality" class="ff-form-validation"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="ff-form-field">
+                        <label asp-for="DateOfBirth" class="ff-form-label"></label>
+                        @{
+                            var dobDp = new FantasyFootball.Models.ViewModels.DatePickerInputModel
+                            {
+                                Name = nameof(Model.DateOfBirth),
+                                Id = "DateOfBirth",
+                                Value = Model.DateOfBirth,
+                                IncludeTime = false,
+                                Required = true
+                            };
+                        }
+                        <partial name="_DatePicker" model="dobDp" />
+                        <span asp-validation-for="DateOfBirth" class="ff-form-validation"></span>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="ff-form-field">
+                        <label asp-for="MarketValue" class="ff-form-label"></label>
+                        <input asp-for="MarketValue" type="number" min="0.1" max="200" step="0.1"
+                               class="ff-form-input" inputmode="decimal" />
+                        <span asp-validation-for="MarketValue" class="ff-form-validation"></span>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="ff-form-field">
+                        <label asp-for="Goals" class="ff-form-label"></label>
+                        <input asp-for="Goals" type="number" min="0" max="1000" step="1"
+                               class="ff-form-input" inputmode="numeric" />
+                        <span asp-validation-for="Goals" class="ff-form-validation"></span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="ff-form-field">
+                        <label asp-for="Assists" class="ff-form-label"></label>
+                        <input asp-for="Assists" type="number" min="0" max="1000" step="1"
+                               class="ff-form-input" inputmode="numeric" />
+                        <span asp-validation-for="Assists" class="ff-form-validation"></span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="ff-form-field">
+                        <label asp-for="CleanSheets" class="ff-form-label"></label>
+                        <input asp-for="CleanSheets" type="number" min="0" max="1000" step="1"
+                               class="ff-form-input" inputmode="numeric" />
+                        <span asp-validation-for="CleanSheets" class="ff-form-validation"></span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="ff-form-field">
+                        <label asp-for="TotalPoints" class="ff-form-label"></label>
+                        <input asp-for="TotalPoints" type="number" min="0" max="10000" step="1"
+                               class="ff-form-input" inputmode="numeric" />
+                        <span asp-validation-for="TotalPoints" class="ff-form-validation"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ff-form-actions">
+                <button type="submit" class="ff-form-submit">
+                    <i class="bi bi-save-fill" aria-hidden="true"></i>
+                    <span>Spremi promjene</span>
+                </button>
+                <a asp-controller="Player" asp-action="Index" class="ff-form-cancel">
+                    Odustani
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

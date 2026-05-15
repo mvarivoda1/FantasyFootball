@@ -1,0 +1,104 @@
+@model FantasyFootball.Models.ViewModels.EditLeagueViewModel
+@{
+    ViewData["Title"] = "Uredi ligu";
+}
+
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="League" asp-action="Index">Lige</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item">
+        <a asp-controller="League" asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a>
+    </li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Uredi</li>
+</ul>
+
+<section class="ff-form-shell" aria-labelledby="editLeagueTitle">
+    <div class="ff-form-card">
+        <header class="ff-form-card__header">
+            <h1 class="ff-form-card__title" id="editLeagueTitle">
+                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                <span>Uredi ligu</span>
+            </h1>
+            <p class="ff-form-card__subtitle">
+                Promijeni naziv, kapacitet ili opis lige. Sezona i šifra se ne mogu mijenjati.
+            </p>
+        </header>
+
+        <!-- Read-only informacije -->
+        <div class="ff-readonly-grid" role="group" aria-label="Informacije lige">
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Sezona</span>
+                <span class="ff-readonly-grid__value">@Model.Season</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Šifra</span>
+                <span class="ff-readonly-grid__value ff-readonly-grid__value--mono">@Model.JoinCode</span>
+            </div>
+            <div class="ff-readonly-grid__item">
+                <span class="ff-readonly-grid__label">Trenutno ekipa</span>
+                <span class="ff-readonly-grid__value">@Model.TeamsCount</span>
+            </div>
+        </div>
+
+        <form asp-controller="League" asp-action="Edit" method="post" class="ff-form" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Season" />
+            <input type="hidden" asp-for="JoinCode" />
+            <input type="hidden" asp-for="TeamsCount" />
+
+            <div asp-validation-summary="ModelOnly" class="ff-form-alert" role="alert"></div>
+
+            <div class="ff-form-field">
+                <label asp-for="Name" class="ff-form-label"></label>
+                <input asp-for="Name"
+                       class="ff-form-input"
+                       autocomplete="off"
+                       maxlength="100" />
+                <span asp-validation-for="Name" class="ff-form-validation"></span>
+                <p class="ff-form-hint">Između 3 i 100 znakova.</p>
+            </div>
+
+            <div class="ff-form-field">
+                <label asp-for="MaxTeams" class="ff-form-label"></label>
+                <input asp-for="MaxTeams"
+                       type="number"
+                       min="2"
+                       max="20"
+                       step="1"
+                       class="ff-form-input"
+                       inputmode="numeric" />
+                <span asp-validation-for="MaxTeams" class="ff-form-validation"></span>
+                <p class="ff-form-hint">Maksimalan broj ekipa ne može biti manji od trenutnog (@Model.TeamsCount).</p>
+            </div>
+
+            <div class="ff-form-field">
+                <label asp-for="Description" class="ff-form-label"></label>
+                <textarea asp-for="Description"
+                          class="ff-form-input"
+                          rows="4"
+                          maxlength="500"
+                          placeholder="Kratki opis lige (opcionalno)"></textarea>
+                <span asp-validation-for="Description" class="ff-form-validation"></span>
+                <p class="ff-form-hint">Najviše 500 znakova.</p>
+            </div>
+
+            <div class="ff-form-actions">
+                <button type="submit" class="ff-form-submit">
+                    <i class="bi bi-save-fill" aria-hidden="true"></i>
+                    <span>Spremi promjene</span>
+                </button>
+                <a asp-controller="League" asp-action="Details" asp-route-id="@Model.Id" class="ff-form-cancel">
+                    Odustani
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,6 +1,10 @@
 @model List<League>
 @{
     ViewData["Title"] = "Leagues";
+    // NAPOMENA: Kontroler može postaviti ViewData["CurrentUserId"] kako bi se
+    // Edit/Delete linkovi prikazivali samo creator-u lige. Ako je null, prikazujemo
+    // linkove svima (UI sloj — server svejedno autorizira na POST-u).
+    var currentUserId = ViewData["CurrentUserId"] as int?;
 }
 
 <h1 class="ff-page-title"><i class="bi bi-diagram-3-fill"></i> Leagues</h1>
@@ -30,6 +34,25 @@
 }
 else
 {
+    <!-- AJAX search bar -->
+    <div class="ff-search-bar" id="ffLeagueSearchBar" role="search">
+        <i class="bi bi-search ff-search-bar__icon" aria-hidden="true"></i>
+        <input type="text"
+               id="ffLeagueSearchInput"
+               class="ff-search-bar__input"
+               placeholder="Pretraži lige po nazivu ili sezoni..."
+               autocomplete="off"
+               aria-label="Pretraga liga" />
+        <span class="ff-search-bar__status" id="ffLeagueSearchStatus"></span>
+        <button type="button"
+                id="ffLeagueSearchClear"
+                class="ff-search-bar__clear"
+                aria-label="Obriši pretragu"
+                style="display:none;">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+    </div>
+
     <div class="ff-table-responsive">
         <table class="ff-table ff-table--sortable" id="ff-leagues-table" aria-label="Leagues list">
             <thead>
@@ -64,11 +87,11 @@ else
                             Created <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
                         </span>
                     </th>
+                    <th scope="col" class="text-end">Akcije</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="ffLeaguesTbody">
                 @{
-                    // Default sort: Total Points desc
                     var sortedLeagues = Model
                         .OrderByDescending(l => l.Teams?.Sum(t => t.TotalPoints) ?? 0)
                         .ToList();
@@ -79,12 +102,17 @@ else
                     var totalPoints = league.Teams?.Sum(t => t.TotalPoints) ?? 0;
                     var acceptedTransfers = league.Transfers?.Count() ?? 0;
                     var detailsUrl = Url.Action("Details", "League", new { id = league.Id });
+                    // Conditional Edit/Delete: prikazi samo creator-u (kontroler postavlja ViewData["CurrentUserId"]).
+                    // Ako nije postavljeno, prikazi svima (server radi finalnu autorizaciju).
+                    bool showActions = !currentUserId.HasValue || league.CreatorUserId == currentUserId.Value;
 
                     <tr class="ff-table__row--clickable"
                         tabindex="0"
                         role="link"
                         data-href="@detailsUrl"
-                        aria-label="Open league @league.Name">
+                        data-search-name="@league.Name.ToLowerInvariant()"
+                        data-search-season="@league.Season.ToLowerInvariant()"
+                        aria-label="Otvori ligu @league.Name">
                         <td data-sort-value="@league.Name.ToLowerInvariant()">
                             <a asp-controller="League" asp-action="Details" asp-route-id="@league.Id">
                                 @league.Name
@@ -105,6 +133,25 @@ else
                         <td class="ff-num" data-sort-value="@league.CreatedAt.Ticks">
                             <span class="ff-text-muted ff-text-sm">@league.CreatedAt.ToString("dd MMM yyyy")</span>
                         </td>
+                        <td class="text-end">
+                            @if (showActions)
+                            {
+                                <div class="ff-row-actions" data-no-row-click>
+                                    <a asp-controller="League" asp-action="Edit" asp-route-id="@league.Id"
+                                       class="ff-row-action"
+                                       title="Uredi"
+                                       aria-label="Uredi ligu @league.Name">
+                                        <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                                    </a>
+                                    <a asp-controller="League" asp-action="Delete" asp-route-id="@league.Id"
+                                       class="ff-row-action ff-row-action--danger"
+                                       title="Obriši"
+                                       aria-label="Obriši ligu @league.Name">
+                                        <i class="bi bi-trash3-fill" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -122,8 +169,9 @@ else
 
             // --- Row click navigation ---
             table.addEventListener('click', function (e) {
-                if (e.target.closest('a')) return; // let link clicks behave normally
+                if (e.target.closest('a')) return;
                 if (e.target.closest('.ff-th-sort')) return;
+                if (e.target.closest('[data-no-row-click]')) return;
                 var row = e.target.closest('.ff-table__row--clickable');
                 if (!row) return;
                 var href = row.getAttribute('data-href');
@@ -148,7 +196,6 @@ else
                     var nb = parseFloat(b) || 0;
                     return (na - nb) * mult;
                 }
-                // string
                 return String(a).localeCompare(String(b)) * mult;
             }
 
@@ -157,15 +204,12 @@ else
                 if (!tbody) return;
                 var headers = table.querySelectorAll('thead th.ff-th-sort');
                 var keyIndex = -1;
-                headers.forEach(function (h, i) {
-                    if (h === th) keyIndex = i;
-                });
+                headers.forEach(function (h, i) { if (h === th) keyIndex = i; });
                 if (keyIndex === -1) return;
 
                 var current = th.getAttribute('aria-sort');
                 var next = current === 'ascending' ? 'descending' : 'ascending';
 
-                // reset all other headers
                 headers.forEach(function (h) {
                     if (h !== th) {
                         h.setAttribute('aria-sort', 'none');
@@ -185,7 +229,7 @@ else
                 }
 
                 var type = th.getAttribute('data-sort-type') || 'string';
-                var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+                var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr:not(.ff-table__empty-row)'));
                 rows.sort(function (ra, rb) {
                     var va = ra.children[keyIndex].getAttribute('data-sort-value');
                     var vb = rb.children[keyIndex].getAttribute('data-sort-value');
@@ -202,6 +246,110 @@ else
                         sortBy(th);
                     }
                 });
+            });
+
+            // --- AJAX Search ---
+            var bar = document.getElementById('ffLeagueSearchBar');
+            var input = document.getElementById('ffLeagueSearchInput');
+            var clearBtn = document.getElementById('ffLeagueSearchClear');
+            var statusEl = document.getElementById('ffLeagueSearchStatus');
+            var tbody = document.getElementById('ffLeaguesTbody');
+            if (!input || !tbody) return;
+
+            var debounceTimer = null;
+            var lastQuery = '';
+            var cachedRows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+            var emptyRow = null;
+
+            function ensureEmptyRow() {
+                if (!emptyRow) {
+                    emptyRow = document.createElement('tr');
+                    emptyRow.className = 'ff-table__empty-row';
+                    var td = document.createElement('td');
+                    td.colSpan = 7;
+                    td.textContent = 'Nema rezultata za zadanu pretragu.';
+                    emptyRow.appendChild(td);
+                }
+                return emptyRow;
+            }
+
+            function clientFilter(q) {
+                var qLow = q.toLowerCase();
+                var visible = 0;
+                cachedRows.forEach(function (r) {
+                    var name = r.getAttribute('data-search-name') || '';
+                    var season = r.getAttribute('data-search-season') || '';
+                    var match = !qLow || name.indexOf(qLow) !== -1 || season.indexOf(qLow) !== -1;
+                    r.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                if (emptyRow && emptyRow.parentNode) emptyRow.parentNode.removeChild(emptyRow);
+                if (visible === 0 && cachedRows.length > 0) {
+                    tbody.appendChild(ensureEmptyRow());
+                }
+                statusEl.textContent = q ? (visible + ' rez.') : '';
+            }
+
+            function serverSearch(q) {
+                bar.classList.add('ff-search-bar--loading');
+                fetch('/League/Search?q=' + encodeURIComponent(q), {
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                    .then(function (results) {
+                        var idSet = {};
+                        (Array.isArray(results) ? results : []).forEach(function (item) {
+                            var id = (item && item.id != null) ? item.id : item;
+                            idSet[id] = true;
+                        });
+                        var visible = 0;
+                        cachedRows.forEach(function (r) {
+                            var href = r.getAttribute('data-href') || '';
+                            var m = href.match(/\/(\d+)(?:\?|$|\/)/);
+                            var rid = m ? parseInt(m[1], 10) : null;
+                            var match = rid != null && idSet[rid];
+                            r.style.display = match ? '' : 'none';
+                            if (match) visible++;
+                        });
+                        if (emptyRow && emptyRow.parentNode) emptyRow.parentNode.removeChild(emptyRow);
+                        if (visible === 0 && cachedRows.length > 0) {
+                            tbody.appendChild(ensureEmptyRow());
+                        }
+                        statusEl.textContent = visible + ' rez.';
+                    })
+                    .catch(function () {
+                        // Fallback: client-side filter
+                        clientFilter(q);
+                    })
+                    .then(function () {
+                        bar.classList.remove('ff-search-bar--loading');
+                    });
+            }
+
+            function onInput() {
+                var q = input.value.trim();
+                clearBtn.style.display = q ? '' : 'none';
+                if (q === lastQuery) return;
+                lastQuery = q;
+
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function () {
+                    if (!q) {
+                        clientFilter('');
+                        return;
+                    }
+                    serverSearch(q);
+                }, 250);
+            }
+
+            input.addEventListener('input', onInput);
+            clearBtn.addEventListener('click', function () {
+                input.value = '';
+                lastQuery = '';
+                clearBtn.style.display = 'none';
+                clientFilter('');
+                input.focus();
             });
         })();
     </script>
