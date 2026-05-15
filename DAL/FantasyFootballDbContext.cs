@@ -80,6 +80,11 @@ namespace FantasyFootball.DAL
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
+
+            // JoinCode lige mora biti jedinstven
+            modelBuilder.Entity<League>()
+                .HasIndex(l => l.JoinCode)
+                .IsUnique();
         }
     }
 }

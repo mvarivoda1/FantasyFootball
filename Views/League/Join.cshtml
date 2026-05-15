@@ -1,0 +1,102 @@
+@model FantasyFootball.Models.ViewModels.JoinLeagueViewModel
+@{
+    ViewData["Title"] = "Pridruži se ligi";
+}
+
+<!-- Breadcrumb -->
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="League" asp-action="Index">Leagues</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Pridruži se</li>
+</ul>
+
+<section class="ff-form-shell" aria-labelledby="joinLeagueTitle">
+    <div class="ff-form-card">
+        <header class="ff-form-card__header">
+            <h1 class="ff-form-card__title" id="joinLeagueTitle">
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                <span>Pridruži se ligi</span>
+            </h1>
+            <p class="ff-form-card__subtitle">
+                Unesi 6-znamenkastu šifru koju si dobio od kreatora lige.
+            </p>
+        </header>
+
+        <form asp-controller="League" asp-action="Join" method="post" class="ff-form" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="ff-form-alert" role="alert"></div>
+
+            <div class="ff-form-field">
+                <label asp-for="JoinCode" class="ff-form-label"></label>
+                <input asp-for="JoinCode"
+                       id="joinCodeInput"
+                       class="ff-form-input ff-form-input--code"
+                       autocomplete="off"
+                       autocapitalize="characters"
+                       spellcheck="false"
+                       maxlength="6"
+                       inputmode="text"
+                       placeholder="A7K9PQ"
+                       aria-describedby="joinCodeHint" />
+                <span asp-validation-for="JoinCode" class="ff-form-validation"></span>
+                <p class="ff-form-hint" id="joinCodeHint">
+                    6 znakova: velika slova (A-Z) i brojevi (0-9).
+                </p>
+            </div>
+
+            <div class="ff-form-actions">
+                <button type="submit" class="ff-form-submit">
+                    <i class="bi bi-arrow-right-circle-fill" aria-hidden="true"></i>
+                    <span>Pridruži se</span>
+                </button>
+                <a asp-controller="League" asp-action="Index" class="ff-form-cancel">
+                    Odustani
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            'use strict';
+            var input = document.getElementById('joinCodeInput');
+            if (!input) return;
+
+            function sanitize(value) {
+                return (value || '')
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, '')
+                    .slice(0, 6);
+            }
+
+            input.addEventListener('input', function () {
+                var clean = sanitize(input.value);
+                if (input.value !== clean) {
+                    input.value = clean;
+                }
+            });
+
+            input.addEventListener('paste', function (e) {
+                if (!e.clipboardData) return;
+                var pasted = e.clipboardData.getData('text');
+                var clean = sanitize(pasted);
+                if (clean) {
+                    e.preventDefault();
+                    input.value = clean;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+
+            // Initial sanitize in case of autofill / back nav
+            if (input.value) {
+                input.value = sanitize(input.value);
+            }
+        })();
+    </script>
+}

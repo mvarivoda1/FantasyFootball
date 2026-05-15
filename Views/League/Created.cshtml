@@ -1,0 +1,165 @@
+@model FantasyFootball.Models.League
+@{
+    ViewData["Title"] = $"Liga '{Model.Name}' kreirana";
+    var joinCode = Model.JoinCode ?? string.Empty;
+}
+
+<!-- Breadcrumb -->
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="League" asp-action="Index">Leagues</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">@Model.Name</li>
+</ul>
+
+<section class="ff-created-shell" aria-labelledby="createdTitle">
+    <div class="ff-created-card">
+        <div class="ff-created-card__check" aria-hidden="true">
+            <i class="bi bi-check-lg"></i>
+        </div>
+
+        <h1 class="ff-created-card__title" id="createdTitle">
+            Liga <em>&laquo;@Model.Name&raquo;</em> je kreirana!
+        </h1>
+        <p class="ff-created-card__subtitle">
+            Spreman si za prvi match-week. Sve što ti treba je da podijeliš šifru s prijateljima.
+        </p>
+
+        <div class="ff-created-meta" aria-label="Detalji lige">
+            @if (!string.IsNullOrEmpty(Model.Season))
+            {
+                <span class="ff-created-meta__item">
+                    <i class="bi bi-calendar3" aria-hidden="true"></i>
+                    Sezona <strong>@Model.Season</strong>
+                </span>
+            }
+            <span class="ff-created-meta__item">
+                <i class="bi bi-shield" aria-hidden="true"></i>
+                Max <strong>@Model.MaxTeams</strong> ekipa
+            </span>
+            <span class="ff-created-meta__item">
+                <i class="bi bi-clock-history" aria-hidden="true"></i>
+                <strong>@Model.CreatedAt.ToString("dd MMM yyyy")</strong>
+            </span>
+        </div>
+
+        <div class="ff-join-code-display" aria-label="Šifra za pridruživanje ligi">
+            <p class="ff-join-code-display__label">Šifra za pridruživanje</p>
+
+            <div class="ff-join-code-display__value" id="joinCodeValue">
+                @foreach (var ch in joinCode)
+                {
+                    <span class="ff-join-code-display__char">@ch</span>
+                }
+            </div>
+
+            <button type="button"
+                    class="ff-copy-btn"
+                    id="copyJoinCodeBtn"
+                    data-code="@joinCode"
+                    aria-label="Kopiraj šifru @joinCode">
+                <i class="bi bi-clipboard" aria-hidden="true"></i>
+                <span class="ff-copy-btn__label">Kopiraj šifru</span>
+            </button>
+        </div>
+
+        <p class="ff-share-hint">
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            Podijeli ovu šifru s prijateljima da se pridruže ligi.
+        </p>
+
+        <div class="ff-created-actions">
+            <a asp-controller="League" asp-action="Details" asp-route-id="@Model.Id"
+               class="ff-action-btn ff-action-btn--primary">
+                <i class="bi bi-eye-fill" aria-hidden="true"></i>
+                <span>Pogledaj ligu</span>
+            </a>
+            <a asp-controller="League" asp-action="Index" class="ff-form-cancel">
+                Natrag na lige
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Mini toast for copy feedback -->
+<div class="ff-mini-toast" id="copyMiniToast" role="status" aria-live="polite">
+    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+    <span>Šifra kopirana!</span>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            'use strict';
+
+            var btn = document.getElementById('copyJoinCodeBtn');
+            var toast = document.getElementById('copyMiniToast');
+            if (!btn) return;
+
+            var defaultLabel = btn.querySelector('.ff-copy-btn__label');
+            var defaultLabelText = defaultLabel ? defaultLabel.textContent : 'Kopiraj šifru';
+            var resetTimer = null;
+
+            function showToast() {
+                if (!toast) return;
+                toast.classList.add('ff-mini-toast--visible');
+                setTimeout(function () {
+                    toast.classList.remove('ff-mini-toast--visible');
+                }, 1800);
+            }
+
+            function markCopied() {
+                btn.classList.add('ff-copy-btn--copied');
+                var icon = btn.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('bi-clipboard');
+                    icon.classList.add('bi-check2');
+                }
+                if (defaultLabel) defaultLabel.textContent = 'Kopirano!';
+
+                if (resetTimer) clearTimeout(resetTimer);
+                resetTimer = setTimeout(function () {
+                    btn.classList.remove('ff-copy-btn--copied');
+                    if (icon) {
+                        icon.classList.remove('bi-check2');
+                        icon.classList.add('bi-clipboard');
+                    }
+                    if (defaultLabel) defaultLabel.textContent = defaultLabelText;
+                }, 2000);
+            }
+
+            function legacyCopy(text) {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'absolute';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); } catch (e) { /* noop */ }
+                document.body.removeChild(ta);
+            }
+
+            btn.addEventListener('click', function () {
+                var code = btn.getAttribute('data-code') || '';
+                if (!code) return;
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(code).then(function () {
+                        markCopied();
+                        showToast();
+                    }, function () {
+                        legacyCopy(code);
+                        markCopied();
+                        showToast();
+                    });
+                } else {
+                    legacyCopy(code);
+                    markCopied();
+                    showToast();
+                }
+            });
+        })();
+    </script>
+}

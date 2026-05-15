@@ -15,6 +15,16 @@
     <li class="ff-breadcrumb__item ff-breadcrumb__item--active">@Model.Name</li>
 </ul>
 
+@if (TempData["JoinInfo"] is string joinInfo && !string.IsNullOrWhiteSpace(joinInfo))
+{
+    <div class="ff-toast ff-toast--success" id="joinInfoToast" role="status" aria-live="polite">
+        <span class="ff-toast__icon" aria-hidden="true">
+            <i class="bi bi-check-lg"></i>
+        </span>
+        <div class="ff-toast__body">@joinInfo</div>
+    </div>
+}
+
 <!-- Compact header (no hero) -->
 <header class="ff-page-header ff-animate-in">
     <div class="ff-page-header__main">
@@ -283,6 +293,19 @@
 </div>
 
 @section Scripts {
+    <script>
+        // Auto-dismiss the JoinInfo toast after 5 seconds
+        (function () {
+            var toast = document.getElementById('joinInfoToast');
+            if (!toast) return;
+            setTimeout(function () {
+                toast.classList.add('ff-toast--dismissing');
+                setTimeout(function () {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 400);
+            }, 5000);
+        })();
+    </script>
     <script>
         $(function () {
             /* ---- Locker Modal Logic (shared trigger: .ff-locker, .ff-player-link[data-player-id]) ---- */

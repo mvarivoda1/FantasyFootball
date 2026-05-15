@@ -6,11 +6,27 @@ namespace FantasyFootball.Models
     {
         [Key]
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Season { get; set; }
+
+        [Required, StringLength(100)]
+        public string Name { get; set; } = string.Empty;
+
+        [StringLength(20)]
+        public string Season { get; set; } = string.Empty;
+
         public DateTime CreatedAt { get; set; }
+
+        [Range(2, 20)]
         public int MaxTeams { get; set; }
-        public string Description { get; set; }
+
+        [StringLength(500)]
+        public string Description { get; set; } = string.Empty;
+
+        // Šifra od 6 znakova za pridruživanje ligi (npr. "A7K9PQ")
+        [Required, StringLength(6, MinimumLength = 6)]
+        public string JoinCode { get; set; } = string.Empty;
+
+        // Korisnik koji je kreirao ligu (opcionalno za stare seedane lige)
+        public int? CreatorUserId { get; set; }
 
         // 1-N: liga ima više fantasy timova
         public virtual ICollection<FantasyTeam> Teams { get; set; }

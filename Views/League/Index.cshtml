@@ -5,6 +5,22 @@
 
 <h1 class="ff-page-title"><i class="bi bi-diagram-3-fill"></i> Leagues</h1>
 
+<div class="ff-action-bar" role="region" aria-label="Akcije za lige">
+    <span class="ff-action-bar__label">
+        Pokreni svoju ligu ili se pridruži postojećoj koristeći šifru.
+    </span>
+    <div class="ff-action-bar__buttons">
+        <a asp-controller="League" asp-action="Create" class="ff-action-btn ff-action-btn--primary">
+            <i class="bi bi-plus-circle-fill" aria-hidden="true"></i>
+            <span>Kreiraj ligu</span>
+        </a>
+        <a asp-controller="League" asp-action="Join" class="ff-action-btn ff-action-btn--secondary">
+            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+            <span>Pridruži se ligi</span>
+        </a>
+    </div>
+</div>
+
 @if (Model == null || !Model.Any())
 {
     <div class="ff-empty">

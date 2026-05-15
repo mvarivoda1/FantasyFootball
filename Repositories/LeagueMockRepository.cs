@@ -15,19 +15,22 @@ namespace FantasyFootball.Repositories
             {
                 Id = 1, Name = "Premier Fantasy Liga", Season = "2025/2026",
                 CreatedAt = new DateTime(2025, 8, 1), MaxTeams = 8,
-                Description = "Glavna liga za ozbiljne fantasy managere"
+                Description = "Glavna liga za ozbiljne fantasy managere",
+                JoinCode = "PREM01"
             };
             var league2 = new League
             {
                 Id = 2, Name = "Prijatelji Liga", Season = "2025/2026",
                 CreatedAt = new DateTime(2025, 8, 10), MaxTeams = 6,
-                Description = "Liga za prijatelje"
+                Description = "Liga za prijatelje",
+                JoinCode = "FRND02"
             };
             var league3 = new League
             {
                 Id = 3, Name = "Studentska Liga", Season = "2025/2026",
                 CreatedAt = new DateTime(2025, 9, 1), MaxTeams = 10,
-                Description = "Liga za studente"
+                Description = "Liga za studente",
+                JoinCode = "STUD03"
             };
 
             // Assign teams to leagues (5 teams each)
