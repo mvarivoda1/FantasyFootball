@@ -1,0 +1,534 @@
+@model List<Transfer>
+@{
+    ViewData["Title"] = "Transfers";
+
+    // -----------------------------------------------------------
+    // Helpers (inline, no backend change)
+    // -----------------------------------------------------------
+    string PosAbbr(Position p) => p switch
+    {
+        Position.Goalkeeper => "GK",
+        Position.Defender   => "DEF",
+        Position.Midfielder => "MID",
+        Position.Forward    => "FWD",
+        _ => "MID"
+    };
+
+    string PosBadgeClass(Position p) => p switch
+    {
+        Position.Goalkeeper => "ff-badge--gk",
+        Position.Defender   => "ff-badge--def",
+        Position.Midfielder => "ff-badge--mid",
+        Position.Forward    => "ff-badge--fwd",
+        _ => "ff-badge--mid"
+    };
+
+    var all = Model ?? new List<Transfer>();
+
+    // -----------------------------------------------------------
+    // Trend datasets
+    // -----------------------------------------------------------
+    var transferredIn = all
+        .Where(t => t.Direction == TransferDirection.In && t.Player != null)
+        .GroupBy(t => t.Player)
+        .Select(g => new {
+            Player = g.Key,
+            Count = g.Count()
+        })
+        .OrderByDescending(x => x.Count)
+        .Take(10)
+        .ToList();
+
+    var transferredOut = all
+        .Where(t => t.Direction == TransferDirection.Out && t.Player != null)
+        .GroupBy(t => t.Player)
+        .Select(g => new {
+            Player = g.Key,
+            Count = g.Count()
+        })
+        .OrderByDescending(x => x.Count)
+        .Take(10)
+        .ToList();
+
+    var recent = all
+        .OrderByDescending(t => t.TransferDate)
+        .Take(15)
+        .ToList();
+}
+
+<!-- Breadcrumb -->
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Transfers</li>
+</ul>
+
+<!-- Page header -->
+<header class="ff-page-header ff-animate-in">
+    <div class="ff-page-header__main">
+        <h1 class="ff-page-header__title"><i class="bi bi-arrow-left-right"></i> Transfer Market</h1>
+        <p class="ff-page-header__meta">
+            <span class="ff-page-header__meta-item">
+                <i class="bi bi-activity"></i> @all.Count total transfers
+            </span>
+            <span class="ff-page-header__meta-item">
+                <i class="bi bi-arrow-down-circle-fill"></i> @all.Count(t => t.Direction == TransferDirection.In) buys
+            </span>
+            <span class="ff-page-header__meta-item">
+                <i class="bi bi-arrow-up-circle-fill"></i> @all.Count(t => t.Direction == TransferDirection.Out) sales
+            </span>
+        </p>
+    </div>
+    <p class="ff-page-header__description">
+        Live market overview &mdash; the most-traded players and the latest deals across all leagues.
+    </p>
+</header>
+
+@if (!all.Any())
+{
+    <div class="ff-empty">
+        <div class="ff-empty__icon"><i class="bi bi-arrow-left-right"></i></div>
+        <div class="ff-empty__text">No transfers recorded yet.</div>
+    </div>
+}
+else
+{
+    <!-- AJAX search bar -->
+    <div class="ff-search-bar" id="ffTransferSearchBar" role="search">
+        <i class="bi bi-search ff-search-bar__icon" aria-hidden="true"></i>
+        <input type="text"
+               id="ffTransferSearchInput"
+               class="ff-search-bar__input"
+               placeholder="Filtriraj po imenu igrača..."
+               autocomplete="off"
+               aria-label="Pretraga transfera" />
+        <span class="ff-search-bar__status" id="ffTransferSearchStatus"></span>
+        <button type="button"
+                id="ffTransferSearchClear"
+                class="ff-search-bar__clear"
+                aria-label="Obriši pretragu"
+                style="display:none;">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    // ---------- Local render helper: builds a .ff-player-link anchor ----------
+    Microsoft.AspNetCore.Html.IHtmlContent PlayerLink(Player p)
+    {
+        var nameEnc      = System.Net.WebUtility.HtmlEncode(p.FullName ?? "");
+        var clubEnc      = System.Net.WebUtility.HtmlEncode(p.Club ?? "");
+        var natEnc       = System.Net.WebUtility.HtmlEncode(p.Nationality ?? "");
+        var teamsJson    = System.Text.Json.JsonSerializer.Serialize(
+                              p.FantasyTeams?.Select(t => new { t.Id, t.Name, t.OwnerName, t.TotalPoints }));
+        var teamsJsonEnc = System.Net.WebUtility.HtmlEncode(teamsJson);
+
+        var sb = new System.Text.StringBuilder();
+        sb.Append("<a href=\"#\" class=\"ff-player-link ff-widget-row__name\" role=\"button\" tabindex=\"0\"");
+        sb.Append(" aria-haspopup=\"dialog\" aria-label=\"Open locker for ").Append(nameEnc).Append("\"");
+        sb.Append(" data-player-id=\"").Append(p.Id).Append("\"");
+        sb.Append(" data-player-name=\"").Append(nameEnc).Append("\"");
+        sb.Append(" data-player-club=\"").Append(clubEnc).Append("\"");
+        sb.Append(" data-player-nationality=\"").Append(natEnc).Append("\"");
+        sb.Append(" data-player-position=\"").Append(p.Position).Append("\"");
+        sb.Append(" data-player-pos-abbr=\"").Append(PosAbbr(p.Position)).Append("\"");
+        sb.Append(" data-player-badge=\"").Append(PosBadgeClass(p.Position)).Append("\"");
+        sb.Append(" data-player-dob=\"").Append(p.DateOfBirth.ToString("dd MMM yyyy")).Append("\"");
+        sb.Append(" data-player-value=\"").Append(p.MarketValue.ToString("N0")).Append("\"");
+        sb.Append(" data-player-goals=\"").Append(p.Goals).Append("\"");
+        sb.Append(" data-player-assists=\"").Append(p.Assists).Append("\"");
+        sb.Append(" data-player-cleansheets=\"").Append(p.CleanSheets).Append("\"");
+        sb.Append(" data-player-points=\"").Append(p.TotalPoints).Append("\"");
+        sb.Append(" data-player-teams='").Append(teamsJsonEnc).Append("'>");
+        sb.Append(nameEnc);
+        sb.Append("</a>");
+        return new Microsoft.AspNetCore.Html.HtmlString(sb.ToString());
+    }
+
+    <!-- Grid of widgets -->
+    <div class="row g-4">
+
+        <!-- ==================== A. Most Transferred In ==================== -->
+        <section class="col-lg-6 col-xl-4">
+            <div class="ff-widget-card ff-widget-card--in">
+                <div class="ff-widget-card__header">
+                    <h2 class="ff-widget-card__title">
+                        <i class="bi bi-arrow-down-circle-fill"></i> Most Transferred In
+                    </h2>
+                    <span class="ff-widget-card__count">Top @transferredIn.Count</span>
+                </div>
+                <div class="ff-widget-card__body ff-widget-card__body--list">
+                    @if (transferredIn.Any())
+                    {
+                        <ol class="ff-widget-list ff-widget-list--ranked">
+                            @{ int rIn = 1; }
+                            @foreach (var item in transferredIn)
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__rank">@rIn</div>
+                                    <div class="ff-widget-row__main">
+                                        @PlayerLink(item.Player)
+                                        <span class="ff-widget-row__sub">@item.Player.Club</span>
+                                    </div>
+                                    <div class="ff-trend-row__metric">
+                                        <span class="ff-badge ff-badge--in">@item.Count IN</span>
+                                    </div>
+                                </li>
+                                rIn++;
+                            }
+                        </ol>
+                    }
+                    else
+                    {
+                        <div class="ff-widget-card__empty">
+                            <i class="bi bi-arrow-down-circle"></i>
+                            No incoming transfers yet.
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== B. Most Transferred Out ==================== -->
+        <section class="col-lg-6 col-xl-4">
+            <div class="ff-widget-card ff-widget-card--out">
+                <div class="ff-widget-card__header">
+                    <h2 class="ff-widget-card__title">
+                        <i class="bi bi-arrow-up-circle-fill"></i> Most Transferred Out
+                    </h2>
+                    <span class="ff-widget-card__count">Top @transferredOut.Count</span>
+                </div>
+                <div class="ff-widget-card__body ff-widget-card__body--list">
+                    @if (transferredOut.Any())
+                    {
+                        <ol class="ff-widget-list ff-widget-list--ranked">
+                            @{ int rOut = 1; }
+                            @foreach (var item in transferredOut)
+                            {
+                                <li class="ff-widget-row">
+                                    <div class="ff-widget-row__rank">@rOut</div>
+                                    <div class="ff-widget-row__main">
+                                        @PlayerLink(item.Player)
+                                        <span class="ff-widget-row__sub">@item.Player.Club</span>
+                                    </div>
+                                    <div class="ff-trend-row__metric">
+                                        <span class="ff-badge ff-badge--out">@item.Count OUT</span>
+                                    </div>
+                                </li>
+                                rOut++;
+                            }
+                        </ol>
+                    }
+                    else
+                    {
+                        <div class="ff-widget-card__empty">
+                            <i class="bi bi-arrow-up-circle"></i>
+                            No outgoing transfers yet.
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== C. Recent Transfers ==================== -->
+        <section class="col-lg-12 col-xl-4">
+            <div class="ff-widget-card">
+                <div class="ff-widget-card__header">
+                    <h2 class="ff-widget-card__title">
+                        <i class="bi bi-clock-history"></i> Recent Transfers
+                    </h2>
+                    <span class="ff-widget-card__count">Last @recent.Count</span>
+                </div>
+                <div class="ff-widget-card__body">
+                    @if (recent.Any())
+                    {
+                        <div class="ff-table-responsive">
+                            <table class="ff-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>Team</th>
+                                        <th>Dir</th>
+                                        <th class="text-end">Price</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var t in recent)
+                                    {
+                                        var dirClass = t.Direction == TransferDirection.In ? "ff-badge--in" : "ff-badge--out";
+                                        var dirLabel = t.Direction == TransferDirection.In ? "IN" : "OUT";
+                                        <tr>
+                                            <td>@PlayerLink(t.Player)</td>
+                                            <td>
+                                                @if (t.Team != null)
+                                                {
+                                                    <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.Team.Id">@t.Team.Name</a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="ff-text-muted">—</span>
+                                                }
+                                            </td>
+                                            <td><span class="ff-badge @dirClass">@dirLabel</span></td>
+                                            <td class="ff-num text-end">&euro;@t.Price.ToString("N0")</td>
+                                            <td><span class="ff-text-muted ff-text-sm">@t.TransferDate.ToString("dd MMM")</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="ff-widget-card__empty">
+                            <i class="bi bi-clock-history"></i>
+                            No recent transfers.
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ==================== Locker Modal (player details) ==================== -->
+    <div class="ff-locker-modal-backdrop" id="lockerModalBackdrop" aria-hidden="true">
+        <div class="ff-locker-modal" role="dialog" aria-modal="true" aria-labelledby="lockerModalName">
+            <div class="ff-locker-modal__door-wrapper">
+                <div class="ff-locker-modal__door" aria-hidden="true">
+                    <div class="ff-locker-modal__door-handle"></div>
+                </div>
+
+                <div class="ff-locker-modal__interior">
+                    <button class="ff-locker-modal__close" aria-label="Close locker" id="lockerModalClose">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+
+                    <div class="ff-locker-modal__header">
+                        <div class="ff-locker-modal__player-identity">
+                            <div>
+                                <h2 class="ff-locker-modal__name" id="lockerModalName"></h2>
+                                <div class="ff-locker-modal__meta">
+                                    <span id="lockerModalBadge"></span>
+                                    <span><i class="bi bi-building"></i> <span id="lockerModalClub"></span></span>
+                                    <span><i class="bi bi-globe"></i> <span id="lockerModalNationality"></span></span>
+                                </div>
+                            </div>
+                            <div class="ff-locker-modal__points">
+                                <div class="ff-locker-modal__points-value" id="lockerModalPoints"></div>
+                                <div class="ff-locker-modal__points-label">Total Pts</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ff-locker-modal__stats">
+                        <div class="ff-locker-modal__stat">
+                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-bullseye"></i></div>
+                            <div class="ff-locker-modal__stat-value" id="lockerModalGoals"></div>
+                            <div class="ff-locker-modal__stat-label">Goals</div>
+                        </div>
+                        <div class="ff-locker-modal__stat">
+                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-hand-thumbs-up-fill"></i></div>
+                            <div class="ff-locker-modal__stat-value" id="lockerModalAssists"></div>
+                            <div class="ff-locker-modal__stat-label">Assists</div>
+                        </div>
+                        <div class="ff-locker-modal__stat">
+                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-shield-fill-check"></i></div>
+                            <div class="ff-locker-modal__stat-value" id="lockerModalCleanSheets"></div>
+                            <div class="ff-locker-modal__stat-label">Clean Sheets</div>
+                        </div>
+                        <div class="ff-locker-modal__stat">
+                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-cash-stack"></i></div>
+                            <div class="ff-locker-modal__stat-value" id="lockerModalValue"></div>
+                            <div class="ff-locker-modal__stat-label">Value</div>
+                        </div>
+                        <div class="ff-locker-modal__stat">
+                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-cake2-fill"></i></div>
+                            <div class="ff-locker-modal__stat-value" id="lockerModalDob"></div>
+                            <div class="ff-locker-modal__stat-label">Born</div>
+                        </div>
+                    </div>
+
+                    <hr class="ff-locker-modal__divider" />
+
+                    <div class="ff-locker-modal__teams">
+                        <div class="ff-locker-modal__teams-title">
+                            <i class="bi bi-shield-fill"></i> Fantasy Teams
+                        </div>
+                        <div class="ff-locker-modal__team-list" id="lockerModalTeams">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="ff-locker-modal__actions">
+                        <a href="#" class="ff-locker-modal__details-link" id="lockerModalDetailsLink">
+                            Full Details <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(function () {
+            /* ============================================================
+               Locker Modal — shared trigger: .ff-player-link[data-player-id]
+               ============================================================ */
+            var $backdrop = $('#lockerModalBackdrop');
+            var triggerSelector = '.ff-player-link[data-player-id]';
+
+            function openLocker($trigger) {
+                var d = $trigger.data();
+
+                $('#lockerModalName').text(d.playerName);
+                $('#lockerModalClub').text(d.playerClub);
+                $('#lockerModalNationality').text(d.playerNationality);
+                $('#lockerModalPoints').text(d.playerPoints);
+                $('#lockerModalGoals').text(d.playerGoals);
+                $('#lockerModalAssists').text(d.playerAssists);
+                $('#lockerModalCleanSheets').text(d.playerCleansheets);
+                $('#lockerModalValue').html('&euro;' + d.playerValue);
+                $('#lockerModalDob').text(d.playerDob);
+
+                var badgeCls = d.playerBadge;
+                var posAbbr = d.playerPosAbbr;
+                $('#lockerModalBadge').html('<span class="ff-badge ' + badgeCls + '">' + posAbbr + '</span>');
+                $('#lockerModalDetailsLink').attr('href', '@Url.RouteUrl("PlayerDetails", new { id = 0 })'.replace('/0', '/' + d.playerId));
+
+                var $teamsList = $('#lockerModalTeams');
+                $teamsList.empty();
+
+                var teams = d.playerTeams;
+                if (teams && teams.length > 0) {
+                    for (var i = 0; i < teams.length; i++) {
+                        var t = teams[i];
+                        var teamName = t.Name || t.name;
+                        var teamOwner = t.OwnerName || t.ownerName;
+                        var teamPoints = t.TotalPoints != null ? t.TotalPoints : t.totalPoints;
+                        var teamId = t.Id != null ? t.Id : t.id;
+
+                        $teamsList.append(
+                            '<div class="ff-locker-modal__team-row">' +
+                                '<div class="ff-locker-modal__team-info">' +
+                                    '<a href="/FantasyTeam/Details/' + teamId + '" class="ff-locker-modal__team-name">' + teamName + '</a>' +
+                                    '<div class="ff-locker-modal__team-owner">' + teamOwner + '</div>' +
+                                '</div>' +
+                                '<div class="ff-locker-modal__team-points">' + teamPoints + '<small>pts</small></div>' +
+                            '</div>'
+                        );
+                    }
+                } else {
+                    $teamsList.html('<div class="ff-locker-modal__no-teams"><i class="bi bi-shield"></i> Not in any fantasy team</div>');
+                }
+
+                $('body').addClass('ff-locker-modal-open');
+                $backdrop.attr('aria-hidden', 'false');
+                $backdrop[0].offsetHeight; // reflow
+                $backdrop.addClass('ff-locker-modal--visible');
+
+                setTimeout(function () {
+                    $('#lockerModalClose').focus();
+                }, 100);
+            }
+
+            function closeLocker() {
+                $backdrop.removeClass('ff-locker-modal--visible');
+                $('body').removeClass('ff-locker-modal-open');
+                setTimeout(function () {
+                    $backdrop.attr('aria-hidden', 'true');
+                }, 400);
+            }
+
+            $(document).on('click', triggerSelector, function (e) {
+                e.preventDefault();
+                openLocker($(this));
+            });
+
+            $(document).on('keydown', triggerSelector, function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openLocker($(this));
+                }
+            });
+
+            $('#lockerModalClose').on('click', function (e) {
+                e.stopPropagation();
+                closeLocker();
+            });
+
+            $backdrop.on('click', function (e) {
+                if ($(e.target).closest('.ff-locker-modal').length === 0) {
+                    closeLocker();
+                }
+            });
+
+            $(document).on('keydown', function (e) {
+                if (e.key === 'Escape' && $backdrop.hasClass('ff-locker-modal--visible')) {
+                    closeLocker();
+                }
+            });
+        });
+    </script>
+
+    <script>
+        /* =====================================================
+           Transfer Index — live search across widgets
+           Filtrira redove i list-iteme po imenu igrača.
+           ===================================================== */
+        (function () {
+            'use strict';
+            var input = document.getElementById('ffTransferSearchInput');
+            var clearBtn = document.getElementById('ffTransferSearchClear');
+            var statusEl = document.getElementById('ffTransferSearchStatus');
+            var bar = document.getElementById('ffTransferSearchBar');
+            if (!input) return;
+
+            // Pronađi sve "redove" koji imaju player-link unutar (radi za <tr> i <li>).
+            function collectTargets() {
+                var links = document.querySelectorAll('.ff-player-link[data-player-name]');
+                var targets = [];
+                Array.prototype.forEach.call(links, function (l) {
+                    var row = l.closest('tr, li');
+                    if (row) {
+                        targets.push({
+                            row: row,
+                            name: (l.getAttribute('data-player-name') || '').toLowerCase()
+                        });
+                    }
+                });
+                return targets;
+            }
+            var targets = collectTargets();
+
+            var debounceTimer = null;
+
+            function filter(q) {
+                var qLow = q.toLowerCase();
+                var visible = 0;
+                targets.forEach(function (t) {
+                    var match = !qLow || t.name.indexOf(qLow) !== -1;
+                    t.row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                statusEl.textContent = q ? (visible + ' rez.') : '';
+            }
+
+            input.addEventListener('input', function () {
+                var q = input.value.trim();
+                clearBtn.style.display = q ? '' : 'none';
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function () { filter(q); }, 200);
+            });
+
+            clearBtn.addEventListener('click', function () {
+                input.value = '';
+                clearBtn.style.display = 'none';
+                filter('');
+                input.focus();
+            });
+        })();
+    </script>
+}

@@ -6568,3 +6568,983 @@ body:has(.ff-build) {
     font-family: 'Consolas', 'Monaco', monospace;
     letter-spacing: 0.1em;
 }
+
+/* ============================================
+   Transfer Market — Pitch (left) + Player market (right)
+   Dark Stadium tema, dijeli izgled s My Team ekranom.
+   ============================================ */
+.ff-transfer {
+    --ff-tr-bg: #0e1722;
+    --ff-tr-surface: #14223a;
+    --ff-tr-line: rgba(255, 255, 255, 0.16);
+    --ff-tr-accent: #00ff87;
+    --ff-tr-accent-deep: #00c46a;
+    --ff-tr-violet: #7b61ff;
+    --ff-tr-danger: #ff4757;
+    --ff-tr-warn: #ffb547;
+    --ff-tr-text: #e6edf7;
+    --ff-tr-text-dim: #95a3b8;
+    color: var(--ff-tr-text);
+    display: block;
+    margin: 0.5rem 0 2.5rem;
+}
+
+/* --- Hero meta: budget badge override (tamna tema) --- */
+.ff-transfer .ff-myteam__hero-meta {
+    align-items: flex-end;
+}
+.ff-transfer .ff-budget-badge {
+    margin-bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 255, 135, 0.16), rgba(123, 97, 255, 0.12));
+    border: 1px solid rgba(0, 255, 135, 0.32);
+    color: var(--ff-tr-accent);
+    box-shadow: 0 8px 20px rgba(0, 255, 135, 0.1);
+}
+.ff-transfer .ff-budget-badge__amount {
+    color: #fff;
+}
+
+/* --- Toast / alert (transfer) --- */
+.ff-transfer-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    animation: ff-myteam-toast-in 0.3s ease;
+}
+.ff-transfer-alert i { font-size: 1.15rem; flex-shrink: 0; }
+.ff-transfer-alert--success {
+    background: linear-gradient(135deg, #101a2e 0%, #0a1320 100%);
+    border-color: rgba(0, 255, 135, 0.3);
+    color: #c8ffe4;
+}
+.ff-transfer-alert--success i { color: var(--ff-tr-accent); }
+.ff-transfer-alert--danger {
+    background: linear-gradient(135deg, #101a2e 0%, #0a1320 100%);
+    border-color: rgba(255, 71, 87, 0.4);
+    color: #ffd2d7;
+}
+.ff-transfer-alert--danger i { color: var(--ff-tr-danger); }
+.ff-transfer-alert__close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.65);
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+.ff-transfer-alert__close:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+
+/* --- Stage: pitch + market panel --- */
+.ff-transfer__stage {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+}
+@media (min-width: 992px) {
+    .ff-transfer__stage {
+        grid-template-columns: minmax(0, 1fr) 380px;
+        column-gap: 1.5rem;
+        align-items: start;
+    }
+}
+@media (min-width: 1200px) {
+    .ff-transfer__stage {
+        grid-template-columns: minmax(0, 1fr) 420px;
+    }
+}
+
+/* Pitch wrapper on the transfer screen keeps full radius (no bench underneath) */
+.ff-transfer__pitch-col .ff-pitch {
+    border-radius: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.ff-transfer__pitch-hint {
+    margin: 0.65rem 0 0;
+    font-size: 0.8rem;
+    color: var(--ff-tr-text-dim);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.ff-transfer__pitch-hint i { color: var(--ff-tr-danger); }
+
+/* On the transfer pitch, players are sell triggers — danger-tinted hover */
+.ff-transfer__pitch-col .ff-pitch-player {
+    position: relative;
+}
+.ff-transfer__pitch-col .ff-pitch-player:not(.ff-pitch-player--selling):not(.ff-pitch-player--incoming):hover {
+    transform: translateY(-3px);
+}
+.ff-transfer__pitch-col .ff-pitch-player:not(.ff-pitch-player--selling):not(.ff-pitch-player--incoming):hover::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 14px;
+    border: 1px dashed rgba(255, 71, 87, 0.6);
+    pointer-events: none;
+}
+
+/* ---- SELL state: empty grey "+" slot ---- */
+.ff-pitch-player--selling .ff-totw-player__shirt {
+    background: linear-gradient(180deg, #3a4456 0%, #2a3344 100%) !important;
+    color: rgba(255, 255, 255, 0.55) !important;
+    border: 1px dashed rgba(255, 255, 255, 0.28) !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+}
+.ff-pitch-player--selling .ff-totw-player__shirt::before {
+    background: #323b4d !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+.ff-pitch-player--selling .ff-totw-player__points {
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--ff-tr-accent);
+    text-shadow: 0 0 10px rgba(0, 255, 135, 0.55);
+}
+.ff-pitch-player--selling .ff-pitch-player__pos-tag {
+    filter: grayscale(1) brightness(0.7);
+    opacity: 0.6;
+}
+.ff-pitch-player--selling .ff-totw-player__name {
+    background: rgba(255, 71, 87, 0.22);
+    color: #ffd2d7;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.6rem;
+}
+.ff-pitch-player--selling .ff-totw-player__stat {
+    color: rgba(255, 255, 255, 0.45);
+    font-style: italic;
+}
+.ff-pitch-player--selling:hover .ff-totw-player__shirt {
+    border-style: solid !important;
+    border-color: var(--ff-tr-accent) !important;
+}
+
+/* ---- INCOMING state: slot filled by a bought player (+ "IN" tag) ---- */
+.ff-pitch-player--incoming {
+    transform: translateY(-2px);
+}
+.ff-pitch-player--incoming .ff-totw-player__shirt {
+    box-shadow: 0 0 0 2px var(--ff-tr-accent), 0 8px 20px rgba(0, 255, 135, 0.3);
+    animation: ff-tr-pop 0.28s ease;
+}
+.ff-pitch-player--incoming .ff-totw-player__points {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+}
+.ff-pitch-player--incoming::after {
+    content: "IN";
+    position: absolute;
+    top: -6px;
+    right: -2px;
+    z-index: 3;
+    font-size: 0.56rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    color: #0a1320;
+    background: linear-gradient(135deg, var(--ff-tr-accent), #00d9f5);
+    padding: 1px 5px;
+    border-radius: 999px;
+    box-shadow: 0 3px 8px rgba(0, 255, 135, 0.4);
+    pointer-events: none;
+}
+.ff-pitch-player--incoming .ff-totw-player__name {
+    background: rgba(0, 255, 135, 0.18);
+    color: #c8ffe4;
+}
+.ff-pitch-player--incoming .ff-totw-player__stat {
+    color: var(--ff-tr-accent);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+@keyframes ff-tr-pop {
+    0% { transform: scale(0.82); }
+    60% { transform: scale(1.07); }
+    100% { transform: scale(1); }
+}
+
+/* ============================================
+   Right side: market panel
+   ============================================ */
+.ff-transfer-market {
+    background: linear-gradient(135deg, #101a2e 0%, #0a1320 100%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    position: relative;
+    overflow: hidden;
+}
+.ff-transfer-market::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ff-tr-accent), var(--ff-tr-violet), transparent);
+    opacity: 0.7;
+}
+@media (min-width: 992px) {
+    .ff-transfer-market {
+        position: sticky;
+        top: 1rem;
+        max-height: calc(100vh - 2rem);
+    }
+}
+
+.ff-transfer-market__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+.ff-transfer-market__title {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ff-tr-accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+.ff-transfer-market__count {
+    font-size: 0.74rem;
+    color: var(--ff-tr-text-dim);
+    font-variant-numeric: tabular-nums;
+}
+.ff-transfer-market__count strong { color: #fff; }
+
+/* --- Filter controls (dark) --- */
+.ff-transfer-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+.ff-transfer-filters__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+}
+.ff-transfer-filters__group--full { grid-column: 1 / -1; }
+.ff-transfer-filters__label {
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ff-tr-text-dim);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.ff-transfer-filters__label i { color: var(--ff-tr-accent); }
+.ff-transfer-select,
+.ff-transfer-search {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--ff-tr-text);
+    font-size: 0.85rem;
+    padding: 0.55rem 0.7rem;
+    transition: all 0.2s ease;
+}
+.ff-transfer-select {
+    padding-right: 1.8rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2395a3b8'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 0.9rem;
+    cursor: pointer;
+}
+.ff-transfer-select option { background: #0e1722; color: var(--ff-tr-text); }
+.ff-transfer-select:hover,
+.ff-transfer-search:hover { border-color: rgba(0, 255, 135, 0.35); }
+.ff-transfer-select:focus,
+.ff-transfer-search:focus {
+    outline: none;
+    border-color: var(--ff-tr-accent);
+    box-shadow: 0 0 0 3px rgba(0, 255, 135, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+}
+.ff-transfer-search::placeholder { color: var(--ff-tr-text-dim); }
+
+/* --- Price sort toggle --- */
+.ff-transfer-sort {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.ff-transfer-sort__label {
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ff-tr-text-dim);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.ff-transfer-sort__label i { color: var(--ff-tr-violet); }
+.ff-transfer-sort__group {
+    display: inline-flex;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+}
+.ff-transfer-sort__btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--ff-tr-text-dim);
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 0.45rem 0.7rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.2s ease;
+}
+.ff-transfer-sort__btn + .ff-transfer-sort__btn {
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+.ff-transfer-sort__btn:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+.ff-transfer-sort__btn.is-active {
+    background: linear-gradient(135deg, rgba(0, 255, 135, 0.2), rgba(123, 97, 255, 0.16));
+    color: #fff;
+}
+.ff-transfer-sort__btn:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--ff-tr-accent);
+}
+
+/* --- Scrollable list --- */
+.ff-transfer-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    padding: 0.15rem 0.35rem 0.15rem 0;
+    margin-right: -0.35rem;
+    min-height: 200px;
+}
+@media (min-width: 992px) {
+    .ff-transfer-list { flex: 1 1 auto; }
+}
+@media (max-width: 991px) {
+    .ff-transfer-list { max-height: 540px; }
+}
+.ff-transfer-list::-webkit-scrollbar { width: 8px; }
+.ff-transfer-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.03); border-radius: 8px; }
+.ff-transfer-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 135, 0.3);
+    border-radius: 8px;
+}
+.ff-transfer-list::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 135, 0.5); }
+
+/* --- Player row (locker-lite) --- */
+.ff-transfer-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 0.6rem 0.7rem;
+    color: var(--ff-tr-text);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.ff-transfer-card:hover:not([disabled]) {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 255, 135, 0.4);
+    box-shadow: 0 8px 22px rgba(0, 255, 135, 0.12);
+}
+.ff-transfer-card:focus-visible {
+    outline: none;
+    border-color: var(--ff-tr-accent);
+    box-shadow: 0 0 0 2px rgba(0, 255, 135, 0.4);
+}
+.ff-transfer-card__pos {
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+.ff-transfer-card__pos--gk  { background: linear-gradient(135deg, #ffd60a, #f5a524); color: #0d1117; }
+.ff-transfer-card__pos--def { background: linear-gradient(135deg, #22c55e, #0d8a3e); color: #fff; }
+.ff-transfer-card__pos--mid { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
+.ff-transfer-card__pos--fwd { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
+.ff-transfer-card__main { min-width: 0; flex: 1 1 auto; }
+.ff-transfer-card__name {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ff-transfer-card__sub {
+    font-size: 0.74rem;
+    color: var(--ff-tr-text-dim);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ff-transfer-card__sub i { font-size: 0.7rem; opacity: 0.8; }
+.ff-transfer-card__right {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+}
+.ff-transfer-card__value {
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: var(--ff-tr-accent);
+    font-variant-numeric: tabular-nums;
+}
+.ff-transfer-card__pts {
+    font-size: 0.68rem;
+    color: var(--ff-tr-text-dim);
+    font-variant-numeric: tabular-nums;
+}
+.ff-transfer-card__flag {
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 1px 6px;
+    border-radius: 999px;
+}
+
+/* State: already in squad */
+.ff-transfer-card--owned {
+    border-color: rgba(0, 255, 135, 0.28);
+    background: rgba(0, 255, 135, 0.05);
+    cursor: default;
+}
+.ff-transfer-card--owned .ff-transfer-card__flag {
+    background: rgba(0, 255, 135, 0.16);
+    color: var(--ff-tr-accent);
+}
+.ff-transfer-card--owned:hover { transform: none; box-shadow: none; }
+
+/* State: too expensive */
+.ff-transfer-card--unaffordable {
+    opacity: 0.55;
+    cursor: not-allowed;
+    border-color: rgba(255, 71, 87, 0.25);
+}
+.ff-transfer-card--unaffordable .ff-transfer-card__value { color: var(--ff-tr-danger); }
+.ff-transfer-card--unaffordable .ff-transfer-card__flag {
+    background: rgba(255, 71, 87, 0.14);
+    color: var(--ff-tr-danger);
+}
+.ff-transfer-card--unaffordable:hover { transform: none; box-shadow: none; }
+
+/* "Odabran" check ribbon — hidden until the card is selected for a buy */
+.ff-transfer-card__check {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ff-tr-accent);
+    background: linear-gradient(135deg, rgba(0, 255, 135, 0.16), rgba(0, 217, 245, 0.1));
+    backdrop-filter: blur(2px);
+}
+.ff-transfer-card__check i { font-size: 1rem; }
+
+/* State: selected as an incoming buy */
+.ff-transfer-card { position: relative; }
+.ff-transfer-card.is-selected {
+    border-color: var(--ff-tr-accent);
+    background: rgba(0, 255, 135, 0.06);
+    box-shadow: 0 8px 22px rgba(0, 255, 135, 0.18);
+    cursor: pointer;
+}
+.ff-transfer-card.is-selected:hover { transform: translateY(-2px); }
+.ff-transfer-card.is-selected .ff-transfer-card__check {
+    display: flex;
+    animation: ff-tr-pop 0.25s ease;
+}
+
+/* Empty filter state */
+.ff-transfer-empty {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--ff-tr-text-dim);
+}
+.ff-transfer-empty.is-shown { display: flex; }
+.ff-transfer-empty__icon { font-size: 1.8rem; color: rgba(255, 255, 255, 0.2); }
+.ff-transfer-empty__text { font-size: 0.85rem; }
+
+/* ============================================
+   Transfer confirm modal (Buy / Sell)
+   ============================================ */
+.ff-transfer-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(5, 9, 16, 0.7);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+.ff-transfer-modal-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+.ff-transfer-modal {
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(135deg, #16213a 0%, #0d1525 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+    padding: 1.5rem 1.4rem 1.4rem;
+    position: relative;
+    transform: translateY(16px) scale(0.96);
+    transition: transform 0.25s ease;
+}
+.ff-transfer-modal-backdrop.is-open .ff-transfer-modal {
+    transform: translateY(0) scale(1);
+}
+.ff-transfer-modal__close {
+    position: absolute;
+    top: 0.85rem;
+    right: 0.85rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s ease;
+}
+.ff-transfer-modal__close:hover { background: rgba(255, 71, 87, 0.18); color: #fff; }
+.ff-transfer-modal__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+    margin-bottom: 0.9rem;
+}
+.ff-transfer-modal__icon--buy {
+    background: linear-gradient(135deg, rgba(0, 255, 135, 0.2), rgba(45, 255, 205, 0.1));
+    color: var(--ff-tr-accent);
+    border: 1px solid rgba(0, 255, 135, 0.3);
+}
+.ff-transfer-modal__icon--sell {
+    background: rgba(255, 71, 87, 0.14);
+    color: var(--ff-tr-danger);
+    border: 1px solid rgba(255, 71, 87, 0.35);
+}
+.ff-transfer-modal__title {
+    margin: 0 0 0.3rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.01em;
+}
+.ff-transfer-modal__text {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    color: var(--ff-tr-text-dim);
+    line-height: 1.5;
+}
+.ff-transfer-modal__text strong { color: #fff; }
+.ff-transfer-modal__money {
+    color: var(--ff-tr-accent);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+.ff-transfer-modal__money--out { color: var(--ff-tr-danger); }
+.ff-transfer-modal__summary {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.4rem 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 0.75rem 0.9rem;
+    margin-bottom: 1.1rem;
+    font-size: 0.85rem;
+}
+.ff-transfer-modal__summary dt { color: var(--ff-tr-text-dim); margin: 0; }
+.ff-transfer-modal__summary dd {
+    margin: 0;
+    text-align: right;
+    font-weight: 700;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+}
+.ff-transfer-modal__summary dd.is-positive { color: var(--ff-tr-accent); }
+.ff-transfer-modal__summary dd.is-negative { color: var(--ff-tr-danger); }
+.ff-transfer-modal__actions {
+    display: flex;
+    gap: 0.6rem;
+}
+.ff-transfer-modal__btn {
+    flex: 1 1 auto;
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 0.92rem;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+.ff-transfer-modal__btn--cancel {
+    flex: 0 0 auto;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--ff-tr-text);
+}
+.ff-transfer-modal__btn--cancel:hover { background: rgba(255, 255, 255, 0.1); }
+.ff-transfer-modal__btn--buy {
+    background: linear-gradient(135deg, #00ff87 0%, #2dffcd 100%);
+    color: #0a1320;
+    box-shadow: 0 8px 18px rgba(0, 255, 135, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.ff-transfer-modal__btn--buy:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow: 0 12px 26px rgba(0, 255, 135, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.ff-transfer-modal__btn--sell {
+    background: linear-gradient(135deg, #ff4757 0%, #c1121f 100%);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(255, 71, 87, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.ff-transfer-modal__btn--sell:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow: 0 12px 26px rgba(255, 71, 87, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+body.ff-transfer-modal-open { overflow: hidden; }
+
+/* ============================================
+   Transfer cart / summary bar (sticky bottom)
+   ============================================ */
+.ff-transfer-cart {
+    position: sticky;
+    bottom: 0.75rem;
+    z-index: 20;
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.25rem;
+    padding: 0.85rem 1.1rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(20, 34, 58, 0.92), rgba(10, 19, 32, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.ff-transfer-cart.is-active {
+    border-color: rgba(0, 255, 135, 0.3);
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 255, 135, 0.15);
+}
+.ff-transfer-cart__stats {
+    display: flex;
+    align-items: stretch;
+    gap: 0.65rem;
+    flex: 0 0 auto;
+}
+.ff-transfer-cart__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    min-width: 84px;
+}
+.ff-transfer-cart__stat-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ff-tr-text-dim);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+}
+.ff-transfer-cart__stat-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+    line-height: 1.1;
+}
+.ff-transfer-cart__stat--out .ff-transfer-cart__stat-label i { color: var(--ff-tr-danger); }
+.ff-transfer-cart__stat--in .ff-transfer-cart__stat-label i { color: var(--ff-tr-accent); }
+.ff-transfer-cart__stat--budget .ff-transfer-cart__stat-label i { color: var(--ff-tr-violet); }
+.ff-transfer-cart__stat--budget .ff-transfer-cart__stat-value { color: var(--ff-tr-accent); }
+.ff-transfer-cart__stat-value.is-negative { color: var(--ff-tr-danger); }
+
+.ff-transfer-cart__hint {
+    flex: 1 1 200px;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--ff-tr-text-dim);
+}
+.ff-transfer-cart__hint i { flex-shrink: 0; }
+.ff-transfer-cart__hint[data-tone="warn"] { color: var(--ff-tr-warn); }
+.ff-transfer-cart__hint[data-tone="warn"] i { color: var(--ff-tr-warn); }
+.ff-transfer-cart__hint[data-tone="danger"] { color: #ffb3ba; }
+.ff-transfer-cart__hint[data-tone="danger"] i { color: var(--ff-tr-danger); }
+.ff-transfer-cart__hint[data-tone="ok"] { color: #c8ffe4; }
+.ff-transfer-cart__hint[data-tone="ok"] i { color: var(--ff-tr-accent); }
+
+.ff-transfer-cart__actions {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 0.6rem;
+    margin-left: auto;
+}
+.ff-transfer-cart__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.05rem;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
+}
+.ff-transfer-cart__btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 255, 135, 0.4);
+}
+.ff-transfer-cart__btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.ff-transfer-cart__btn--reset {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--ff-tr-text);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.ff-transfer-cart__btn--reset:not(:disabled):hover {
+    background: rgba(255, 71, 87, 0.14);
+    color: #ffd2d7;
+    border-color: rgba(255, 71, 87, 0.4);
+}
+.ff-transfer-cart__btn--confirm {
+    background: linear-gradient(135deg, #00f5a0 0%, #00d9f5 100%);
+    color: #06121f;
+    box-shadow: 0 8px 20px rgba(0, 255, 135, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.ff-transfer-cart__btn--confirm:not(:disabled):hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow: 0 12px 28px rgba(0, 255, 135, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* ============================================
+   Confirm modal — review of OUT + IN
+   ============================================ */
+.ff-transfer-modal--cart { max-width: 540px; text-align: left; }
+.ff-transfer-modal--cart .ff-transfer-modal__icon,
+.ff-transfer-modal--cart .ff-transfer-modal__title,
+.ff-transfer-modal--cart .ff-transfer-modal__text { text-align: center; }
+.ff-transfer-modal--cart .ff-transfer-modal__icon { margin-left: auto; margin-right: auto; }
+
+.ff-transfer-review {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+    margin: 1rem 0 0.4rem;
+}
+.ff-transfer-review__col {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 0.7rem;
+    min-width: 0;
+}
+.ff-transfer-review__heading {
+    margin: 0 0 0.55rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.ff-transfer-review__heading--out { color: var(--ff-tr-danger); }
+.ff-transfer-review__heading--in { color: var(--ff-tr-accent); }
+.ff-transfer-review__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.ff-transfer-review__empty { font-size: 0.78rem; color: var(--ff-tr-text-dim); font-style: italic; }
+.ff-transfer-review__item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+}
+.ff-transfer-review__pos {
+    flex: 0 0 auto;
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    padding: 1px 5px;
+    border-radius: 5px;
+    color: #fff;
+}
+.ff-transfer-review__pos--gk  { background: linear-gradient(135deg, #ffd60a, #f5a524); color: #0d1117; }
+.ff-transfer-review__pos--def { background: linear-gradient(135deg, #22c55e, #0d8a3e); }
+.ff-transfer-review__pos--mid { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.ff-transfer-review__pos--fwd { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+.ff-transfer-review__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: #fff;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ff-transfer-review__val {
+    flex: 0 0 auto;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.78rem;
+}
+.ff-transfer-review__val--out { color: var(--ff-tr-accent); }
+.ff-transfer-review__val--in { color: var(--ff-tr-danger); }
+.ff-transfer-modal__summary dd.is-positive { color: var(--ff-tr-accent); }
+
+/* ============================================
+   Toast (transient inline messages)
+   ============================================ */
+.ff-transfer-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    transform: translate(-50%, 140%);
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    max-width: min(92vw, 420px);
+    padding: 0.75rem 1.1rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 71, 87, 0.95), rgba(193, 18, 31, 0.95));
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.28s ease;
+}
+.ff-transfer-toast i { font-size: 1.1rem; flex-shrink: 0; }
+.ff-transfer-toast.is-shown {
+    transform: translate(-50%, 0);
+    opacity: 1;
+}
+
+/* Error variant — feasibility blocks (budget / club limit).
+   Darker surface with a hard neon-red accent edge so it reads as a hard "stop". */
+.ff-transfer-toast--error {
+    background: linear-gradient(135deg, rgba(20, 27, 45, 0.96), rgba(36, 14, 20, 0.96));
+    border: 1px solid rgba(255, 71, 87, 0.55);
+    border-left: 3px solid #ff4757;
+    color: #ffd9dd;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 71, 87, 0.12);
+}
+.ff-transfer-toast--error i { color: #ff4757; }
+
+/* --- Responsive --- */
+@media (max-width: 575px) {
+    .ff-transfer-filters { grid-template-columns: 1fr; }
+    .ff-transfer-market { padding: 0.85rem; }
+    .ff-transfer-modal__actions { flex-wrap: wrap; }
+    .ff-transfer-modal__btn--cancel { flex: 1 1 100%; order: 2; }
+    .ff-transfer-review { grid-template-columns: 1fr; }
+    .ff-transfer-cart { gap: 0.7rem; padding: 0.75rem 0.85rem; }
+    .ff-transfer-cart__stats { flex: 1 1 100%; }
+    .ff-transfer-cart__stat { flex: 1 1 0; min-width: 0; padding: 0.4rem 0.5rem; }
+    .ff-transfer-cart__hint { flex: 1 1 100%; order: 3; }
+    .ff-transfer-cart__actions { flex: 1 1 100%; margin-left: 0; }
+    .ff-transfer-cart__btn { flex: 1 1 0; justify-content: center; }
+}
+@media (max-width: 991px) {
+    .ff-transfer-cart__hint { flex-basis: 100%; order: 3; }
+    .ff-transfer-cart__actions { margin-left: auto; }
+}

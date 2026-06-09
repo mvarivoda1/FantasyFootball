@@ -1,534 +1,789 @@
-@model List<Transfer>
+@model FantasyFootball.Models.ViewModels.TransferMarketViewModel
 @{
-    ViewData["Title"] = "Transfers";
+    ViewData["Title"] = "Transferi";
 
-    // -----------------------------------------------------------
-    // Helpers (inline, no backend change)
-    // -----------------------------------------------------------
-    string PosAbbr(Position p) => p switch
+    string PosAbbr(Position pos) => pos switch
     {
         Position.Goalkeeper => "GK",
-        Position.Defender   => "DEF",
+        Position.Defender => "DEF",
         Position.Midfielder => "MID",
-        Position.Forward    => "FWD",
+        Position.Forward => "FWD",
         _ => "MID"
     };
-
-    string PosBadgeClass(Position p) => p switch
+    string PosVariant(Position pos) => pos switch
     {
-        Position.Goalkeeper => "ff-badge--gk",
-        Position.Defender   => "ff-badge--def",
-        Position.Midfielder => "ff-badge--mid",
-        Position.Forward    => "ff-badge--fwd",
-        _ => "ff-badge--mid"
+        Position.Goalkeeper => "gk",
+        Position.Defender => "def",
+        Position.Midfielder => "mid",
+        Position.Forward => "fwd",
+        _ => "mid"
     };
-
-    var all = Model ?? new List<Transfer>();
-
-    // -----------------------------------------------------------
-    // Trend datasets
-    // -----------------------------------------------------------
-    var transferredIn = all
-        .Where(t => t.Direction == TransferDirection.In && t.Player != null)
-        .GroupBy(t => t.Player)
-        .Select(g => new {
-            Player = g.Key,
-            Count = g.Count()
-        })
-        .OrderByDescending(x => x.Count)
-        .Take(10)
-        .ToList();
-
-    var transferredOut = all
-        .Where(t => t.Direction == TransferDirection.Out && t.Player != null)
-        .GroupBy(t => t.Player)
-        .Select(g => new {
-            Player = g.Key,
-            Count = g.Count()
-        })
-        .OrderByDescending(x => x.Count)
-        .Take(10)
-        .ToList();
-
-    var recent = all
-        .OrderByDescending(t => t.TransferDate)
-        .Take(15)
-        .ToList();
 }
 
-<!-- Breadcrumb -->
-<ul class="ff-breadcrumb">
-    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
-    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Transfers</li>
-</ul>
+<section class="ff-transfer ff-myteam" data-budget="@Model.Budget.ToString(System.Globalization.CultureInfo.InvariantCulture)">
 
-<!-- Page header -->
-<header class="ff-page-header ff-animate-in">
-    <div class="ff-page-header__main">
-        <h1 class="ff-page-header__title"><i class="bi bi-arrow-left-right"></i> Transfer Market</h1>
-        <p class="ff-page-header__meta">
-            <span class="ff-page-header__meta-item">
-                <i class="bi bi-activity"></i> @all.Count total transfers
-            </span>
-            <span class="ff-page-header__meta-item">
-                <i class="bi bi-arrow-down-circle-fill"></i> @all.Count(t => t.Direction == TransferDirection.In) buys
-            </span>
-            <span class="ff-page-header__meta-item">
-                <i class="bi bi-arrow-up-circle-fill"></i> @all.Count(t => t.Direction == TransferDirection.Out) sales
-            </span>
-        </p>
-    </div>
-    <p class="ff-page-header__description">
-        Live market overview &mdash; the most-traded players and the latest deals across all leagues.
-    </p>
-</header>
-
-@if (!all.Any())
-{
-    <div class="ff-empty">
-        <div class="ff-empty__icon"><i class="bi bi-arrow-left-right"></i></div>
-        <div class="ff-empty__text">No transfers recorded yet.</div>
-    </div>
-}
-else
-{
-    <!-- AJAX search bar -->
-    <div class="ff-search-bar" id="ffTransferSearchBar" role="search">
-        <i class="bi bi-search ff-search-bar__icon" aria-hidden="true"></i>
-        <input type="text"
-               id="ffTransferSearchInput"
-               class="ff-search-bar__input"
-               placeholder="Filtriraj po imenu igrača..."
-               autocomplete="off"
-               aria-label="Pretraga transfera" />
-        <span class="ff-search-bar__status" id="ffTransferSearchStatus"></span>
-        <button type="button"
-                id="ffTransferSearchClear"
-                class="ff-search-bar__clear"
-                aria-label="Obriši pretragu"
-                style="display:none;">
-            <i class="bi bi-x-lg" aria-hidden="true"></i>
-        </button>
-    </div>
-
-    // ---------- Local render helper: builds a .ff-player-link anchor ----------
-    Microsoft.AspNetCore.Html.IHtmlContent PlayerLink(Player p)
-    {
-        var nameEnc      = System.Net.WebUtility.HtmlEncode(p.FullName ?? "");
-        var clubEnc      = System.Net.WebUtility.HtmlEncode(p.Club ?? "");
-        var natEnc       = System.Net.WebUtility.HtmlEncode(p.Nationality ?? "");
-        var teamsJson    = System.Text.Json.JsonSerializer.Serialize(
-                              p.FantasyTeams?.Select(t => new { t.Id, t.Name, t.OwnerName, t.TotalPoints }));
-        var teamsJsonEnc = System.Net.WebUtility.HtmlEncode(teamsJson);
-
-        var sb = new System.Text.StringBuilder();
-        sb.Append("<a href=\"#\" class=\"ff-player-link ff-widget-row__name\" role=\"button\" tabindex=\"0\"");
-        sb.Append(" aria-haspopup=\"dialog\" aria-label=\"Open locker for ").Append(nameEnc).Append("\"");
-        sb.Append(" data-player-id=\"").Append(p.Id).Append("\"");
-        sb.Append(" data-player-name=\"").Append(nameEnc).Append("\"");
-        sb.Append(" data-player-club=\"").Append(clubEnc).Append("\"");
-        sb.Append(" data-player-nationality=\"").Append(natEnc).Append("\"");
-        sb.Append(" data-player-position=\"").Append(p.Position).Append("\"");
-        sb.Append(" data-player-pos-abbr=\"").Append(PosAbbr(p.Position)).Append("\"");
-        sb.Append(" data-player-badge=\"").Append(PosBadgeClass(p.Position)).Append("\"");
-        sb.Append(" data-player-dob=\"").Append(p.DateOfBirth.ToString("dd MMM yyyy")).Append("\"");
-        sb.Append(" data-player-value=\"").Append(p.MarketValue.ToString("N0")).Append("\"");
-        sb.Append(" data-player-goals=\"").Append(p.Goals).Append("\"");
-        sb.Append(" data-player-assists=\"").Append(p.Assists).Append("\"");
-        sb.Append(" data-player-cleansheets=\"").Append(p.CleanSheets).Append("\"");
-        sb.Append(" data-player-points=\"").Append(p.TotalPoints).Append("\"");
-        sb.Append(" data-player-teams='").Append(teamsJsonEnc).Append("'>");
-        sb.Append(nameEnc);
-        sb.Append("</a>");
-        return new Microsoft.AspNetCore.Html.HtmlString(sb.ToString());
-    }
-
-    <!-- Grid of widgets -->
-    <div class="row g-4">
-
-        <!-- ==================== A. Most Transferred In ==================== -->
-        <section class="col-lg-6 col-xl-4">
-            <div class="ff-widget-card ff-widget-card--in">
-                <div class="ff-widget-card__header">
-                    <h2 class="ff-widget-card__title">
-                        <i class="bi bi-arrow-down-circle-fill"></i> Most Transferred In
-                    </h2>
-                    <span class="ff-widget-card__count">Top @transferredIn.Count</span>
-                </div>
-                <div class="ff-widget-card__body ff-widget-card__body--list">
-                    @if (transferredIn.Any())
-                    {
-                        <ol class="ff-widget-list ff-widget-list--ranked">
-                            @{ int rIn = 1; }
-                            @foreach (var item in transferredIn)
-                            {
-                                <li class="ff-widget-row">
-                                    <div class="ff-widget-row__rank">@rIn</div>
-                                    <div class="ff-widget-row__main">
-                                        @PlayerLink(item.Player)
-                                        <span class="ff-widget-row__sub">@item.Player.Club</span>
-                                    </div>
-                                    <div class="ff-trend-row__metric">
-                                        <span class="ff-badge ff-badge--in">@item.Count IN</span>
-                                    </div>
-                                </li>
-                                rIn++;
-                            }
-                        </ol>
-                    }
-                    else
-                    {
-                        <div class="ff-widget-card__empty">
-                            <i class="bi bi-arrow-down-circle"></i>
-                            No incoming transfers yet.
-                        </div>
-                    }
-                </div>
+    <header class="ff-myteam__hero">
+        <div class="ff-myteam__hero-bg" aria-hidden="true"></div>
+        <div class="ff-myteam__hero-inner">
+            <div class="ff-myteam__hero-text">
+                <h1 class="ff-myteam__title">@Model.TeamName</h1>
+                <p class="ff-myteam__subtitle">
+                    Tržište igrača. Klikni igrača na terenu da ga <strong>prodaš</strong>,
+                    pa popuni oslobođeno mjesto igračem iz popisa desno da ga <strong>kupiš</strong>.
+                    Sve transfere potvrđuješ na kraju.
+                </p>
             </div>
-        </section>
-
-        <!-- ==================== B. Most Transferred Out ==================== -->
-        <section class="col-lg-6 col-xl-4">
-            <div class="ff-widget-card ff-widget-card--out">
-                <div class="ff-widget-card__header">
-                    <h2 class="ff-widget-card__title">
-                        <i class="bi bi-arrow-up-circle-fill"></i> Most Transferred Out
-                    </h2>
-                    <span class="ff-widget-card__count">Top @transferredOut.Count</span>
-                </div>
-                <div class="ff-widget-card__body ff-widget-card__body--list">
-                    @if (transferredOut.Any())
-                    {
-                        <ol class="ff-widget-list ff-widget-list--ranked">
-                            @{ int rOut = 1; }
-                            @foreach (var item in transferredOut)
-                            {
-                                <li class="ff-widget-row">
-                                    <div class="ff-widget-row__rank">@rOut</div>
-                                    <div class="ff-widget-row__main">
-                                        @PlayerLink(item.Player)
-                                        <span class="ff-widget-row__sub">@item.Player.Club</span>
-                                    </div>
-                                    <div class="ff-trend-row__metric">
-                                        <span class="ff-badge ff-badge--out">@item.Count OUT</span>
-                                    </div>
-                                </li>
-                                rOut++;
-                            }
-                        </ol>
-                    }
-                    else
-                    {
-                        <div class="ff-widget-card__empty">
-                            <i class="bi bi-arrow-up-circle"></i>
-                            No outgoing transfers yet.
-                        </div>
-                    }
-                </div>
-            </div>
-        </section>
-
-        <!-- ==================== C. Recent Transfers ==================== -->
-        <section class="col-lg-12 col-xl-4">
-            <div class="ff-widget-card">
-                <div class="ff-widget-card__header">
-                    <h2 class="ff-widget-card__title">
-                        <i class="bi bi-clock-history"></i> Recent Transfers
-                    </h2>
-                    <span class="ff-widget-card__count">Last @recent.Count</span>
-                </div>
-                <div class="ff-widget-card__body">
-                    @if (recent.Any())
-                    {
-                        <div class="ff-table-responsive">
-                            <table class="ff-table">
-                                <thead>
-                                    <tr>
-                                        <th>Player</th>
-                                        <th>Team</th>
-                                        <th>Dir</th>
-                                        <th class="text-end">Price</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var t in recent)
-                                    {
-                                        var dirClass = t.Direction == TransferDirection.In ? "ff-badge--in" : "ff-badge--out";
-                                        var dirLabel = t.Direction == TransferDirection.In ? "IN" : "OUT";
-                                        <tr>
-                                            <td>@PlayerLink(t.Player)</td>
-                                            <td>
-                                                @if (t.Team != null)
-                                                {
-                                                    <a asp-controller="FantasyTeam" asp-action="Details" asp-route-id="@t.Team.Id">@t.Team.Name</a>
-                                                }
-                                                else
-                                                {
-                                                    <span class="ff-text-muted">—</span>
-                                                }
-                                            </td>
-                                            <td><span class="ff-badge @dirClass">@dirLabel</span></td>
-                                            <td class="ff-num text-end">&euro;@t.Price.ToString("N0")</td>
-                                            <td><span class="ff-text-muted ff-text-sm">@t.TransferDate.ToString("dd MMM")</span></td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="ff-widget-card__empty">
-                            <i class="bi bi-clock-history"></i>
-                            No recent transfers.
-                        </div>
-                    }
-                </div>
-            </div>
-        </section>
-
-    </div>
-
-    <!-- ==================== Locker Modal (player details) ==================== -->
-    <div class="ff-locker-modal-backdrop" id="lockerModalBackdrop" aria-hidden="true">
-        <div class="ff-locker-modal" role="dialog" aria-modal="true" aria-labelledby="lockerModalName">
-            <div class="ff-locker-modal__door-wrapper">
-                <div class="ff-locker-modal__door" aria-hidden="true">
-                    <div class="ff-locker-modal__door-handle"></div>
-                </div>
-
-                <div class="ff-locker-modal__interior">
-                    <button class="ff-locker-modal__close" aria-label="Close locker" id="lockerModalClose">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-
-                    <div class="ff-locker-modal__header">
-                        <div class="ff-locker-modal__player-identity">
-                            <div>
-                                <h2 class="ff-locker-modal__name" id="lockerModalName"></h2>
-                                <div class="ff-locker-modal__meta">
-                                    <span id="lockerModalBadge"></span>
-                                    <span><i class="bi bi-building"></i> <span id="lockerModalClub"></span></span>
-                                    <span><i class="bi bi-globe"></i> <span id="lockerModalNationality"></span></span>
-                                </div>
-                            </div>
-                            <div class="ff-locker-modal__points">
-                                <div class="ff-locker-modal__points-value" id="lockerModalPoints"></div>
-                                <div class="ff-locker-modal__points-label">Total Pts</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="ff-locker-modal__stats">
-                        <div class="ff-locker-modal__stat">
-                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-bullseye"></i></div>
-                            <div class="ff-locker-modal__stat-value" id="lockerModalGoals"></div>
-                            <div class="ff-locker-modal__stat-label">Goals</div>
-                        </div>
-                        <div class="ff-locker-modal__stat">
-                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-hand-thumbs-up-fill"></i></div>
-                            <div class="ff-locker-modal__stat-value" id="lockerModalAssists"></div>
-                            <div class="ff-locker-modal__stat-label">Assists</div>
-                        </div>
-                        <div class="ff-locker-modal__stat">
-                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-shield-fill-check"></i></div>
-                            <div class="ff-locker-modal__stat-value" id="lockerModalCleanSheets"></div>
-                            <div class="ff-locker-modal__stat-label">Clean Sheets</div>
-                        </div>
-                        <div class="ff-locker-modal__stat">
-                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-cash-stack"></i></div>
-                            <div class="ff-locker-modal__stat-value" id="lockerModalValue"></div>
-                            <div class="ff-locker-modal__stat-label">Value</div>
-                        </div>
-                        <div class="ff-locker-modal__stat">
-                            <div class="ff-locker-modal__stat-icon"><i class="bi bi-cake2-fill"></i></div>
-                            <div class="ff-locker-modal__stat-value" id="lockerModalDob"></div>
-                            <div class="ff-locker-modal__stat-label">Born</div>
-                        </div>
-                    </div>
-
-                    <hr class="ff-locker-modal__divider" />
-
-                    <div class="ff-locker-modal__teams">
-                        <div class="ff-locker-modal__teams-title">
-                            <i class="bi bi-shield-fill"></i> Fantasy Teams
-                        </div>
-                        <div class="ff-locker-modal__team-list" id="lockerModalTeams">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-
-                    <div class="ff-locker-modal__actions">
-                        <a href="#" class="ff-locker-modal__details-link" id="lockerModalDetailsLink">
-                            Full Details <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
+            <div class="ff-myteam__hero-meta">
+                <div class="ff-budget-badge" aria-label="Raspoloživi transfer budget">
+                    <span class="ff-budget-badge__icon" aria-hidden="true"><i class="bi bi-cash-coin"></i></span>
+                    <span>Budget:</span>
+                    <span class="ff-budget-badge__amount" data-role="budget-display">@Model.Budget.ToString("N1")M</span>
                 </div>
             </div>
         </div>
+    </header>
+
+    @if (TempData["TransferSuccess"] != null)
+    {
+        <div class="ff-transfer-alert ff-transfer-alert--success" role="status" aria-live="polite">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>@TempData["TransferSuccess"]</span>
+            <button type="button" class="ff-transfer-alert__close" aria-label="Zatvori" data-dismiss-alert>
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+    }
+    @if (TempData["TransferError"] != null)
+    {
+        <div class="ff-transfer-alert ff-transfer-alert--danger" role="alert" aria-live="assertive">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            <span>@TempData["TransferError"]</span>
+            <button type="button" class="ff-transfer-alert__close" aria-label="Zatvori" data-dismiss-alert>
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+    }
+
+    <div class="ff-transfer__stage">
+
+        <!-- LEFT: pitch with current squad (click player = mark for sell; empty "+" slot = buy target) -->
+        <div class="ff-transfer__pitch-col">
+            <div class="ff-pitch" data-role="pitch" aria-label="Trenutni sastav — klikni igrača za prodaju">
+                <div class="ff-pitch__lines" aria-hidden="true">
+                    <span class="ff-pitch__line ff-pitch__line--center"></span>
+                    <span class="ff-pitch__line ff-pitch__circle"></span>
+                    <span class="ff-pitch__line ff-pitch__spot ff-pitch__spot--center"></span>
+                    <span class="ff-pitch__line ff-pitch__box ff-pitch__box--top"></span>
+                    <span class="ff-pitch__line ff-pitch__box ff-pitch__box--top-six"></span>
+                    <span class="ff-pitch__line ff-pitch__box ff-pitch__box--bottom"></span>
+                    <span class="ff-pitch__line ff-pitch__box ff-pitch__box--bottom-six"></span>
+                    <span class="ff-pitch__line ff-pitch__spot ff-pitch__spot--top"></span>
+                    <span class="ff-pitch__line ff-pitch__spot ff-pitch__spot--bottom"></span>
+                </div>
+
+                <div class="ff-pitch__rows">
+                    <div class="ff-pitch__row ff-pitch__row--fwd ff-totw__row" data-row="FWD">
+                        @foreach (var p in Model.SquadForwards)
+                        {
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                        }
+                    </div>
+                    <div class="ff-pitch__row ff-pitch__row--mid ff-totw__row" data-row="MID">
+                        @foreach (var p in Model.SquadMidfielders)
+                        {
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                        }
+                    </div>
+                    <div class="ff-pitch__row ff-pitch__row--def ff-totw__row" data-row="DEF">
+                        @foreach (var p in Model.SquadDefenders)
+                        {
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                        }
+                    </div>
+                    <div class="ff-pitch__row ff-pitch__row--gk ff-totw__row" data-row="GK">
+                        @foreach (var p in Model.SquadGoalkeepers)
+                        {
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                        }
+                    </div>
+                </div>
+            </div>
+            <p class="ff-transfer__pitch-hint">
+                <i class="bi bi-box-arrow-up" aria-hidden="true"></i>
+                Klik na igrača ga označi za prodaju (postane sivo <strong>+</strong> mjesto). Ponovni klik poništava prodaju.
+            </p>
+        </div>
+
+        <!-- RIGHT: market panel -->
+        <aside class="ff-transfer-market" aria-label="Tržište igrača">
+            <div class="ff-transfer-market__head">
+                <h2 class="ff-transfer-market__title">
+                    <i class="bi bi-cart3" aria-hidden="true"></i> Tržište
+                </h2>
+                <span class="ff-transfer-market__count" data-role="market-count">
+                    <strong>@Model.AllPlayers.Count</strong> / @Model.AllPlayers.Count igrača
+                </span>
+            </div>
+
+            <div class="ff-transfer-filters" role="search" aria-label="Filtriraj igrače">
+                <div class="ff-transfer-filters__group">
+                    <label class="ff-transfer-filters__label" for="trPosition">
+                        <i class="bi bi-person-badge-fill" aria-hidden="true"></i> Pozicija
+                    </label>
+                    <select id="trPosition" class="ff-transfer-select" aria-label="Filtriraj po poziciji">
+                        <option value="">Sve pozicije</option>
+                        <option value="Goalkeeper">GK — Vratar</option>
+                        <option value="Defender">DEF — Obrana</option>
+                        <option value="Midfielder">MID — Vezni red</option>
+                        <option value="Forward">FWD — Napad</option>
+                    </select>
+                </div>
+                <div class="ff-transfer-filters__group">
+                    <label class="ff-transfer-filters__label" for="trClub">
+                        <i class="bi bi-shield-fill" aria-hidden="true"></i> Klub
+                    </label>
+                    <select id="trClub" class="ff-transfer-select" aria-label="Filtriraj po klubu">
+                        <option value="">Svi klubovi</option>
+                        @foreach (var club in Model.Clubs)
+                        {
+                            <option value="@club">@club</option>
+                        }
+                    </select>
+                </div>
+                <div class="ff-transfer-filters__group ff-transfer-filters__group--full">
+                    <label class="ff-transfer-filters__label" for="trSearch">
+                        <i class="bi bi-search" aria-hidden="true"></i> Pretraga
+                    </label>
+                    <input type="text" id="trSearch" class="ff-transfer-search"
+                           placeholder="Ime igrača..." autocomplete="off"
+                           aria-label="Pretraži igrače po imenu" />
+                </div>
+            </div>
+
+            <div class="ff-transfer-sort">
+                <span class="ff-transfer-sort__label">
+                    <i class="bi bi-sort-numeric-down" aria-hidden="true"></i> Cijena
+                </span>
+                <div class="ff-transfer-sort__group" role="group" aria-label="Sortiraj po cijeni">
+                    <button type="button" class="ff-transfer-sort__btn is-active"
+                            data-sort="asc" aria-pressed="true">
+                        <i class="bi bi-arrow-up" aria-hidden="true"></i> Najjeftiniji
+                    </button>
+                    <button type="button" class="ff-transfer-sort__btn"
+                            data-sort="desc" aria-pressed="false">
+                        <i class="bi bi-arrow-down" aria-hidden="true"></i> Najskuplji
+                    </button>
+                </div>
+            </div>
+
+            <div class="ff-transfer-list" data-role="market-list">
+                @foreach (var p in Model.AllPlayers)
+                {
+                    var posAbbr = PosAbbr(p.Position);
+                    var posVar = PosVariant(p.Position);
+                    var owned = Model.SquadPlayerIds.Contains(p.Id);
+                    var stateClass = owned ? " ff-transfer-card--owned" : string.Empty;
+
+                    <button type="button"
+                            class="ff-transfer-card@(stateClass)"
+                            data-role="market-card"
+                            data-player-id="@p.Id"
+                            data-player-name="@p.FullName"
+                            data-player-last="@p.LastName"
+                            data-player-club="@p.Club"
+                            data-player-position="@p.Position"
+                            data-player-pos-abbr="@posAbbr"
+                            data-player-pos-var="@posVar"
+                            data-player-value-raw="@p.MarketValue.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                            data-player-value="@p.MarketValue.ToString("N1")"
+                            data-player-owned="@(owned ? "true" : "false")"
+                            aria-pressed="false"
+                            disabled="@(owned ? "disabled" : null)"
+                            aria-label="@(owned ? $"{p.FullName} je već u timu" : $"Kupi {p.FullName} za {p.MarketValue.ToString("N1")} milijuna")">
+                        <span class="ff-transfer-card__pos ff-transfer-card__pos--@posVar" aria-hidden="true">@posAbbr</span>
+                        <span class="ff-transfer-card__main">
+                            <span class="ff-transfer-card__name">@p.FullName</span>
+                            <span class="ff-transfer-card__sub">
+                                <i class="bi bi-shield" aria-hidden="true"></i>@p.Club
+                            </span>
+                        </span>
+                        <span class="ff-transfer-card__right">
+                            <span class="ff-transfer-card__value">@p.MarketValue.ToString("N1")M</span>
+                            @if (owned)
+                            {
+                                <span class="ff-transfer-card__flag" aria-hidden="true">U timu</span>
+                            }
+                            else
+                            {
+                                <span class="ff-transfer-card__pts">@p.TotalPoints pts</span>
+                            }
+                        </span>
+                        <span class="ff-transfer-card__check" aria-hidden="true">
+                            <i class="bi bi-check-lg"></i> Odabran
+                        </span>
+                    </button>
+                }
+            </div>
+
+            <div class="ff-transfer-empty" data-role="market-empty" aria-live="polite">
+                <div class="ff-transfer-empty__icon"><i class="bi bi-search"></i></div>
+                <div class="ff-transfer-empty__text">Nijedan igrač ne odgovara filterima.</div>
+            </div>
+        </aside>
+
     </div>
-}
+
+    <!-- ====== Transfer košarica / summary bar ====== -->
+    <div class="ff-transfer-cart" data-role="cart" aria-live="polite">
+        <div class="ff-transfer-cart__stats">
+            <div class="ff-transfer-cart__stat ff-transfer-cart__stat--out">
+                <span class="ff-transfer-cart__stat-label"><i class="bi bi-box-arrow-up" aria-hidden="true"></i> Prodaja</span>
+                <span class="ff-transfer-cart__stat-value" data-role="cart-out">0</span>
+            </div>
+            <div class="ff-transfer-cart__stat ff-transfer-cart__stat--in">
+                <span class="ff-transfer-cart__stat-label"><i class="bi bi-cart-plus" aria-hidden="true"></i> Kupnja</span>
+                <span class="ff-transfer-cart__stat-value" data-role="cart-in">0</span>
+            </div>
+            <div class="ff-transfer-cart__stat ff-transfer-cart__stat--budget">
+                <span class="ff-transfer-cart__stat-label"><i class="bi bi-wallet2" aria-hidden="true"></i> Budget nakon</span>
+                <span class="ff-transfer-cart__stat-value" data-role="cart-budget">@Model.Budget.ToString("N1")M</span>
+            </div>
+        </div>
+        <div class="ff-transfer-cart__hint" data-role="cart-hint" data-tone="info">
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            <span data-role="cart-hint-text">Odaberi barem jedan transfer.</span>
+        </div>
+        <div class="ff-transfer-cart__actions">
+            <button type="button" class="ff-transfer-cart__btn ff-transfer-cart__btn--reset" data-role="cart-reset" disabled>
+                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Poništi sve
+            </button>
+            <button type="button" class="ff-transfer-cart__btn ff-transfer-cart__btn--confirm" data-role="cart-confirm" disabled>
+                <i class="bi bi-check2-circle" aria-hidden="true"></i> Potvrdi transfere
+            </button>
+        </div>
+    </div>
+
+    <!-- Confirm submit form (hidden inputs built by JS on confirm) -->
+    <form method="post" asp-controller="Transfer" asp-action="Confirm" data-role="confirm-form" class="d-none">
+        @Html.AntiForgeryToken()
+        <div data-role="confirm-inputs"></div>
+    </form>
+
+    <!-- ====== Confirm modal (summary of OUT + IN) ====== -->
+    <div class="ff-transfer-modal-backdrop" data-role="confirm-backdrop" aria-hidden="true">
+        <div class="ff-transfer-modal ff-transfer-modal--cart" role="dialog" aria-modal="true" aria-labelledby="trModalTitle">
+            <button type="button" class="ff-transfer-modal__close" data-role="confirm-close" aria-label="Zatvori">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+            <div class="ff-transfer-modal__icon ff-transfer-modal__icon--buy" aria-hidden="true">
+                <i class="bi bi-arrow-left-right"></i>
+            </div>
+            <h3 class="ff-transfer-modal__title" id="trModalTitle">Potvrdi transfere</h3>
+            <p class="ff-transfer-modal__text">Pregledaj odabrane transfere prije potvrde.</p>
+
+            <div class="ff-transfer-review">
+                <div class="ff-transfer-review__col">
+                    <h4 class="ff-transfer-review__heading ff-transfer-review__heading--out">
+                        <i class="bi bi-box-arrow-up" aria-hidden="true"></i> Odlaze
+                    </h4>
+                    <ul class="ff-transfer-review__list" data-role="review-out">
+                        <li class="ff-transfer-review__empty">Nema</li>
+                    </ul>
+                </div>
+                <div class="ff-transfer-review__col">
+                    <h4 class="ff-transfer-review__heading ff-transfer-review__heading--in">
+                        <i class="bi bi-cart-plus" aria-hidden="true"></i> Dolaze
+                    </h4>
+                    <ul class="ff-transfer-review__list" data-role="review-in">
+                        <li class="ff-transfer-review__empty">Nema</li>
+                    </ul>
+                </div>
+            </div>
+
+            <dl class="ff-transfer-modal__summary">
+                <dt>Budget sada</dt>
+                <dd data-role="review-budget-now">@Model.Budget.ToString("N1")M</dd>
+                <dt>Budget nakon</dt>
+                <dd data-role="review-budget-after">@Model.Budget.ToString("N1")M</dd>
+            </dl>
+
+            <div class="ff-transfer-modal__actions">
+                <button type="button" class="ff-transfer-modal__btn ff-transfer-modal__btn--cancel" data-role="confirm-cancel">
+                    Odustani
+                </button>
+                <button type="button" class="ff-transfer-modal__btn ff-transfer-modal__btn--buy" data-role="confirm-submit">
+                    <i class="bi bi-check2-circle" aria-hidden="true"></i> Potvrdi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast for transient messages (e.g. "prvo prodaj na poziciji") -->
+    <div class="ff-transfer-toast" data-role="toast" role="status" aria-live="polite" aria-hidden="true">
+        <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+        <span data-role="toast-text"></span>
+    </div>
+
+</section>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         $(function () {
-            /* ============================================================
-               Locker Modal — shared trigger: .ff-player-link[data-player-id]
-               ============================================================ */
-            var $backdrop = $('#lockerModalBackdrop');
-            var triggerSelector = '.ff-player-link[data-player-id]';
-
-            function openLocker($trigger) {
-                var d = $trigger.data();
-
-                $('#lockerModalName').text(d.playerName);
-                $('#lockerModalClub').text(d.playerClub);
-                $('#lockerModalNationality').text(d.playerNationality);
-                $('#lockerModalPoints').text(d.playerPoints);
-                $('#lockerModalGoals').text(d.playerGoals);
-                $('#lockerModalAssists').text(d.playerAssists);
-                $('#lockerModalCleanSheets').text(d.playerCleansheets);
-                $('#lockerModalValue').html('&euro;' + d.playerValue);
-                $('#lockerModalDob').text(d.playerDob);
-
-                var badgeCls = d.playerBadge;
-                var posAbbr = d.playerPosAbbr;
-                $('#lockerModalBadge').html('<span class="ff-badge ' + badgeCls + '">' + posAbbr + '</span>');
-                $('#lockerModalDetailsLink').attr('href', '@Url.RouteUrl("PlayerDetails", new { id = 0 })'.replace('/0', '/' + d.playerId));
-
-                var $teamsList = $('#lockerModalTeams');
-                $teamsList.empty();
-
-                var teams = d.playerTeams;
-                if (teams && teams.length > 0) {
-                    for (var i = 0; i < teams.length; i++) {
-                        var t = teams[i];
-                        var teamName = t.Name || t.name;
-                        var teamOwner = t.OwnerName || t.ownerName;
-                        var teamPoints = t.TotalPoints != null ? t.TotalPoints : t.totalPoints;
-                        var teamId = t.Id != null ? t.Id : t.id;
-
-                        $teamsList.append(
-                            '<div class="ff-locker-modal__team-row">' +
-                                '<div class="ff-locker-modal__team-info">' +
-                                    '<a href="/FantasyTeam/Details/' + teamId + '" class="ff-locker-modal__team-name">' + teamName + '</a>' +
-                                    '<div class="ff-locker-modal__team-owner">' + teamOwner + '</div>' +
-                                '</div>' +
-                                '<div class="ff-locker-modal__team-points">' + teamPoints + '<small>pts</small></div>' +
-                            '</div>'
-                        );
-                    }
-                } else {
-                    $teamsList.html('<div class="ff-locker-modal__no-teams"><i class="bi bi-shield"></i> Not in any fantasy team</div>');
-                }
-
-                $('body').addClass('ff-locker-modal-open');
-                $backdrop.attr('aria-hidden', 'false');
-                $backdrop[0].offsetHeight; // reflow
-                $backdrop.addClass('ff-locker-modal--visible');
-
-                setTimeout(function () {
-                    $('#lockerModalClose').focus();
-                }, 100);
-            }
-
-            function closeLocker() {
-                $backdrop.removeClass('ff-locker-modal--visible');
-                $('body').removeClass('ff-locker-modal-open');
-                setTimeout(function () {
-                    $backdrop.attr('aria-hidden', 'true');
-                }, 400);
-            }
-
-            $(document).on('click', triggerSelector, function (e) {
-                e.preventDefault();
-                openLocker($(this));
-            });
-
-            $(document).on('keydown', triggerSelector, function (e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openLocker($(this));
-                }
-            });
-
-            $('#lockerModalClose').on('click', function (e) {
-                e.stopPropagation();
-                closeLocker();
-            });
-
-            $backdrop.on('click', function (e) {
-                if ($(e.target).closest('.ff-locker-modal').length === 0) {
-                    closeLocker();
-                }
-            });
-
-            $(document).on('keydown', function (e) {
-                if (e.key === 'Escape' && $backdrop.hasClass('ff-locker-modal--visible')) {
-                    closeLocker();
-                }
-            });
-        });
-    </script>
-
-    <script>
-        /* =====================================================
-           Transfer Index — live search across widgets
-           Filtrira redove i list-iteme po imenu igrača.
-           ===================================================== */
-        (function () {
             'use strict';
-            var input = document.getElementById('ffTransferSearchInput');
-            var clearBtn = document.getElementById('ffTransferSearchClear');
-            var statusEl = document.getElementById('ffTransferSearchStatus');
-            var bar = document.getElementById('ffTransferSearchBar');
-            if (!input) return;
 
-            // Pronađi sve "redove" koji imaju player-link unutar (radi za <tr> i <li>).
-            function collectTargets() {
-                var links = document.querySelectorAll('.ff-player-link[data-player-name]');
-                var targets = [];
-                Array.prototype.forEach.call(links, function (l) {
-                    var row = l.closest('tr, li');
-                    if (row) {
-                        targets.push({
-                            row: row,
-                            name: (l.getAttribute('data-player-name') || '').toLowerCase()
-                        });
+            var $section = $('.ff-transfer');
+            var baseBudget = parseFloat($section.attr('data-budget')) || 0;
+            var MAX_PER_CLUB = @Model.MaxPerClub;
+
+            /* ---------- Market list refs ---------- */
+            var $list = $('[data-role="market-list"]');
+            var $cards = $list.find('[data-role="market-card"]');
+            var totalCount = $cards.length;
+            var $count = $('[data-role="market-count"]');
+            var $empty = $('[data-role="market-empty"]');
+
+            var $position = $('#trPosition');
+            var $club = $('#trClub');
+            var $search = $('#trSearch');
+            var $sortBtns = $('.ff-transfer-sort__btn');
+
+            /* ---------- Cart refs ---------- */
+            var $cart = $('[data-role="cart"]');
+            var $cartOut = $('[data-role="cart-out"]');
+            var $cartIn = $('[data-role="cart-in"]');
+            var $cartBudget = $('[data-role="cart-budget"]');
+            var $cartHintText = $('[data-role="cart-hint-text"]');
+            var $cartHint = $('[data-role="cart-hint"]');
+            var $cartReset = $('[data-role="cart-reset"]');
+            var $cartConfirm = $('[data-role="cart-confirm"]');
+            var $budgetDisplay = $('[data-role="budget-display"]');
+
+            /* ---------- State ----------
+               sells: map pitchPlayerId(string) -> { id, name, value, posVar, filledBy }
+               buys:  map marketPlayerId(string) -> { id, name, last, value, posVar, slotId }
+               A "slot" = a pitch player marked for sell; may be filled by a buy. */
+            var sells = {};
+            var buys = {};
+
+            var POS_LABEL = { gk: 'GK', def: 'DEF', mid: 'MID', fwd: 'FWD' };
+
+            function fmtMoney(n) {
+                return n.toLocaleString('hr-HR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'M';
+            }
+            function esc(s) { return $('<div>').text(s == null ? '' : s).html(); }
+
+            function posVarFromCode(code) {
+                switch ((code || '').toUpperCase()) {
+                    case 'GK': return 'gk';
+                    case 'DEF': return 'def';
+                    case 'MID': return 'mid';
+                    case 'FWD': return 'fwd';
+                    default: return 'mid';
+                }
+            }
+
+            /* ===================== Budget / cart computation ===================== */
+            function sumValues(obj) {
+                var total = 0;
+                $.each(obj, function (_, v) { total += v.value; });
+                return total;
+            }
+
+            function openSlotsByPos() {
+                // sells NOT yet filled by a buy, grouped by posVar
+                var open = { gk: 0, def: 0, mid: 0, fwd: 0 };
+                $.each(sells, function (_, s) {
+                    if (!s.filledBy) { open[s.posVar] = (open[s.posVar] || 0) + 1; }
+                });
+                return open;
+            }
+
+            function recompute() {
+                var outCount = Object.keys(sells).length;
+                var inCount = Object.keys(buys).length;
+                var budgetAfter = baseBudget + sumValues(sells) - sumValues(buys);
+
+                $cartOut.text(outCount);
+                $cartIn.text(inCount);
+                $cartBudget.text(fmtMoney(budgetAfter)).toggleClass('is-negative', budgetAfter < 0);
+                $budgetDisplay.text(fmtMoney(budgetAfter)).toggleClass('is-negative', budgetAfter < 0);
+
+                var open = openSlotsByPos();
+                var openTotal = open.gk + open.def + open.mid + open.fwd;
+
+                var hasTransfers = (outCount + inCount) > 0;
+                var allSlotsFilled = openTotal === 0;
+                var budgetOk = budgetAfter >= 0;
+                var canConfirm = hasTransfers && allSlotsFilled && budgetOk && outCount === inCount;
+
+                $cart.toggleClass('is-active', hasTransfers);
+                $cartReset.prop('disabled', !hasTransfers);
+                $cartConfirm.prop('disabled', !canConfirm);
+
+                var msg, tone = 'info';
+                if (!hasTransfers) {
+                    msg = 'Odaberi barem jedan transfer.';
+                } else if (!allSlotsFilled) {
+                    var parts = [];
+                    $.each(open, function (k, n) { if (n > 0) { parts.push(n + '× ' + POS_LABEL[k]); } });
+                    msg = 'Popuni prazna mjesta: ' + parts.join(', ') + '.';
+                    tone = 'warn';
+                } else if (!budgetOk) {
+                    msg = 'Nedovoljno budgeta — nedostaje ' + fmtMoney(-budgetAfter) + '.';
+                    tone = 'danger';
+                } else {
+                    msg = 'Spremno za potvrdu: ' + outCount + ' OUT, ' + inCount + ' IN.';
+                    tone = 'ok';
+                }
+                $cartHintText.text(msg);
+                $cartHint.attr('data-tone', tone);
+            }
+
+            /* ===================== Toast ===================== */
+            var $toast = $('[data-role="toast"]');
+            var $toastText = $('[data-role="toast-text"]');
+            var toastTimer = null;
+            function showToast(text, type) {
+                $toastText.text(text);
+                $toast.toggleClass('ff-transfer-toast--error', type === 'error');
+                $toast.attr('aria-hidden', 'false').addClass('is-shown');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(function () {
+                    $toast.removeClass('is-shown');
+                    setTimeout(function () { $toast.attr('aria-hidden', 'true'); }, 250);
+                }, 2600);
+            }
+
+            /* ===================== Pitch player snapshot ===================== */
+            var $pitchPlayers = $('.ff-transfer__pitch-col .ff-pitch-player');
+            $pitchPlayers.each(function () {
+                var $b = $(this);
+                $b.attr('data-orig-points', $b.find('.ff-totw-player__points').text());
+                $b.attr('data-orig-name', $b.find('.ff-totw-player__name').text());
+                $b.attr('data-orig-stat', $b.find('.ff-totw-player__stat').text());
+                $b.attr('data-pos-var', posVarFromCode($b.attr('data-position')));
+            });
+
+            function pitchById(id) {
+                return $pitchPlayers.filter('[data-player-id="' + id + '"]').first();
+            }
+            function cardById(id) {
+                return $cards.filter('[data-player-id="' + id + '"]').first();
+            }
+
+            function renderSlotState($btn) {
+                $btn.removeClass('ff-pitch-player--incoming').addClass('ff-pitch-player--selling');
+                $btn.attr('aria-pressed', 'true');
+                $btn.find('.ff-totw-player__points').text('+');
+                $btn.find('.ff-totw-player__name').text('Prazno');
+                $btn.find('.ff-totw-player__stat').text('klik za poništi');
+            }
+            function renderFilledState($btn, buy) {
+                $btn.removeClass('ff-pitch-player--selling').addClass('ff-pitch-player--incoming');
+                $btn.attr('aria-pressed', 'true');
+                $btn.find('.ff-totw-player__points').text('IN');
+                $btn.find('.ff-totw-player__name').text(buy.last || buy.name);
+                $btn.find('.ff-totw-player__stat').text(fmtMoney(buy.value));
+            }
+            function renderOriginalState($btn) {
+                $btn.removeClass('ff-pitch-player--selling ff-pitch-player--incoming');
+                $btn.attr('aria-pressed', 'false');
+                $btn.find('.ff-totw-player__points').text($btn.attr('data-orig-points'));
+                $btn.find('.ff-totw-player__name').text($btn.attr('data-orig-name'));
+                $btn.find('.ff-totw-player__stat').text($btn.attr('data-orig-stat'));
+            }
+
+            /* ===================== Squad meta (for sell value) ===================== */
+            var squadMeta = {};
+            @foreach (var p in Model.Squad)
+            {
+                @:squadMeta['@p.Id'] = { name: '@Html.Raw(Html.Encode(p.FullName).Replace("'", "\\'").Replace("\r", "").Replace("\n", " "))', last: '@Html.Raw(Html.Encode(p.LastName).Replace("'", "\\'").Replace("\r", "").Replace("\n", " "))', value: @p.MarketValue.ToString(System.Globalization.CultureInfo.InvariantCulture), posVar: '@PosVariant(p.Position)', club: '@Html.Raw(Html.Encode(p.Club).Replace("'", "\\'").Replace("\r", "").Replace("\n", " "))' };
+            }
+
+            /* ===================== Buy/slot helpers ===================== */
+            function firstOpenSlotForPos(posVar) {
+                var slotId = null;
+                $.each(sells, function (id, s) {
+                    if (slotId === null && s.posVar === posVar && !s.filledBy) { slotId = id; }
+                });
+                return slotId;
+            }
+
+            // How many players from `club` are in the RESULTING squad (sold players free up a spot).
+            function clubCountForBuy(club) {
+                var count = 0;
+                $.each(squadMeta, function (pid, m) {
+                    if (m.club === club && !sells[pid]) { count++; }   // kept squad players of this club
+                });
+                $.each(buys, function (_, b) {
+                    if (b.club === club) { count++; }                  // already-selected buys of this club
+                });
+                return count;
+            }
+
+            // Remove the buy sitting in slotId; re-enable its market card.
+            function removeBuyInSlot(slotId) {
+                var foundId = null;
+                $.each(buys, function (mid, b) {
+                    if (String(b.slotId) === String(slotId)) { foundId = mid; return false; }
+                });
+                if (foundId !== null) {
+                    cardById(foundId).removeClass('is-selected').prop('disabled', false).attr('aria-pressed', 'false');
+                    delete buys[foundId];
+                }
+            }
+
+            /* ===================== Pitch click (sell / unfill / unsell) ===================== */
+            $pitchPlayers.on('click', function () {
+                var $btn = $(this);
+                var id = $btn.attr('data-player-id');
+                var meta = squadMeta[id];
+                if (!meta) { return; }
+
+                var slot = sells[id];
+                if (slot) {
+                    if (slot.filledBy) {
+                        // slot filled by a buy -> first click removes the buy, re-opens "+" slot
+                        removeBuyInSlot(id);
+                        slot.filledBy = null;
+                        renderSlotState($btn);
+                        recompute();
+                        return;
                     }
+                    // empty "+" slot -> un-mark sell, restore original player
+                    delete sells[id];
+                    renderOriginalState($btn);
+                    recompute();
+                    return;
+                }
+
+                // not selling yet -> mark for sell
+                sells[id] = {
+                    id: parseInt(id, 10),
+                    name: meta.name,
+                    value: meta.value,
+                    posVar: meta.posVar,
+                    filledBy: null
+                };
+                renderSlotState($btn);
+                recompute();
+            });
+
+            /* ===================== Market click (buy / unbuy) ===================== */
+            $cards.on('click', function () {
+                var $card = $(this);
+                if ($card.is('[disabled]') || $card.attr('data-player-owned') === 'true') { return; }
+                var id = $card.attr('data-player-id');
+
+                if (buys[id]) {
+                    // deselect -> re-open its slot
+                    var b = buys[id];
+                    var slot = sells[b.slotId];
+                    if (slot) {
+                        slot.filledBy = null;
+                        renderSlotState(pitchById(b.slotId));
+                    }
+                    delete buys[id];
+                    $card.removeClass('is-selected').attr('aria-pressed', 'false');
+                    recompute();
+                    return;
+                }
+
+                var posVar = $card.attr('data-player-pos-var');
+
+                // a) Position: need a free "+" slot of this position.
+                var slotId = firstOpenSlotForPos(posVar);
+                if (slotId === null) {
+                    showToast('Prvo prodaj igrača na poziciji ' + (POS_LABEL[posVar] || posVar.toUpperCase()) + '.');
+                    return;
+                }
+
+                var name = $card.attr('data-player-name');
+                var club = $card.attr('data-player-club');
+                var price = parseFloat($card.attr('data-player-value-raw')) || 0;
+
+                // b) Budget: must afford this buy with the budget available BEFORE it.
+                var available = baseBudget + sumValues(sells) - sumValues(buys);
+                if (price > available + 1e-9) {
+                    showToast('Nedovoljno budgeta za ' + name + ' — nedostaje ' + fmtMoney(price - available) + '.', 'error');
+                    return;
+                }
+
+                // c) Club limit: resulting squad must not exceed MAX_PER_CLUB from one club.
+                if (clubCountForBuy(club) + 1 > MAX_PER_CLUB) {
+                    showToast('Maksimalno ' + MAX_PER_CLUB + ' igrača iz kluba ' + club + '.', 'error');
+                    return;
+                }
+
+                var buy = {
+                    id: parseInt(id, 10),
+                    name: name,
+                    last: $card.attr('data-player-last'),
+                    value: price,
+                    posVar: posVar,
+                    club: club,
+                    slotId: slotId
+                };
+                buys[id] = buy;
+                sells[slotId].filledBy = buy.id;
+
+                $card.addClass('is-selected').attr('aria-pressed', 'true');
+                renderFilledState(pitchById(slotId), buy);
+                recompute();
+            });
+
+            /* ===================== Reset all ===================== */
+            function resetAll() {
+                $.each(buys, function (id) {
+                    cardById(id).removeClass('is-selected').prop('disabled', false).attr('aria-pressed', 'false');
                 });
-                return targets;
+                $.each(sells, function (id) {
+                    renderOriginalState(pitchById(id));
+                });
+                $cards.filter('[data-player-owned="true"]').prop('disabled', true);
+                sells = {};
+                buys = {};
+                recompute();
             }
-            var targets = collectTargets();
+            $cartReset.on('click', resetAll);
 
-            var debounceTimer = null;
-
-            function filter(q) {
-                var qLow = q.toLowerCase();
+            /* ===================== Filtering ===================== */
+            function applyFilters() {
+                var posVal = $position.val();
+                var clubVal = ($club.val() || '').toLowerCase();
+                var searchVal = ($search.val() || '').toLowerCase().trim();
                 var visible = 0;
-                targets.forEach(function (t) {
-                    var match = !qLow || t.name.indexOf(qLow) !== -1;
-                    t.row.style.display = match ? '' : 'none';
-                    if (match) visible++;
+
+                $cards.each(function () {
+                    var $c = $(this);
+                    var cPos = ($c.attr('data-player-position') || '');
+                    var cClub = ($c.attr('data-player-club') || '').toLowerCase();
+                    var cName = ($c.attr('data-player-name') || '').toLowerCase();
+
+                    var ok = (!posVal || cPos === posVal)
+                        && (!clubVal || cClub === clubVal)
+                        && (!searchVal || cName.indexOf(searchVal) !== -1);
+
+                    if (ok) { $c.show(); visible++; } else { $c.hide(); }
                 });
-                statusEl.textContent = q ? (visible + ' rez.') : '';
+
+                $count.html('<strong>' + visible + '</strong> / ' + totalCount + ' igrača');
+                $empty.toggleClass('is-shown', visible === 0 && totalCount > 0);
+            }
+            $position.on('change', applyFilters);
+            $club.on('change', applyFilters);
+            $search.on('input', applyFilters);
+
+            /* ===================== Sorting ===================== */
+            function sortList(dir) {
+                var items = $cards.toArray();
+                items.sort(function (a, b) {
+                    var va = parseFloat($(a).attr('data-player-value-raw')) || 0;
+                    var vb = parseFloat($(b).attr('data-player-value-raw')) || 0;
+                    return dir === 'asc' ? va - vb : vb - va;
+                });
+                $.each(items, function (_, el) { $list.append(el); });
+            }
+            $sortBtns.on('click', function () {
+                var dir = $(this).attr('data-sort');
+                $sortBtns.removeClass('is-active').attr('aria-pressed', 'false');
+                $(this).addClass('is-active').attr('aria-pressed', 'true');
+                sortList(dir);
+            });
+
+            /* ===================== Confirm modal ===================== */
+            var $backdrop = $('[data-role="confirm-backdrop"]');
+            var $reviewOut = $('[data-role="review-out"]');
+            var $reviewIn = $('[data-role="review-in"]');
+            var $reviewBudgetNow = $('[data-role="review-budget-now"]');
+            var $reviewBudgetAfter = $('[data-role="review-budget-after"]');
+            var lastFocused = null;
+
+            function reviewRow(item, dir) {
+                return '<li class="ff-transfer-review__item">' +
+                    '<span class="ff-transfer-review__pos ff-transfer-review__pos--' + item.posVar + '">' +
+                        (POS_LABEL[item.posVar] || '') + '</span>' +
+                    '<span class="ff-transfer-review__name">' + esc(item.name) + '</span>' +
+                    '<span class="ff-transfer-review__val ff-transfer-review__val--' + dir + '">' +
+                        (dir === 'out' ? '+' : '−') + fmtMoney(item.value) + '</span>' +
+                    '</li>';
             }
 
-            input.addEventListener('input', function () {
-                var q = input.value.trim();
-                clearBtn.style.display = q ? '' : 'none';
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(function () { filter(q); }, 200);
+            function buildReview() {
+                var outItems = Object.keys(sells).map(function (k) { return sells[k]; });
+                var inItems = Object.keys(buys).map(function (k) { return buys[k]; });
+
+                $reviewOut.empty();
+                if (outItems.length) {
+                    $.each(outItems, function (_, it) { $reviewOut.append(reviewRow(it, 'out')); });
+                } else {
+                    $reviewOut.html('<li class="ff-transfer-review__empty">Nema</li>');
+                }
+
+                $reviewIn.empty();
+                if (inItems.length) {
+                    $.each(inItems, function (_, it) { $reviewIn.append(reviewRow(it, 'in')); });
+                } else {
+                    $reviewIn.html('<li class="ff-transfer-review__empty">Nema</li>');
+                }
+
+                var budgetAfter = baseBudget + sumValues(sells) - sumValues(buys);
+                $reviewBudgetNow.text(fmtMoney(baseBudget));
+                $reviewBudgetAfter.text(fmtMoney(budgetAfter))
+                    .toggleClass('is-negative', budgetAfter < 0)
+                    .toggleClass('is-positive', budgetAfter >= 0);
+            }
+
+            function openConfirm() {
+                buildReview();
+                lastFocused = document.activeElement;
+                $('body').addClass('ff-transfer-modal-open');
+                $backdrop.attr('aria-hidden', 'false').addClass('is-open');
+                setTimeout(function () { $backdrop.find('[data-role="confirm-submit"]').focus(); }, 60);
+            }
+            function closeConfirm() {
+                $backdrop.removeClass('is-open');
+                $('body').removeClass('ff-transfer-modal-open');
+                setTimeout(function () { $backdrop.attr('aria-hidden', 'true'); }, 250);
+                if (lastFocused && lastFocused.focus) { lastFocused.focus(); }
+            }
+
+            $cartConfirm.on('click', function () {
+                if ($(this).is(':disabled')) { return; }
+                openConfirm();
             });
 
-            clearBtn.addEventListener('click', function () {
-                input.value = '';
-                clearBtn.style.display = 'none';
-                filter('');
-                input.focus();
+            $backdrop.find('[data-role="confirm-close"], [data-role="confirm-cancel"]').on('click', closeConfirm);
+            $backdrop.on('click', function (e) {
+                if ($(e.target).closest('.ff-transfer-modal').length === 0) { closeConfirm(); }
             });
-        })();
+            $(document).on('keydown', function (e) {
+                if (e.key === 'Escape' && $backdrop.hasClass('is-open')) { closeConfirm(); }
+            });
+
+            /* ---- Final submit: build hidden inputs and POST ---- */
+            var $confirmForm = $('[data-role="confirm-form"]');
+            var $confirmInputs = $('[data-role="confirm-inputs"]');
+            $('[data-role="confirm-submit"]').on('click', function () {
+                $confirmInputs.empty();
+                $.each(sells, function (_, s) {
+                    $('<input>', { type: 'hidden', name: 'outIds', value: s.id }).appendTo($confirmInputs);
+                });
+                $.each(buys, function (_, b) {
+                    $('<input>', { type: 'hidden', name: 'inIds', value: b.id }).appendTo($confirmInputs);
+                });
+                $confirmForm[0].submit();
+            });
+
+            /* ===================== Dismiss alerts ===================== */
+            $('[data-dismiss-alert]').on('click', function () {
+                $(this).closest('.ff-transfer-alert').slideUp(150, function () { $(this).remove(); });
+            });
+
+            /* ===================== Init ===================== */
+            sortList('asc');
+            recompute();
+        });
     </script>
 }

@@ -28,7 +28,9 @@ su samo preko navedenog custom URL-a.
 | `/igrac/{id:int}` | PlayerController | `Details` | [Views/Player/Details.cshtml](Views/Player/Details.cshtml) | **Custom route** — detalji igrača |
 | `/lige` | [LeagueController](Controllers/LeagueController.cs) | `Index` | [Views/League/Index.cshtml](Views/League/Index.cshtml) | **Custom route** |
 | `/liga/{id:int}` | LeagueController | `Details` | [Views/League/Details.cshtml](Views/League/Details.cshtml) | **Custom route** |
-| `/transferi` | [TransferController](Controllers/TransferController.cs) | `Index` | [Views/Transfer/Index.cshtml](Views/Transfer/Index.cshtml) | **Custom route** |
+| `/transferi` | [TransferController](Controllers/TransferController.cs) | `Index` | [Views/Transfer/Index.cshtml](Views/Transfer/Index.cshtml) | **Custom route** — transfer tržište (teren + kupnja/prodaja) |
+| `/Transfer/Confirm` | TransferController | `Confirm` | — (redirect na `Index`) | POST — batch potvrda transfera (`outIds`/`inIds`) |
+| `/transferi/statistika` | TransferController | `Stats` | [Views/Transfer/Stats.cshtml](Views/Transfer/Stats.cshtml) | **Custom route** — statistika transfera (kasnije admin-only) |
 | `/Transfer/Details/{id}` | TransferController | `Details` | [Views/Transfer/Details.cshtml](Views/Transfer/Details.cshtml) | Default konvencijska ruta |
 | `/kola` | [GameweekController](Controllers/GameweekController.cs) | `Index` | [Views/Gameweek/Index.cshtml](Views/Gameweek/Index.cshtml) | **Custom route** |
 | `/kolo/{id:int}` | GameweekController | `Details` | [Views/Gameweek/Details.cshtml](Views/Gameweek/Details.cshtml) | **Custom route** |
@@ -60,6 +62,7 @@ Sljedeće akcije imaju `[Route]` atribute koje isključuju default konvenciju:
 | `LeagueController.Index` | `lige` | `LeagueIndex` | GET |
 | `LeagueController.Details` | `liga/{id:int}` | `LeagueDetails` | GET |
 | `TransferController.Index` | `transferi` | `TransferIndex` | GET |
+| `TransferController.Stats` | `transferi/statistika` | `TransferStats` | GET |
 | `GameweekController.Index` | `kola` | `GameweekIndex` | GET |
 | `GameweekController.Details` | `kolo/{id:int}` | `GameweekDetails` | GET |
 

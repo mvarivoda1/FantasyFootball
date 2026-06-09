@@ -11,7 +11,7 @@
 <ul class="ff-breadcrumb">
     <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
     <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
-    <li class="ff-breadcrumb__item"><a asp-controller="Transfer" asp-action="Index">Transfers</a></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="Transfer" asp-action="Stats">Transfers</a></li>
     <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
     <li class="ff-breadcrumb__item ff-breadcrumb__item--active">@Model.Player.FullName</li>
 </ul>
@@ -101,6 +101,6 @@
     }
 </div>
 
-<a asp-controller="Transfer" asp-action="Index" class="ff-btn ff-btn--outline">
+<a asp-controller="Transfer" asp-action="Stats" class="ff-btn ff-btn--outline">
     <i class="bi bi-arrow-left"></i> Back to Transfers
 </a>

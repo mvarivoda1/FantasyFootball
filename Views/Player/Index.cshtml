@@ -1,9 +1,6 @@
 @model List<Player>
 @{
     ViewData["Title"] = "Players";
-    var currentBudget = ViewData["CurrentBudget"] as double?;
-    var currentTeamId = ViewData["CurrentTeamId"] as int?;
-    bool hasTeam = currentTeamId.HasValue;
 }
 
 <h1 class="ff-page-title"><i class="bi bi-people"></i> Players</h1>
@@ -19,30 +16,6 @@
         </a>
     </div>
 </div>
-
-@if (hasTeam)
-{
-    <div class="ff-budget-badge" aria-label="Current transfer budget">
-        <span class="ff-budget-badge__icon" aria-hidden="true"><i class="bi bi-cash-coin"></i></span>
-        <span>Budget:</span>
-        <span class="ff-budget-badge__amount">&euro;@(currentBudget.HasValue ? currentBudget.Value.ToString("N1") : "0")</span>
-    </div>
-}
-
-@if (TempData["TransferSuccess"] != null)
-{
-    <div class="ff-alert ff-alert--success" role="status">
-        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-        <span>@TempData["TransferSuccess"]</span>
-    </div>
-}
-@if (TempData["TransferError"] != null)
-{
-    <div class="ff-alert ff-alert--danger" role="alert">
-        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-        <span>@TempData["TransferError"]</span>
-    </div>
-}
 
 @if (Model == null || !Model.Any())
 {
@@ -120,9 +93,6 @@ else
         </button>
     </div>
 
-    <!-- Hidden AntiForgery token form for AJAX-free reuse -->
-    <form id="antiForgeryHolder" style="display:none;">@Html.AntiForgeryToken()</form>
-
     <!-- Locker Grid -->
     <div class="ff-locker-room">
         @foreach (var player in Model)
@@ -154,10 +124,6 @@ else
                 _ => "MID"
             };
 
-            bool playerOnTeam = hasTeam
-                && player.FantasyTeams != null
-                && player.FantasyTeams.Any(t => t.Id == currentTeamId.Value);
-
             <div class="ff-locker"
                  role="button"
                  tabindex="0"
@@ -176,7 +142,6 @@ else
                  data-player-assists="@player.Assists"
                  data-player-cleansheets="@player.CleanSheets"
                  data-player-points="@player.TotalPoints"
-                 data-player-on-team="@(playerOnTeam ? "true" : "false")"
                  data-player-teams='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(player.FantasyTeams?.Select(t => new { t.Id, t.Name, t.OwnerName, t.TotalPoints })))'>
                 <div class="ff-locker__door">
                     <!-- Position color stripe -->
@@ -214,9 +179,7 @@ else
     </div>
 
     <!-- Modal Backdrop (single reusable instance) -->
-    <div class="ff-locker-modal-backdrop" id="lockerModalBackdrop" aria-hidden="true"
-         data-has-team="@(hasTeam ? "true" : "false")"
-         data-current-budget="@(currentBudget ?? 0)">
+    <div class="ff-locker-modal-backdrop" id="lockerModalBackdrop" aria-hidden="true">
         <div class="ff-locker-modal" role="dialog" aria-modal="true" aria-labelledby="lockerModalName">
             <div class="ff-locker-modal__door-wrapper">
                 <!-- Animated door piece -->
@@ -309,9 +272,6 @@ else
                             </a>
                         </span>
                     </div>
-
-                    <!-- Transfer Action (Buy/Sell) — populated by JS -->
-                    <div id="lockerModalTransferAction"></div>
                 </div>
             </div>
         </div>
@@ -451,65 +411,6 @@ $(function () {
     /* ---- Locker Modal Logic ---- */
     var $backdrop = $('#lockerModalBackdrop');
     var $modal = $backdrop.find('.ff-locker-modal');
-    var hasTeam = $backdrop.data('has-team') === true || $backdrop.data('has-team') === 'true';
-    var currentBudget = parseFloat($backdrop.data('current-budget')) || 0;
-
-    // Read antiforgery token once
-    var antiForgeryToken = $('#antiForgeryHolder input[name="__RequestVerificationToken"]').val() || '';
-
-    function formatMoney(n) {
-        return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
-    }
-
-    function renderTransferAction(playerId, playerName, playerValueRaw, playerOnTeam) {
-        var $container = $('#lockerModalTransferAction');
-        $container.empty();
-
-        if (!hasTeam) {
-            return;
-        }
-
-        var safeName = $('<div>').text(playerName).html();
-
-        if (playerOnTeam) {
-            // SELL form
-            var sellHtml =
-                '<div class="ff-locker-modal__transfer-action">' +
-                    '<div class="ff-locker-modal__transfer-action-label">' +
-                        '<i class="bi bi-shield-fill-check"></i> In your squad' +
-                    '</div>' +
-                    '<form method="post" action="/Player/Sell/' + playerId + '">' +
-                        '<input type="hidden" name="__RequestVerificationToken" value="' + antiForgeryToken + '" />' +
-                        '<button type="submit" class="ff-btn ff-btn--danger ff-btn--block">' +
-                            '<i class="bi bi-box-arrow-up"></i> Sell ' + safeName +
-                        '</button>' +
-                    '</form>' +
-                '</div>';
-            $container.html(sellHtml);
-        } else {
-            // BUY form
-            var canAfford = currentBudget >= playerValueRaw;
-            var disabledAttr = canAfford ? '' : ' disabled';
-            var hint = canAfford
-                ? ''
-                : '<div class="ff-locker-modal__transfer-action-hint"><i class="bi bi-exclamation-circle"></i> Not enough budget (need &euro;' + formatMoney(playerValueRaw) + ', have &euro;' + formatMoney(currentBudget) + ')</div>';
-
-            var buyHtml =
-                '<div class="ff-locker-modal__transfer-action">' +
-                    '<div class="ff-locker-modal__transfer-action-label">' +
-                        '<i class="bi bi-cart-plus"></i> Available on the market' +
-                    '</div>' +
-                    '<form method="post" action="/Player/Buy/' + playerId + '">' +
-                        '<input type="hidden" name="__RequestVerificationToken" value="' + antiForgeryToken + '" />' +
-                        '<button type="submit" class="ff-btn ff-btn--success ff-btn--block"' + disabledAttr + '>' +
-                            '<i class="bi bi-cart-check"></i> Buy ' + safeName + ' &mdash; &euro;' + formatMoney(playerValueRaw) +
-                        '</button>' +
-                    '</form>' +
-                    hint +
-                '</div>';
-            $container.html(buyHtml);
-        }
-    }
 
     // Open locker modal
     function openLocker($locker) {
@@ -558,11 +459,6 @@ $(function () {
         } else {
             $teamsList.html('<div class="ff-locker-modal__no-teams"><i class="bi bi-shield"></i> Not in any fantasy team</div>');
         }
-
-        // Render buy/sell form
-        var playerOnTeam = (d.playerOnTeam === true || d.playerOnTeam === 'true');
-        var valueRaw = parseFloat(d.playerValueRaw) || 0;
-        renderTransferAction(d.playerId, d.playerName, valueRaw, playerOnTeam);
 
         $('body').addClass('ff-locker-modal-open');
         $backdrop.attr('aria-hidden', 'false');
