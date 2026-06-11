@@ -1,6 +1,6 @@
 using FantasyFootball.Models;
 using FantasyFootball.Repositories;
-using FantasyFootball.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace FantasyFootball.DAL
@@ -11,14 +11,22 @@ namespace FantasyFootball.DAL
         private const double MinPrice = 4.5;
         private const double MaxPrice = 13.0;
 
-        public static void Seed(FantasyFootballDbContext context)
+        public const string AdminRole = "Admin";
+        public const string UserRole = "User";
+
+        public static async Task SeedAsync(
+            FantasyFootballDbContext context,
+            UserManager<AppUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
-            SeedUsers(context);
+            await SeedRolesAsync(roleManager);
 
             // Ako baza već ima podatke, preskoči seeding (ali ipak rebalansiraj cijene)
             if (context.Players.Any())
             {
                 RebalancePrices(context);
+                await SeedUsersAsync(context, userManager);
+                await EnsureAdminAsync(userManager);
                 return;
             }
 
@@ -76,7 +84,17 @@ namespace FantasyFootball.DAL
 
             // Nakon što su timovi spremljeni i dobili Id, kreiraj korisničke račune
             // za svaki postojeći OwnerName (npr. Marko -> marko@gmail.com / markopass).
-            SeedUsers(context);
+            await SeedUsersAsync(context, userManager);
+            await EnsureAdminAsync(userManager);
+        }
+
+        private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
+        {
+            foreach (var role in new[] { AdminRole, UserRole })
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                    await roleManager.CreateAsync(new IdentityRole(role));
+            }
         }
 
         private static void ApplyPointBasedPrices(IEnumerable<Player> players)
@@ -106,6 +124,10 @@ namespace FantasyFootball.DAL
             // timove koje su korisnici sami kreirali kroz UI).
             var teams = context.FantasyTeams.Include(t => t.Players).ToList();
             EnsureFullSquads(teams, players);
+
+            // Rebalans cijena može gurnuti nekoć valjan tim preko 100M (→ negativan
+            // budget) ili je zatečeni zapis prekršio max-3-po-klubu; popravi takve.
+            EnforceConstraints(teams, players);
 
             foreach (var team in teams)
                 team.SquadValue = Math.Round(team.Players.Sum(p => p.MarketValue), 1);
@@ -149,6 +171,43 @@ namespace FantasyFootball.DAL
                 foreach (var p in team.Players)
                     if (!p.FantasyTeams.Contains(team))
                         p.FantasyTeams.Add(team);
+        }
+
+        // Popravi timove koji krše invarijante: max 3 igrača iz istog kluba i
+        // ukupna vrijednost ≤ 100M (jer je budget = 100 − SquadValue i ne smije
+        // biti negativan). Neispravan tim se prerađuje u nasumičan valjan 15-igrački
+        // sastav. Pokreće se pri svakom seedingu pa čisti zatečene zapise i sprječava
+        // da rebalansiranje cijena ostavi tim u nevažećem stanju.
+        private static void EnforceConstraints(List<FantasyTeam> teams, List<Player> allPlayers)
+        {
+            var byPos = allPlayers
+                .GroupBy(p => p.Position)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            for (int idx = 0; idx < teams.Count; idx++)
+            {
+                var team = teams[idx];
+
+                // Nepotpune timove je već obradio EnsureFullSquads (unutar pravila).
+                if (team.Players.Count != SquadSize) continue;
+
+                bool overClub = team.Players
+                    .GroupBy(p => p.Club)
+                    .Any(g => g.Count() > MaxPerClub);
+                bool overBudget = team.Players.Sum(p => p.MarketValue) > SquadBudget + 1e-6;
+
+                if (!overClub && !overBudget) continue;
+
+                var rng = new Random((idx + 1) * 23 + 91);
+                var fresh = BuildSquad(byPos, rng);
+                if (fresh == null) continue; // ne uspijem li složiti valjan tim, ostavi kako jest
+
+                team.Players.Clear();
+                foreach (var p in fresh) team.Players.Add(p);
+
+                // Sastav se promijenio — resetiraj startnu postavu (MyTeam je posloži nanovo).
+                team.StartingLineupIds = null;
+            }
         }
 
         private static void EnsureFullSquads(List<FantasyTeam> teams, List<Player> allPlayers)
@@ -298,50 +357,82 @@ namespace FantasyFootball.DAL
             return candidates[candidates.Count - 1];
         }
 
-        private static void SeedUsers(FantasyFootballDbContext context)
+        private static async Task SeedUsersAsync(
+            FantasyFootballDbContext context,
+            UserManager<AppUser> userManager)
         {
             var teams = context.FantasyTeams.ToList();
             if (teams.Count == 0)
                 return;
 
-            var existingEmails = context.Users.Select(u => u.Email).ToHashSet();
             // Timovi koji su već povezani s nekim korisnikom — ne smiju dobiti seed-user
-            // jer je User.FantasyTeamId UNIQUE (1-1 veza).
+            // jer je AppUser.FantasyTeamId UNIQUE (1-1 veza).
             var ownedTeamIds = context.Users
                 .Where(u => u.FantasyTeamId != null)
                 .Select(u => u.FantasyTeamId!.Value)
                 .ToHashSet();
-            var toAdd = new List<User>();
 
+            int idx = 0;
             foreach (var team in teams)
             {
+                idx++;
                 if (string.IsNullOrWhiteSpace(team.OwnerName)) continue;
                 if (ownedTeamIds.Contains(team.Id)) continue;
 
-                var slug = team.OwnerName.Trim().ToLowerInvariant();
+                var slug = new string(team.OwnerName.Trim().ToLowerInvariant()
+                    .Where(char.IsLetterOrDigit).ToArray());
+                if (slug.Length == 0) continue;
+
                 var email = $"{slug}@gmail.com";
                 var password = $"{slug}pass";
 
-                if (existingEmails.Contains(email)) continue;
+                if (await userManager.FindByEmailAsync(email) != null) continue;
 
-                toAdd.Add(new User
+                var user = new AppUser
                 {
+                    UserName = email,
                     Email = email,
-                    PasswordHash = PasswordHasher.Hash(password),
+                    EmailConfirmed = true,
                     CreatedAt = DateTime.UtcNow,
                     // Budget = 100 - SquadValue (transferski budget = preostalo od početnih 100M)
                     Budget = Math.Round(SquadBudget - team.SquadValue, 1),
-                    FantasyTeamId = team.Id
-                });
-                existingEmails.Add(email);
-                ownedTeamIds.Add(team.Id);
-            }
+                    FantasyTeamId = team.Id,
+                    OIB = GenerateDigits(11, idx),
+                    JMBG = GenerateDigits(13, idx)
+                };
 
-            if (toAdd.Count > 0)
-            {
-                context.Users.AddRange(toAdd);
-                context.SaveChanges();
+                var result = await userManager.CreateAsync(user, password);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(user, UserRole);
+                    ownedTeamIds.Add(team.Id);
+                }
             }
+        }
+
+        // Garantira da barem jedan korisnik ima Admin rolu (prvi po vremenu kreiranja).
+        private static async Task EnsureAdminAsync(UserManager<AppUser> userManager)
+        {
+            var admins = await userManager.GetUsersInRoleAsync(AdminRole);
+            if (admins.Count > 0) return;
+
+            var first = userManager.Users
+                .OrderBy(u => u.CreatedAt)
+                .ThenBy(u => u.Email)
+                .FirstOrDefault();
+
+            if (first != null)
+                await userManager.AddToRoleAsync(first, AdminRole);
+        }
+
+        // Deterministički generira numerički string zadane duljine (dummy OIB/JMBG).
+        private static string GenerateDigits(int length, int seed)
+        {
+            var rng = new Random(seed * 7919 + length);
+            var chars = new char[length];
+            for (int i = 0; i < length; i++)
+                chars[i] = (char)('0' + rng.Next(0, 10));
+            return new string(chars);
         }
     }
 }

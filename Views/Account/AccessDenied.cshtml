@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Pristup odbijen";
+}
+
+<section class="ff-auth-shell" aria-label="Pristup odbijen">
+    <div class="ff-auth-card text-center">
+        <h1 class="ff-auth-title"><i class="bi bi-shield-lock" aria-hidden="true"></i> Pristup odbijen</h1>
+        <p class="ff-auth-subtitle">
+            Nemaš ovlasti za pristup ovoj stranici. Ako misliš da je riječ o pogrešci, obrati se administratoru.
+        </p>
+        <a asp-controller="Home" asp-action="Index" class="ff-auth-btn ff-auth-btn--primary">
+            <i class="bi bi-house-door" aria-hidden="true"></i>
+            <span>Natrag na početnu</span>
+        </a>
+    </div>
+</section>

@@ -2,6 +2,7 @@ using FantasyFootball.DAL;
 using FantasyFootball.Models;
 using FantasyFootball.Models.ViewModels;
 using FantasyFootball.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,15 +34,17 @@ namespace FantasyFootball.Controllers
             return View(player);
         }
 
-        // ----- CRUD (admin) -----
+        // ----- CRUD (samo Admin) -----
 
         [HttpGet]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         public IActionResult Create()
         {
             return View(new PlayerFormViewModel());
         }
 
         [HttpPost]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PlayerFormViewModel model)
         {
@@ -71,6 +74,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         public async Task<IActionResult> Edit(int id)
         {
             var player = await _ctx.Players.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
@@ -95,6 +99,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpPost, ActionName("Edit")]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditPost(int id)
         {
@@ -129,6 +134,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         public async Task<IActionResult> Delete(int id)
         {
             var player = await _ctx.Players
@@ -140,6 +146,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

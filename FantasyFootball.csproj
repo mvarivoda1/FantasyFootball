@@ -1,12 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>b17f19ca-9146-4be0-80f3-4c3683cdedaa</UserSecretsId>
   </PropertyGroup>
 
+  <!-- Testni projekt je u poddirektoriju; isključi ga iz web projekta da ne globa njegove .cs datoteke -->
   <ItemGroup>
+    <Compile Remove="FantasyFootball.Tests/**/*.cs" />
+    <Content Remove="FantasyFootball.Tests/**" />
+    <None Remove="FantasyFootball.Tests/**" />
+    <EmbeddedResource Remove="FantasyFootball.Tests/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

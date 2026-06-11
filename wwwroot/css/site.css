@@ -7548,3 +7548,86 @@ body.ff-transfer-modal-open { overflow: hidden; }
     .ff-transfer-cart__hint { flex-basis: 100%; order: 3; }
     .ff-transfer-cart__actions { margin-left: auto; }
 }
+
+/* ===== Lab 5: Identity / OAuth / Upload dodaci ===== */
+
+.ff-auth-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--fpl-purple);
+    text-align: center;
+}
+
+.ff-auth-subtitle {
+    margin: 0 0 1.25rem;
+    font-size: 0.9rem;
+    color: var(--fpl-text-secondary);
+    text-align: center;
+}
+
+.ff-auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1rem 0;
+    color: var(--fpl-text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.ff-auth-divider::before,
+.ff-auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(55, 0, 60, 0.15);
+}
+
+.ff-auth-google-form { margin: 0; }
+
+.ff-auth-btn--google {
+    background: #fff;
+    color: #3c4043;
+    border: 1px solid rgba(55, 0, 60, 0.18);
+    box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.25);
+}
+
+.ff-auth-btn--google:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.3);
+    color: #3c4043;
+}
+
+.ff-auth-btn--google i { color: #ea4335; }
+
+.ff-auth-btn--google:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 255, 135, 0.35);
+}
+
+/* Upload datoteka (Dropzone) na Edit formi tima */
+.ff-attach-panel {
+    background: #fff;
+    border: 1px solid rgba(55, 0, 60, 0.12);
+    border-radius: var(--fpl-radius);
+    padding: 1rem;
+}
+
+.ff-attach-panel .dropzone {
+    border: 2px dashed rgba(55, 0, 60, 0.25);
+    border-radius: var(--fpl-radius);
+    background: rgba(55, 0, 60, 0.02);
+    min-height: 140px;
+}
+
+.ff-attach-panel .dropzone:hover {
+    border-color: var(--fpl-green);
+    background: rgba(0, 255, 135, 0.05);
+}
+
+.ff-attach-list { margin-top: 1rem; }
+
+.ff-attach-list table { margin-bottom: 0; }
+

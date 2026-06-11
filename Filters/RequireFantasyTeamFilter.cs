@@ -12,6 +12,13 @@ namespace FantasyFootball.Filters
 
             if (httpUser.HasClaim(c => c.Type == "FantasyTeamId")) return;
 
+            // API zahtjevi ne smiju biti preusmjereni na MVC Build stranicu — vraćaju podatke.
+            var path = context.HttpContext.Request.Path.Value ?? string.Empty;
+            if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase)) return;
+
+            // Adminima koji nemaju vlastiti fantasy tim ne namećemo izgradnju tima.
+            if (httpUser.IsInRole("Admin")) return;
+
             var route = context.RouteData.Values;
             var controller = (route["controller"]?.ToString() ?? string.Empty).ToLowerInvariant();
             var action = (route["action"]?.ToString() ?? string.Empty).ToLowerInvariant();

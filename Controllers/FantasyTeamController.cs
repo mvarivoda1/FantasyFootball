@@ -3,8 +3,7 @@ using FantasyFootball.DAL;
 using FantasyFootball.Models;
 using FantasyFootball.Models.ViewModels;
 using FantasyFootball.Repositories;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,15 +30,18 @@ namespace FantasyFootball.Controllers
         private readonly FantasyFootballDbContext _ctx;
         private readonly FantasyTeamRepository _teamRepo;
         private readonly PlayerRepository _playerRepo;
+        private readonly SignInManager<AppUser> _signInManager;
 
         public FantasyTeamController(
             FantasyFootballDbContext ctx,
             FantasyTeamRepository teamRepo,
-            PlayerRepository playerRepo)
+            PlayerRepository playerRepo,
+            SignInManager<AppUser> signInManager)
         {
             _ctx = ctx;
             _teamRepo = teamRepo;
             _playerRepo = playerRepo;
+            _signInManager = signInManager;
         }
 
         public IActionResult Index()
@@ -61,7 +63,7 @@ namespace FantasyFootball.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return RedirectToAction("Login", "Account");
 
-            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.FantasyTeamId.HasValue) return RedirectToAction("Index", "Home");
 
@@ -76,7 +78,7 @@ namespace FantasyFootball.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return RedirectToAction("Login", "Account");
 
-            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.FantasyTeamId.HasValue) return RedirectToAction("Index", "Home");
 
@@ -126,7 +128,7 @@ namespace FantasyFootball.Controllers
             var team = new FantasyTeam
             {
                 Name = model.TeamName.Trim(),
-                OwnerName = user.Email,
+                OwnerName = user.Email ?? user.UserName ?? string.Empty,
                 CreatedAt = DateTime.UtcNow,
                 SquadValue = totalCost,
                 TotalPoints = 0,
@@ -140,7 +142,7 @@ namespace FantasyFootball.Controllers
             user.Budget = InitialBudget - totalCost;
             await _ctx.SaveChangesAsync();
 
-            await ResignInWithTeamClaimAsync(user);
+            await _signInManager.RefreshSignInAsync(user);
 
             return RedirectToAction("Index", "Home");
         }
@@ -151,7 +153,7 @@ namespace FantasyFootball.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return RedirectToAction("Login", "Account");
 
-            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null) return RedirectToAction("Login", "Account");
             if (!user.FantasyTeamId.HasValue) return RedirectToAction("Build");
 
@@ -186,7 +188,7 @@ namespace FantasyFootball.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return RedirectToAction("Login", "Account");
 
-            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.FantasyTeamId != teamId) return Forbid();
 
@@ -247,7 +249,7 @@ namespace FantasyFootball.Controllers
             if (team == null) return NotFound();
 
             // Samo vlasnik smije uređivati tim
-            var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
             if (user?.FantasyTeamId != team.Id) return Forbid();
 
             var vm = new EditFantasyTeamViewModel
@@ -269,7 +271,7 @@ namespace FantasyFootball.Controllers
             var team = await _ctx.FantasyTeams.FirstOrDefaultAsync(t => t.Id == id);
             if (team == null) return NotFound();
 
-            var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
             if (user?.FantasyTeamId != team.Id) return Forbid();
 
             var vm = new EditFantasyTeamViewModel { Id = team.Id };
@@ -300,7 +302,7 @@ namespace FantasyFootball.Controllers
                 .FirstOrDefaultAsync(t => t.Id == id);
             if (team == null) return NotFound();
 
-            var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
             if (user?.FantasyTeamId != team.Id) return Forbid();
 
             return View(team);
@@ -318,7 +320,7 @@ namespace FantasyFootball.Controllers
                 .FirstOrDefaultAsync(t => t.Id == id);
             if (team == null) return NotFound();
 
-            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user?.FantasyTeamId != team.Id) return Forbid();
 
             team.Players.Clear();
@@ -328,7 +330,7 @@ namespace FantasyFootball.Controllers
             _ctx.FantasyTeams.Remove(team);
             await _ctx.SaveChangesAsync();
 
-            await ResignInWithTeamClaimAsync(user);
+            await _signInManager.RefreshSignInAsync(user);
 
             TempData["TeamInfo"] = $"Tim '{team.Name}' je obrisan. Možeš kreirati novi tim.";
             return RedirectToAction(nameof(Build));
@@ -394,29 +396,104 @@ namespace FantasyFootball.Controllers
             MaxPerClub = MaxPerClub
         };
 
-        private int? GetCurrentUserId()
+        private string? GetCurrentUserId()
         {
             var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return int.TryParse(raw, out var id) ? id : null;
+            return string.IsNullOrEmpty(raw) ? null : raw;
         }
 
-        private async Task ResignInWithTeamClaimAsync(User user)
+        // ===== Upload datoteka (Dropzone) — vezano uz fantasy tim =====
+
+        private static readonly string[] AllowedExtensions =
+            { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf", ".doc", ".docx", ".txt" };
+        private const long MaxFileSize = 5 * 1024 * 1024; // 5 MB
+
+        // Provjerava je li trenutni korisnik vlasnik zadanog tima.
+        private async Task<bool> IsOwnerAsync(int teamId)
         {
-            var claims = new List<Claim>
+            var userId = GetCurrentUserId();
+            if (userId == null) return false;
+            var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            return user?.FantasyTeamId == teamId;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadAttachment(int teamId, IFormFile file)
+        {
+            if (!await IsOwnerAsync(teamId)) return Forbid();
+
+            var team = await _ctx.FantasyTeams.FirstOrDefaultAsync(t => t.Id == teamId);
+            if (team == null) return NotFound();
+
+            if (file == null || file.Length == 0)
+                return BadRequest("Datoteka je prazna.");
+            if (file.Length > MaxFileSize)
+                return BadRequest("Datoteka je prevelika (maksimalno 5 MB).");
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!AllowedExtensions.Contains(ext))
+                return BadRequest("Nedozvoljen tip datoteke.");
+
+            var uploadsPath = Path.Combine(
+                Directory.GetCurrentDirectory(), "wwwroot", "uploads", "teams", teamId.ToString());
+            Directory.CreateDirectory(uploadsPath);
+
+            var storedName = Guid.NewGuid().ToString() + ext;
+            var fullPath = Path.Combine(uploadsPath, storedName);
+
+            using (var stream = new FileStream(fullPath, FileMode.Create))
             {
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Name, user.Email),
+                await file.CopyToAsync(stream);
+            }
+
+            var attachment = new Attachment
+            {
+                FantasyTeamId = teamId,
+                FileName = Path.GetFileName(file.FileName),
+                FilePath = $"/uploads/teams/{teamId}/{storedName}",
+                ContentType = file.ContentType,
+                FileSize = file.Length,
+                CreatedAt = DateTime.UtcNow
             };
-            if (user.FantasyTeamId.HasValue)
-                claims.Add(new Claim("FantasyTeamId", user.FantasyTeamId.Value.ToString()));
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
+            _ctx.Attachments.Add(attachment);
+            await _ctx.SaveChangesAsync();
 
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                principal);
+            return Json(new { success = true });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAttachments(int teamId)
+        {
+            if (!await IsOwnerAsync(teamId)) return Forbid();
+
+            var attachments = await _ctx.Attachments
+                .Where(a => a.FantasyTeamId == teamId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            return PartialView("_AttachmentList", attachments);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAttachment(int id)
+        {
+            var attachment = await _ctx.Attachments.FirstOrDefaultAsync(a => a.Id == id);
+            if (attachment == null) return NotFound();
+
+            if (!await IsOwnerAsync(attachment.FantasyTeamId)) return Forbid();
+
+            var physicalPath = Path.Combine(
+                Directory.GetCurrentDirectory(), "wwwroot", attachment.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+
+            if (System.IO.File.Exists(physicalPath))
+                System.IO.File.Delete(physicalPath);
+
+            _ctx.Attachments.Remove(attachment);
+            await _ctx.SaveChangesAsync();
+
+            return Json(new { success = true });
         }
     }
 }

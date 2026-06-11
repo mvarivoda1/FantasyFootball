@@ -1,9 +1,12 @@
 using FantasyFootball.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FantasyFootball.DAL
 {
-    public class FantasyFootballDbContext : DbContext
+    // IdentityDbContext daje DbSet<AppUser> Users, role i sve Identity tablice.
+    public class FantasyFootballDbContext : IdentityDbContext<AppUser, IdentityRole, string>
     {
         protected FantasyFootballDbContext() { }
 
@@ -16,7 +19,7 @@ namespace FantasyFootball.DAL
         public DbSet<Transfer> Transfers { get; set; }
         public DbSet<Gameweek> Gameweeks { get; set; }
         public DbSet<MatchPerformance> MatchPerformances { get; set; }
-        public DbSet<User> Users { get; set; }
+        public DbSet<Attachment> Attachments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -69,17 +72,19 @@ namespace FantasyFootball.DAL
                 .HasForeignKey(mp => mp.PlayerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 1-1: User <-> FantasyTeam (User drži FK)
-            modelBuilder.Entity<User>()
+            // 1-1: AppUser <-> FantasyTeam (AppUser drži FK)
+            modelBuilder.Entity<AppUser>()
                 .HasOne(u => u.FantasyTeam)
                 .WithOne(t => t.Owner)
-                .HasForeignKey<User>(u => u.FantasyTeamId)
+                .HasForeignKey<AppUser>(u => u.FantasyTeamId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Email mora biti jedinstven
-            modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
+            // 1-N: FantasyTeam -> Attachment (brisanjem tima brišu se i prilozi)
+            modelBuilder.Entity<Attachment>()
+                .HasOne(a => a.FantasyTeam)
+                .WithMany(t => t.Attachments)
+                .HasForeignKey(a => a.FantasyTeamId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // JoinCode lige mora biti jedinstven
             modelBuilder.Entity<League>()

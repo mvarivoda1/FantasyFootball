@@ -6,6 +6,10 @@
 
 <section class="ff-auth-shell" aria-label="Prijava">
     <div class="ff-auth-card">
+        @if (TempData["LoginError"] != null)
+        {
+            <div class="ff-auth-alert" role="alert">@TempData["LoginError"]</div>
+        }
         <form asp-controller="Account" asp-action="Login" asp-route-returnUrl="@returnUrl" method="post" class="ff-auth-form" novalidate>
             @Html.AntiForgeryToken()
 
@@ -51,6 +55,17 @@
                 <i class="bi bi-info-circle" aria-hidden="true"></i>
                 Demo računi: <code>marko@gmail.com</code> / <code>markopass</code>
             </p>
+        </form>
+
+        <div class="ff-auth-divider"><span>ili</span></div>
+
+        <form asp-controller="Account" asp-action="ExternalLogin" asp-route-returnUrl="@returnUrl" method="post" class="ff-auth-google-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="provider" value="Google" />
+            <button type="submit" class="ff-auth-btn ff-auth-btn--google">
+                <i class="bi bi-google" aria-hidden="true"></i>
+                <span>Prijavi se s Google</span>
+            </button>
         </form>
     </div>
 </section>

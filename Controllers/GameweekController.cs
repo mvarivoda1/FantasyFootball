@@ -2,6 +2,7 @@ using FantasyFootball.DAL;
 using FantasyFootball.Models;
 using FantasyFootball.Models.ViewModels;
 using FantasyFootball.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +35,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         public IActionResult Create()
         {
             var nextWeekNumber = (_ctx.Gameweeks.Max(g => (int?)g.WeekNumber) ?? 0) + 1;
@@ -46,6 +48,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(GameweekFormViewModel model)
         {
@@ -73,6 +76,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         public async Task<IActionResult> Edit(int id)
         {
             var gw = await _ctx.Gameweeks.AsNoTracking().FirstOrDefaultAsync(g => g.Id == id);
@@ -89,6 +93,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpPost, ActionName("Edit")]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditPost(int id)
         {
@@ -119,6 +124,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         public async Task<IActionResult> Delete(int id)
         {
             var gw = await _ctx.Gameweeks
@@ -130,6 +136,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = DbSeeder.AdminRole)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

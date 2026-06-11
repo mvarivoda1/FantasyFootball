@@ -1,0 +1,57 @@
+@model FantasyFootball.Models.ViewModels.ExternalLoginConfirmationViewModel
+@{
+    ViewData["Title"] = "Dovrši registraciju";
+}
+
+<section class="ff-auth-shell" aria-label="Dovrši registraciju">
+    <div class="ff-auth-card">
+        <h1 class="ff-auth-title">Dovrši registraciju</h1>
+        <p class="ff-auth-subtitle">
+            Prijavljen si preko @Model.Provider računa. Dovrši profil kako bismo kreirali tvoj račun.
+        </p>
+
+        <form asp-controller="Account" asp-action="ExternalLoginConfirmation" method="post" class="ff-auth-form" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Provider" />
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div asp-validation-summary="ModelOnly" class="ff-auth-alert" role="alert"></div>
+
+            <div class="ff-auth-field">
+                <label asp-for="Email" class="form-label ff-auth-label"></label>
+                <div class="ff-auth-input-wrap">
+                    <i class="bi bi-envelope ff-auth-input-icon" aria-hidden="true"></i>
+                    <input asp-for="Email" class="form-control ff-auth-input" autocomplete="email" placeholder="ime@primjer.com" />
+                </div>
+                <span asp-validation-for="Email" class="ff-auth-validation"></span>
+            </div>
+
+            <div class="ff-auth-field">
+                <label asp-for="OIB" class="form-label ff-auth-label"></label>
+                <div class="ff-auth-input-wrap">
+                    <i class="bi bi-person-vcard ff-auth-input-icon" aria-hidden="true"></i>
+                    <input asp-for="OIB" class="form-control ff-auth-input" inputmode="numeric" maxlength="11" placeholder="11 znamenki" />
+                </div>
+                <span asp-validation-for="OIB" class="ff-auth-validation"></span>
+            </div>
+
+            <div class="ff-auth-field">
+                <label asp-for="JMBG" class="form-label ff-auth-label"></label>
+                <div class="ff-auth-input-wrap">
+                    <i class="bi bi-person-badge ff-auth-input-icon" aria-hidden="true"></i>
+                    <input asp-for="JMBG" class="form-control ff-auth-input" inputmode="numeric" maxlength="13" placeholder="13 znamenki" />
+                </div>
+                <span asp-validation-for="JMBG" class="ff-auth-validation"></span>
+            </div>
+
+            <button type="submit" class="ff-auth-btn ff-auth-btn--primary">
+                <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                <span>Dovrši registraciju</span>
+            </button>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

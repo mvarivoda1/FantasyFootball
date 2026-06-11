@@ -7,7 +7,7 @@ namespace FantasyFootball.Models.ViewModels
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Broj kola je obavezan.")]
-        [Range(1, 60, ErrorMessage = "Broj kola mora biti između 1 i 60.")]
+        [Range(1, 38, ErrorMessage = "Broj kola mora biti između 1 i 38.")]
         [Display(Name = "Broj kola")]
         public int WeekNumber { get; set; }
 

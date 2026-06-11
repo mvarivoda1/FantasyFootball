@@ -33,7 +33,7 @@ namespace FantasyFootball.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return RedirectToAction("Login", "Account");
 
-            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null) return RedirectToAction("Login", "Account");
             if (!user.FantasyTeamId.HasValue) return RedirectToAction("Build", "FantasyTeam");
 
@@ -78,7 +78,7 @@ namespace FantasyFootball.Controllers
             var user = await _ctx.Users
                 .Include(u => u.FantasyTeam)
                     .ThenInclude(t => t!.Players)
-                .FirstOrDefaultAsync(u => u.Id == userId.Value);
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user?.FantasyTeam == null)
             {
@@ -227,10 +227,10 @@ namespace FantasyFootball.Controllers
             return View(transfer);
         }
 
-        private int? GetCurrentUserId()
+        private string? GetCurrentUserId()
         {
             var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return int.TryParse(claim, out var id) ? id : null;
+            return string.IsNullOrEmpty(claim) ? null : claim;
         }
     }
 }

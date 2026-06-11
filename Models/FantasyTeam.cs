@@ -30,11 +30,15 @@ namespace FantasyFootball.Models
         public int? LeagueId { get; set; }
         public virtual League? League { get; set; }
 
-        public virtual User? Owner { get; set; }
+        public virtual AppUser? Owner { get; set; }
+
+        // 1-N: tim može imati više priloženih datoteka (upload preko Dropzone)
+        public virtual ICollection<Attachment> Attachments { get; set; }
 
         public FantasyTeam()
         {
             Players = new List<Player>();
+            Attachments = new List<Attachment>();
         }
     }
 }

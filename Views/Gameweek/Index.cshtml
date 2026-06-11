@@ -13,15 +13,18 @@
     </div>
 }
 
-<div class="ff-action-bar" role="region" aria-label="Akcije za kola">
-    <span class="ff-action-bar__label">Upravljaj kolima sezone — kreiraj nova, uredi postojeća.</span>
-    <div class="ff-action-bar__buttons">
-        <a asp-controller="Gameweek" asp-action="Create" class="ff-action-btn ff-action-btn--primary">
-            <i class="bi bi-plus-circle-fill" aria-hidden="true"></i>
-            <span>Kreiraj kolo</span>
-        </a>
+@if (User.IsInRole("Admin"))
+{
+    <div class="ff-action-bar" role="region" aria-label="Akcije za kola">
+        <span class="ff-action-bar__label">Upravljaj kolima sezone — kreiraj nova, uredi postojeća.</span>
+        <div class="ff-action-bar__buttons">
+            <a asp-controller="Gameweek" asp-action="Create" class="ff-action-btn ff-action-btn--primary">
+                <i class="bi bi-plus-circle-fill" aria-hidden="true"></i>
+                <span>Kreiraj kolo</span>
+            </a>
+        </div>
     </div>
-</div>
+}
 
 <div class="ff-search-bar" role="search">
     <i class="bi bi-search ff-search-bar__icon" aria-hidden="true"></i>
@@ -76,16 +79,19 @@ else
                         <span class="ff-text-muted ff-text-sm">
                             @gw.StartDate.ToString("ddd") &ndash; @gw.EndDate.ToString("ddd")
                         </span>
-                        <span style="display:inline-flex; gap:.35rem;">
-                            <a asp-controller="Gameweek" asp-action="Edit" asp-route-id="@gw.Id"
-                               class="ff-row-action ff-row-action--edit" title="Uredi" aria-label="Uredi kolo @gw.WeekNumber">
-                                <i class="bi bi-pencil-fill"></i>
-                            </a>
-                            <a asp-controller="Gameweek" asp-action="Delete" asp-route-id="@gw.Id"
-                               class="ff-row-action ff-row-action--delete" title="Obriši" aria-label="Obriši kolo @gw.WeekNumber">
-                                <i class="bi bi-trash-fill"></i>
-                            </a>
-                        </span>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <span style="display:inline-flex; gap:.35rem;">
+                                <a asp-controller="Gameweek" asp-action="Edit" asp-route-id="@gw.Id"
+                                   class="ff-row-action ff-row-action--edit" title="Uredi" aria-label="Uredi kolo @gw.WeekNumber">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a asp-controller="Gameweek" asp-action="Delete" asp-route-id="@gw.Id"
+                                   class="ff-row-action ff-row-action--delete" title="Obriši" aria-label="Obriši kolo @gw.WeekNumber">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            </span>
+                        }
                     </div>
                 </div>
             </div>

@@ -1,24 +1,26 @@
-using System.Security.Claims;
-using FantasyFootball.DAL;
 using FantasyFootball.Models;
 using FantasyFootball.Models.ViewModels;
-using FantasyFootball.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace FantasyFootball.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly FantasyFootballDbContext _ctx;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
 
-        public AccountController(FantasyFootballDbContext ctx)
+        public AccountController(
+            UserManager<AppUser> userManager,
+            SignInManager<AppUser> signInManager)
         {
-            _ctx = ctx;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
+
+        // ===== Lokalna prijava =====
 
         [HttpGet]
         [AllowAnonymous]
@@ -37,18 +39,22 @@ namespace FantasyFootball.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var email = model.Email.Trim().ToLowerInvariant();
-            var user = await _ctx.Users
-                .Include(u => u.FantasyTeam)
-                .FirstOrDefaultAsync(u => u.Email == email);
-
-            if (user == null || !PasswordHasher.Verify(model.Password, user.PasswordHash))
+            var email = model.Email.Trim();
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Neispravan email ili lozinka.");
                 return View(model);
             }
 
-            await SignInAsync(user, model.RememberMe);
+            var result = await _signInManager.PasswordSignInAsync(
+                user.UserName!, model.Password, model.RememberMe, lockoutOnFailure: false);
+
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError(string.Empty, "Neispravan email ili lozinka.");
+                return View(model);
+            }
 
             if (!user.FantasyTeamId.HasValue)
                 return RedirectToAction("Build", "FantasyTeam");
@@ -58,6 +64,8 @@ namespace FantasyFootball.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
+        // ===== Lokalna registracija =====
 
         [HttpGet]
         [AllowAnonymous]
@@ -74,33 +82,44 @@ namespace FantasyFootball.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var email = model.Email.Trim().ToLowerInvariant();
+            var email = model.Email.Trim();
 
-            if (await _ctx.Users.AnyAsync(u => u.Email == email))
+            if (await _userManager.FindByEmailAsync(email) != null)
             {
                 ModelState.AddModelError(nameof(model.Email), "Korisnik s tim emailom već postoji.");
                 return View(model);
             }
 
-            var user = new User
+            var user = new AppUser
             {
+                UserName = email,
                 Email = email,
-                PasswordHash = PasswordHasher.Hash(model.Password),
-                CreatedAt = DateTime.UtcNow
+                EmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow,
+                OIB = model.OIB,
+                JMBG = model.JMBG
             };
 
-            _ctx.Users.Add(user);
-            await _ctx.SaveChangesAsync();
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+                return View(model);
+            }
 
-            await SignInAsync(user, isPersistent: false);
+            await _userManager.AddToRoleAsync(user, DAL.DbSeeder.UserRole);
+            await _signInManager.SignInAsync(user, isPersistent: false);
             return RedirectToAction("Build", "FantasyTeam");
         }
+
+        // ===== Odjava =====
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
 
@@ -108,25 +127,117 @@ namespace FantasyFootball.Controllers
         [AllowAnonymous]
         public IActionResult AccessDenied() => View();
 
-        private async Task SignInAsync(User user, bool isPersistent)
+        // ===== Vanjska prijava (Google) =====
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
         {
-            var claims = new List<Claim>
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+        {
+            if (remoteError != null)
             {
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Name, user.Email),
+                TempData["LoginError"] = $"Greška vanjskog providera: {remoteError}";
+                return RedirectToAction(nameof(Login));
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                TempData["LoginError"] = "Nije moguće dohvatiti podatke vanjske prijave.";
+                return RedirectToAction(nameof(Login));
+            }
+
+            // Postojeći korisnik s povezanim vanjskim loginom -> prijava
+            var result = await _signInManager.ExternalLoginSignInAsync(
+                info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+
+            if (result.Succeeded)
+            {
+                var existing = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                if (existing != null && !existing.FantasyTeamId.HasValue)
+                    return RedirectToAction("Build", "FantasyTeam");
+
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Prva prijava ovim providerom -> dovrši registraciju (OIB/JMBG)
+            var email = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty;
+            var vm = new ExternalLoginConfirmationViewModel
+            {
+                Email = email,
+                Provider = info.LoginProvider,
+                ReturnUrl = returnUrl
             };
+            return View("ExternalLoginConfirmation", vm);
+        }
 
-            if (user.FantasyTeamId.HasValue)
-                claims.Add(new Claim("FantasyTeamId", user.FantasyTeamId.Value.ToString()));
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model)
+        {
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                TempData["LoginError"] = "Sesija vanjske prijave je istekla. Pokušaj ponovno.";
+                return RedirectToAction(nameof(Login));
+            }
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
+            if (!ModelState.IsValid)
+                return View(model);
 
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                principal,
-                new AuthenticationProperties { IsPersistent = isPersistent });
+            var email = model.Email.Trim();
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                user = new AppUser
+                {
+                    UserName = email,
+                    Email = email,
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.UtcNow,
+                    OIB = model.OIB,
+                    JMBG = model.JMBG
+                };
+
+                var createResult = await _userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                {
+                    foreach (var error in createResult.Errors)
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    return View(model);
+                }
+
+                await _userManager.AddToRoleAsync(user, DAL.DbSeeder.UserRole);
+            }
+
+            var addLoginResult = await _userManager.AddLoginAsync(user, info);
+            if (!addLoginResult.Succeeded)
+            {
+                foreach (var error in addLoginResult.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+                return View(model);
+            }
+
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
+            if (!user.FantasyTeamId.HasValue)
+                return RedirectToAction("Build", "FantasyTeam");
+
+            if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                return Redirect(model.ReturnUrl);
+            return RedirectToAction("Index", "Home");
         }
     }
 }

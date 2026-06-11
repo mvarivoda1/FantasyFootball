@@ -4,7 +4,7 @@
     // NAPOMENA: Kontroler može postaviti ViewData["CurrentUserId"] kako bi se
     // Edit/Delete linkovi prikazivali samo creator-u lige. Ako je null, prikazujemo
     // linkove svima (UI sloj — server svejedno autorizira na POST-u).
-    var currentUserId = ViewData["CurrentUserId"] as int?;
+    var currentUserId = ViewData["CurrentUserId"] as string;
 }
 
 <h1 class="ff-page-title"><i class="bi bi-diagram-3-fill"></i> Leagues</h1>
@@ -104,7 +104,7 @@ else
                     var detailsUrl = Url.Action("Details", "League", new { id = league.Id });
                     // Conditional Edit/Delete: prikazi samo creator-u (kontroler postavlja ViewData["CurrentUserId"]).
                     // Ako nije postavljeno, prikazi svima (server radi finalnu autorizaciju).
-                    bool showActions = !currentUserId.HasValue || league.CreatorUserId == currentUserId.Value;
+                    bool showActions = string.IsNullOrEmpty(currentUserId) || league.CreatorUserId == currentUserId;
 
                     <tr class="ff-table__row--clickable"
                         tabindex="0"

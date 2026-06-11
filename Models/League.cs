@@ -25,8 +25,8 @@ namespace FantasyFootball.Models
         [Required, StringLength(6, MinimumLength = 6)]
         public string JoinCode { get; set; } = string.Empty;
 
-        // Korisnik koji je kreirao ligu (opcionalno za stare seedane lige)
-        public int? CreatorUserId { get; set; }
+        // Korisnik koji je kreirao ligu (Identity string PK; opcionalno za stare seedane lige)
+        public string? CreatorUserId { get; set; }
 
         // 1-N: liga ima više fantasy timova
         public virtual ICollection<FantasyTeam> Teams { get; set; }

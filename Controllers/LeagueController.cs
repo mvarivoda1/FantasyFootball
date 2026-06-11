@@ -37,7 +37,7 @@ namespace FantasyFootball.Controllers
             if (league == null) return NotFound();
             var userId = GetCurrentUserId();
             ViewData["CurrentUserId"] = userId;
-            ViewData["IsCreator"] = league.CreatorUserId.HasValue && league.CreatorUserId == userId;
+            ViewData["IsCreator"] = !string.IsNullOrEmpty(league.CreatorUserId) && league.CreatorUserId == userId;
             return View(league);
         }
 
@@ -57,7 +57,7 @@ namespace FantasyFootball.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return RedirectToAction("Login", "Account");
 
-            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user?.FantasyTeamId == null)
                 return RedirectToAction("Build", "FantasyTeam");
 
@@ -121,7 +121,7 @@ namespace FantasyFootball.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return RedirectToAction("Login", "Account");
 
-            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+            var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user?.FantasyTeamId == null)
                 return RedirectToAction("Build", "FantasyTeam");
 
@@ -320,10 +320,10 @@ namespace FantasyFootball.Controllers
             return new string(chars);
         }
 
-        private int? GetCurrentUserId()
+        private string? GetCurrentUserId()
         {
             var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return int.TryParse(raw, out var id) ? id : null;
+            return string.IsNullOrEmpty(raw) ? null : raw;
         }
     }
 }
