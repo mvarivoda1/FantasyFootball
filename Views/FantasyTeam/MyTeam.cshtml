@@ -15,7 +15,19 @@
         <div class="ff-myteam__hero-bg" aria-hidden="true"></div>
         <div class="ff-myteam__hero-inner">
             <div class="ff-myteam__hero-text">
-                <h1 class="ff-myteam__title">@Model.TeamName</h1>
+                @if (!string.IsNullOrEmpty(Model.LogoPath))
+                {
+                    <div class="ff-myteam__brand">
+                        <img src="@Model.LogoPath"
+                             alt="Logo tima @Model.TeamName"
+                             class="ff-myteam__logo" />
+                        <h1 class="ff-myteam__title">@Model.TeamName</h1>
+                    </div>
+                }
+                else
+                {
+                    <h1 class="ff-myteam__title">@Model.TeamName</h1>
+                }
                 <p class="ff-myteam__subtitle">
                     Posloži svoj početni sastav. Klikni igrača na terenu, pa klikni drugog za zamjenu.
                 </p>

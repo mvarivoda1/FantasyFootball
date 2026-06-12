@@ -256,7 +256,8 @@ namespace FantasyFootball.Controllers
             {
                 Id = team.Id,
                 Name = team.Name,
-                OwnerName = team.OwnerName
+                OwnerName = team.OwnerName,
+                LogoPath = team.LogoPath
             };
             return View(vm);
         }
@@ -274,7 +275,7 @@ namespace FantasyFootball.Controllers
             var user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
             if (user?.FantasyTeamId != team.Id) return Forbid();
 
-            var vm = new EditFantasyTeamViewModel { Id = team.Id };
+            var vm = new EditFantasyTeamViewModel { Id = team.Id, LogoPath = team.LogoPath };
             var ok = await TryUpdateModelAsync(vm, string.Empty,
                 v => v.Name, v => v.OwnerName);
 
@@ -327,6 +328,8 @@ namespace FantasyFootball.Controllers
             user.FantasyTeamId = null;
             user.Budget = InitialBudget;
 
+            DeleteLogoFile(team.LogoPath);
+
             _ctx.FantasyTeams.Remove(team);
             await _ctx.SaveChangesAsync();
 
@@ -373,6 +376,7 @@ namespace FantasyFootball.Controllers
         {
             TeamId = team.Id,
             TeamName = team.Name,
+            LogoPath = team.LogoPath,
             Starters = starters,
             Bench = bench,
             MinGk = MinStartGk,
@@ -402,10 +406,10 @@ namespace FantasyFootball.Controllers
             return string.IsNullOrEmpty(raw) ? null : raw;
         }
 
-        // ===== Upload datoteka (Dropzone) — vezano uz fantasy tim =====
+        // ===== Upload loga tima (Dropzone) =====
 
-        private static readonly string[] AllowedExtensions =
-            { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf", ".doc", ".docx", ".txt" };
+        private static readonly string[] AllowedImageExtensions =
+            { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
         private const long MaxFileSize = 5 * 1024 * 1024; // 5 MB
 
         // Provjerava je li trenutni korisnik vlasnik zadanog tima.
@@ -417,8 +421,19 @@ namespace FantasyFootball.Controllers
             return user?.FantasyTeamId == teamId;
         }
 
+        // Briše fizičku datoteku loga (ako postoji) na temelju spremljene web putanje.
+        private static void DeleteLogoFile(string? logoPath)
+        {
+            if (string.IsNullOrWhiteSpace(logoPath)) return;
+            var physicalPath = Path.Combine(
+                Directory.GetCurrentDirectory(), "wwwroot",
+                logoPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            if (System.IO.File.Exists(physicalPath))
+                System.IO.File.Delete(physicalPath);
+        }
+
         [HttpPost]
-        public async Task<IActionResult> UploadAttachment(int teamId, IFormFile file)
+        public async Task<IActionResult> UploadLogo(int teamId, IFormFile file)
         {
             if (!await IsOwnerAsync(teamId)) return Forbid();
 
@@ -428,11 +443,11 @@ namespace FantasyFootball.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("Datoteka je prazna.");
             if (file.Length > MaxFileSize)
-                return BadRequest("Datoteka je prevelika (maksimalno 5 MB).");
+                return BadRequest("Slika je prevelika (maksimalno 5 MB).");
 
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!AllowedExtensions.Contains(ext))
-                return BadRequest("Nedozvoljen tip datoteke.");
+            if (!AllowedImageExtensions.Contains(ext))
+                return BadRequest("Dozvoljene su samo slike (jpg, png, gif, webp).");
 
             var uploadsPath = Path.Combine(
                 Directory.GetCurrentDirectory(), "wwwroot", "uploads", "teams", teamId.ToString());
@@ -446,51 +461,26 @@ namespace FantasyFootball.Controllers
                 await file.CopyToAsync(stream);
             }
 
-            var attachment = new Attachment
-            {
-                FantasyTeamId = teamId,
-                FileName = Path.GetFileName(file.FileName),
-                FilePath = $"/uploads/teams/{teamId}/{storedName}",
-                ContentType = file.ContentType,
-                FileSize = file.Length,
-                CreatedAt = DateTime.UtcNow
-            };
+            // Logo je jedan po timu — stari obriši s diska prije zamjene.
+            DeleteLogoFile(team.LogoPath);
 
-            _ctx.Attachments.Add(attachment);
+            team.LogoPath = $"/uploads/teams/{teamId}/{storedName}";
             await _ctx.SaveChangesAsync();
 
-            return Json(new { success = true });
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAttachments(int teamId)
-        {
-            if (!await IsOwnerAsync(teamId)) return Forbid();
-
-            var attachments = await _ctx.Attachments
-                .Where(a => a.FantasyTeamId == teamId)
-                .OrderByDescending(a => a.CreatedAt)
-                .ToListAsync();
-
-            return PartialView("_AttachmentList", attachments);
+            return Json(new { success = true, logoPath = team.LogoPath });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteAttachment(int id)
+        public async Task<IActionResult> RemoveLogo(int teamId)
         {
-            var attachment = await _ctx.Attachments.FirstOrDefaultAsync(a => a.Id == id);
-            if (attachment == null) return NotFound();
+            if (!await IsOwnerAsync(teamId)) return Forbid();
 
-            if (!await IsOwnerAsync(attachment.FantasyTeamId)) return Forbid();
+            var team = await _ctx.FantasyTeams.FirstOrDefaultAsync(t => t.Id == teamId);
+            if (team == null) return NotFound();
 
-            var physicalPath = Path.Combine(
-                Directory.GetCurrentDirectory(), "wwwroot", attachment.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-
-            if (System.IO.File.Exists(physicalPath))
-                System.IO.File.Delete(physicalPath);
-
-            _ctx.Attachments.Remove(attachment);
+            DeleteLogoFile(team.LogoPath);
+            team.LogoPath = null;
             await _ctx.SaveChangesAsync();
 
             return Json(new { success = true });

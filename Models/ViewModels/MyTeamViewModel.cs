@@ -4,6 +4,7 @@ namespace FantasyFootball.Models.ViewModels
     {
         public int TeamId { get; set; }
         public string TeamName { get; set; } = string.Empty;
+        public string? LogoPath { get; set; }
 
         public List<Player> Starters { get; set; } = new();
         public List<Player> Bench { get; set; } = new();

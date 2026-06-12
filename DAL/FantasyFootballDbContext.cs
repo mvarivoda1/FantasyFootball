@@ -19,7 +19,6 @@ namespace FantasyFootball.DAL
         public DbSet<Transfer> Transfers { get; set; }
         public DbSet<Gameweek> Gameweeks { get; set; }
         public DbSet<MatchPerformance> MatchPerformances { get; set; }
-        public DbSet<Attachment> Attachments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -78,13 +77,6 @@ namespace FantasyFootball.DAL
                 .WithOne(t => t.Owner)
                 .HasForeignKey<AppUser>(u => u.FantasyTeamId)
                 .OnDelete(DeleteBehavior.SetNull);
-
-            // 1-N: FantasyTeam -> Attachment (brisanjem tima brišu se i prilozi)
-            modelBuilder.Entity<Attachment>()
-                .HasOne(a => a.FantasyTeam)
-                .WithMany(t => t.Attachments)
-                .HasForeignKey(a => a.FantasyTeamId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             // JoinCode lige mora biti jedinstven
             modelBuilder.Entity<League>()

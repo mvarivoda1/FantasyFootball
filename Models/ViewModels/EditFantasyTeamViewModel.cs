@@ -15,5 +15,9 @@ namespace FantasyFootball.Models.ViewModels
         [StringLength(100, MinimumLength = 2, ErrorMessage = "Ime vlasnika mora imati između 2 i 100 znakova.")]
         [Display(Name = "Vlasnik")]
         public string OwnerName { get; set; } = string.Empty;
+
+        // Putanja do trenutnog loga (null = nema loga). Ne uploada se kroz ovu formu —
+        // logo ide preko zasebnog Dropzone uploada.
+        public string? LogoPath { get; set; }
     }
 }

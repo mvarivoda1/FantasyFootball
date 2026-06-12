@@ -68,26 +68,44 @@
     </div>
 
     <div class="col-lg-6">
-        <div class="ff-attach-panel">
+        <div class="ff-logo-panel">
             <h2 class="ff-form-card__title" style="font-size:1.1rem;">
-                <i class="bi bi-paperclip" aria-hidden="true"></i>
-                <span>Dokumenti tima</span>
+                <i class="bi bi-image" aria-hidden="true"></i>
+                <span>Logo tima</span>
             </h2>
             <p class="ff-form-card__subtitle">
-                Priloži datoteke (slike, PDF, dokumenti — do 5 MB). Povuci i ispusti ili klikni.
+                Jedna slika koja predstavlja tvoj tim — do 5 MB, formati jpg, png, gif ili webp.
             </p>
 
-            @* Standalone antiforgery token za AJAX brisanje priloga *@
+            @* Standalone antiforgery token za AJAX uklanjanje loga *@
             @Html.AntiForgeryToken()
 
-            <form id="attachmentDz"
+            <div class="ff-logo-preview" data-role="logo-preview">
+                <img src="@Model.LogoPath"
+                     alt="Logo tima @Model.Name"
+                     class="ff-logo-preview__img @(string.IsNullOrEmpty(Model.LogoPath) ? "is-hidden" : "")"
+                     data-role="logo-img" />
+                <div class="ff-logo-preview__placeholder @(string.IsNullOrEmpty(Model.LogoPath) ? "" : "is-hidden")"
+                     data-role="logo-placeholder"
+                     aria-hidden="true">
+                    <i class="bi bi-image" aria-hidden="true"></i>
+                    <span>Nema loga</span>
+                </div>
+            </div>
+
+            <button type="button"
+                    class="ff-logo-remove @(string.IsNullOrEmpty(Model.LogoPath) ? "is-hidden" : "")"
+                    data-role="logo-remove">
+                <i class="bi bi-trash3" aria-hidden="true"></i>
+                <span>Ukloni logo</span>
+            </button>
+
+            <form id="logoDz"
                   asp-controller="FantasyTeam"
-                  asp-action="UploadAttachment"
+                  asp-action="UploadLogo"
                   asp-route-teamId="@Model.Id"
                   enctype="multipart/form-data"
-                  class="dropzone"></form>
-
-            <div id="attachmentList" class="ff-attach-list"></div>
+                  class="dropzone ff-logo-uploader"></form>
         </div>
     </div>
 </div>
@@ -97,25 +115,43 @@
     <link rel="stylesheet" href="~/lib/dropzone/dropzone.min.css" />
     <script src="~/lib/dropzone/dropzone.min.js"></script>
     <script type="text/javascript">
-        Dropzone.options.attachmentDz = {
+        Dropzone.options.logoDz = {
+            maxFiles: 1,
             maxFilesize: 5, // MB
-            success: function (file, response) { loadAttachments(); }
+            acceptedFiles: "image/*",
+            dictDefaultMessage: "Povuci logo ovdje ili klikni za odabir",
+            success: function (file, response) {
+                if (response && response.logoPath) {
+                    var $img = $('[data-role="logo-img"]');
+                    $img.attr("src", response.logoPath).removeClass("is-hidden");
+                    $('[data-role="logo-placeholder"]').addClass("is-hidden");
+                    $('[data-role="logo-remove"]').removeClass("is-hidden");
+                }
+                // Ostavi uploader čist za sljedeću zamjenu
+                this.removeAllFiles();
+            },
+            error: function (file, response) {
+                var msg = (typeof response === "string")
+                    ? response
+                    : (response && response.message ? response.message : "Učitavanje loga nije uspjelo.");
+                $(file.previewElement).find("[data-dz-errormessage]").text(msg);
+            }
         };
 
-        function loadAttachments() {
-            $("#attachmentList").load("@Url.Action("GetAttachments", "FantasyTeam", new { teamId = Model.Id })");
-        }
-
-        function deleteAttachment(id) {
-            var token = $('input[name="__RequestVerificationToken"]').first().val();
-            $.ajax({
-                url: "@Url.Action("DeleteAttachment", "FantasyTeam")",
-                method: "POST",
-                data: { id: id, __RequestVerificationToken: token },
-                success: function () { loadAttachments(); }
+        $(function () {
+            $('[data-role="logo-remove"]').on("click", function () {
+                var token = $('input[name="__RequestVerificationToken"]').first().val();
+                $.ajax({
+                    url: "@Url.Action("RemoveLogo", "FantasyTeam")",
+                    method: "POST",
+                    data: { teamId: @Model.Id, __RequestVerificationToken: token },
+                    success: function () {
+                        $('[data-role="logo-img"]').addClass("is-hidden").attr("src", "");
+                        $('[data-role="logo-placeholder"]').removeClass("is-hidden");
+                        $('[data-role="logo-remove"]').addClass("is-hidden");
+                    }
+                });
             });
-        }
-
-        $(function () { loadAttachments(); });
+        });
     </script>
 }

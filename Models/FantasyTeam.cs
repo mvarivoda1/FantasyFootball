@@ -24,6 +24,9 @@ namespace FantasyFootball.Models
 
         public string? StartingLineupIds { get; set; }
 
+        // Putanja do loga tima (slika uploadana preko Dropzone). null = nema loga.
+        public string? LogoPath { get; set; }
+
         public virtual ICollection<Player> Players { get; set; }
 
         [ForeignKey(nameof(League))]
@@ -32,13 +35,9 @@ namespace FantasyFootball.Models
 
         public virtual AppUser? Owner { get; set; }
 
-        // 1-N: tim može imati više priloženih datoteka (upload preko Dropzone)
-        public virtual ICollection<Attachment> Attachments { get; set; }
-
         public FantasyTeam()
         {
             Players = new List<Player>();
-            Attachments = new List<Attachment>();
         }
     }
 }
