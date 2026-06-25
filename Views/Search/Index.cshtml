@@ -1,0 +1,254 @@
+@model FantasyFootball.Models.ViewModels.SearchResultsViewModel
+@{
+    ViewData["Title"] = string.IsNullOrWhiteSpace(Model.Query)
+        ? "Pretraga"
+        : $"Rezultati za \"{Model.Query}\"";
+
+    string PositionAbbr(FantasyFootball.Models.Position pos) => pos switch
+    {
+        FantasyFootball.Models.Position.Goalkeeper => "GK",
+        FantasyFootball.Models.Position.Defender => "DEF",
+        FantasyFootball.Models.Position.Midfielder => "MID",
+        FantasyFootball.Models.Position.Forward => "FWD",
+        _ => "MID"
+    };
+
+    string PositionBadge(FantasyFootball.Models.Position pos) => pos switch
+    {
+        FantasyFootball.Models.Position.Goalkeeper => "ff-badge--gk",
+        FantasyFootball.Models.Position.Defender => "ff-badge--def",
+        FantasyFootball.Models.Position.Midfielder => "ff-badge--mid",
+        FantasyFootball.Models.Position.Forward => "ff-badge--fwd",
+        _ => "ff-badge--mid"
+    };
+}
+
+<h1 class="ff-page-title">
+    <i class="bi bi-search"></i> Pretraga
+</h1>
+
+@if (string.IsNullOrWhiteSpace(Model.Query))
+{
+    <section class="ff-search-page__prompt" aria-label="Upute za pretragu">
+        <div class="ff-search-page__prompt-icon"><i class="bi bi-binoculars"></i></div>
+        <h2 class="ff-search-page__prompt-title">Što tražiš?</h2>
+        <p class="ff-search-page__prompt-text">
+            Upiši ime igrača, naziv tima, lige ili kola u tražilicu u zaglavlju i
+            pronađi sve na jednom mjestu.
+        </p>
+        <form method="get" action="/Search" role="search" class="ff-search-page__form" autocomplete="off">
+            <label for="ffSearchPageInput" class="visually-hidden">Pojam pretrage</label>
+            <i class="bi bi-search ff-search-bar__icon" aria-hidden="true"></i>
+            <input type="search"
+                   name="q"
+                   id="ffSearchPageInput"
+                   class="ff-search-bar__input"
+                   placeholder="Pretraži igrače, timove, lige..."
+                   aria-label="Pojam pretrage" />
+            <button type="submit" class="ff-action-btn ff-action-btn--primary ff-search-page__form-btn">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <span>Traži</span>
+            </button>
+        </form>
+    </section>
+}
+else
+{
+    <p class="ff-page-title__meta">
+        <span>
+            <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+            <strong class="ff-num">@Model.TotalCount</strong>
+            @(Model.TotalCount == 1 ? "rezultat" : "rezultata") za
+            <span class="ff-text-accent">&ldquo;@Model.Query&rdquo;</span>
+        </span>
+    </p>
+
+    if (Model.TotalCount == 0)
+    {
+        <section class="ff-empty" aria-live="polite">
+            <div class="ff-empty__icon"><i class="bi bi-emoji-frown"></i></div>
+            <div class="ff-empty__text">
+                Nismo pronašli ništa za <strong>&ldquo;@Model.Query&rdquo;</strong>.
+            </div>
+            <p class="ff-text-muted ff-text-sm mt-2 mb-0">
+                Provjeri pravopis ili pokušaj s drugim pojmom.
+            </p>
+        </section>
+    }
+    else
+    {
+        @* ---------- Stranice ---------- *@
+        if (Model.Pages.Any())
+        {
+            <section class="ff-search-section" aria-labelledby="ff-sec-pages">
+                <header class="ff-search-section__head">
+                    <h2 class="ff-search-section__title" id="ff-sec-pages">
+                        <i class="bi bi-compass" aria-hidden="true"></i> Stranice
+                    </h2>
+                    <span class="ff-search-section__count">@Model.Pages.Count</span>
+                </header>
+                <div class="ff-search-section__grid">
+                    @foreach (var pg in Model.Pages)
+                    {
+                        <a class="ff-result-card" href="@pg.Url">
+                            <span class="ff-result-card__icon"><i class="bi @pg.Icon" aria-hidden="true"></i></span>
+                            <span class="ff-result-card__body">
+                                <span class="ff-result-card__title">@pg.Label</span>
+                                <span class="ff-result-card__sub">@pg.Sublabel</span>
+                            </span>
+                            <span class="ff-result-card__type">Stranica</span>
+                            <i class="bi bi-arrow-right ff-result-card__arrow" aria-hidden="true"></i>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+
+        @* ---------- Igrači ---------- *@
+        if (Model.Players.Any())
+        {
+            <section class="ff-search-section" aria-labelledby="ff-sec-players">
+                <header class="ff-search-section__head">
+                    <h2 class="ff-search-section__title" id="ff-sec-players">
+                        <i class="bi bi-people-fill" aria-hidden="true"></i> Igrači
+                    </h2>
+                    <span class="ff-search-section__count">@Model.Players.Count</span>
+                </header>
+                <div class="ff-search-section__grid">
+                    @foreach (var p in Model.Players)
+                    {
+                        <a class="ff-result-card ff-result-card--player" href="@Url.RouteUrl("PlayerDetails", new { id = p.Id })">
+                            <span class="ff-result-card__icon"><i class="bi bi-person" aria-hidden="true"></i></span>
+                            <span class="ff-result-card__body">
+                                <span class="ff-result-card__title">@p.FullName</span>
+                                <span class="ff-result-card__sub">
+                                    <i class="bi bi-building" aria-hidden="true"></i> @p.Club
+                                    <span class="ff-result-card__dot" aria-hidden="true">&bull;</span>
+                                    <i class="bi bi-flag" aria-hidden="true"></i> @p.Nationality
+                                </span>
+                                <span class="ff-result-card__stats">
+                                    <span class="ff-result-card__stat" title="Golovi">
+                                        <i class="bi bi-bullseye" aria-hidden="true"></i> <span class="ff-num">@p.Goals</span> G
+                                    </span>
+                                    <span class="ff-result-card__stat" title="Asistencije">
+                                        <i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> <span class="ff-num">@p.Assists</span> A
+                                    </span>
+                                    <span class="ff-result-card__stat" title="Tržišna vrijednost">
+                                        <i class="bi bi-cash-stack" aria-hidden="true"></i> &euro;<span class="ff-num">@p.MarketValue.ToString("N0")</span>
+                                    </span>
+                                </span>
+                            </span>
+                            <span class="ff-badge @PositionBadge(p.Position) ff-result-card__pos">@PositionAbbr(p.Position)</span>
+                            <i class="bi bi-arrow-right ff-result-card__arrow" aria-hidden="true"></i>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+
+        @* ---------- Timovi ---------- *@
+        if (Model.Teams.Any())
+        {
+            <section class="ff-search-section" aria-labelledby="ff-sec-teams">
+                <header class="ff-search-section__head">
+                    <h2 class="ff-search-section__title" id="ff-sec-teams">
+                        <i class="bi bi-shield-fill" aria-hidden="true"></i> Timovi
+                    </h2>
+                    <span class="ff-search-section__count">@Model.Teams.Count</span>
+                </header>
+                <div class="ff-search-section__grid">
+                    @foreach (var t in Model.Teams)
+                    {
+                        <a class="ff-result-card" href="@Url.Action("Details", "FantasyTeam", new { id = t.Id })">
+                            <span class="ff-result-card__icon"><i class="bi bi-shield" aria-hidden="true"></i></span>
+                            <span class="ff-result-card__body">
+                                <span class="ff-result-card__title">@t.Name</span>
+                                <span class="ff-result-card__sub">
+                                    <i class="bi bi-person-badge" aria-hidden="true"></i> @t.OwnerName
+                                    @if (t.League != null && !string.IsNullOrWhiteSpace(t.League.Name))
+                                    {
+                                        <span class="ff-result-card__dot" aria-hidden="true">&bull;</span>
+                                        <i class="bi bi-diagram-3" aria-hidden="true"></i>
+                                        @t.League.Name
+                                    }
+                                </span>
+                            </span>
+                            <span class="ff-result-card__type">Tim</span>
+                            <i class="bi bi-arrow-right ff-result-card__arrow" aria-hidden="true"></i>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+
+        @* ---------- Lige ---------- *@
+        if (Model.Leagues.Any())
+        {
+            <section class="ff-search-section" aria-labelledby="ff-sec-leagues">
+                <header class="ff-search-section__head">
+                    <h2 class="ff-search-section__title" id="ff-sec-leagues">
+                        <i class="bi bi-diagram-3-fill" aria-hidden="true"></i> Lige
+                    </h2>
+                    <span class="ff-search-section__count">@Model.Leagues.Count</span>
+                </header>
+                <div class="ff-search-section__grid">
+                    @foreach (var l in Model.Leagues)
+                    {
+                        <a class="ff-result-card" href="@Url.RouteUrl("LeagueDetails", new { id = l.Id })">
+                            <span class="ff-result-card__icon"><i class="bi bi-diagram-3" aria-hidden="true"></i></span>
+                            <span class="ff-result-card__body">
+                                <span class="ff-result-card__title">@l.Name</span>
+                                <span class="ff-result-card__sub">
+                                    @if (!string.IsNullOrWhiteSpace(l.Season))
+                                    {
+                                        <i class="bi bi-calendar3" aria-hidden="true"></i>
+                                        <span>Sezona @l.Season</span>
+                                        <span class="ff-result-card__dot" aria-hidden="true">&bull;</span>
+                                    }
+                                    <i class="bi bi-shield" aria-hidden="true"></i>
+                                    <span><span class="ff-num">@(l.Teams?.Count ?? 0)</span> timova</span>
+                                </span>
+                                @if (!string.IsNullOrWhiteSpace(l.Description))
+                                {
+                                    <span class="ff-result-card__desc">@l.Description</span>
+                                }
+                            </span>
+                            <span class="ff-result-card__type">Liga</span>
+                            <i class="bi bi-arrow-right ff-result-card__arrow" aria-hidden="true"></i>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+
+        @* ---------- Kola ---------- *@
+        if (Model.Gameweeks.Any())
+        {
+            <section class="ff-search-section" aria-labelledby="ff-sec-gameweeks">
+                <header class="ff-search-section__head">
+                    <h2 class="ff-search-section__title" id="ff-sec-gameweeks">
+                        <i class="bi bi-calendar-week-fill" aria-hidden="true"></i> Kola
+                    </h2>
+                    <span class="ff-search-section__count">@Model.Gameweeks.Count</span>
+                </header>
+                <div class="ff-search-section__grid">
+                    @foreach (var g in Model.Gameweeks)
+                    {
+                        <a class="ff-result-card" href="@Url.RouteUrl("GameweekDetails", new { id = g.Id })">
+                            <span class="ff-result-card__icon"><i class="bi bi-calendar-week" aria-hidden="true"></i></span>
+                            <span class="ff-result-card__body">
+                                <span class="ff-result-card__title">Kolo @g.WeekNumber</span>
+                                <span class="ff-result-card__sub">
+                                    <i class="bi bi-calendar-range" aria-hidden="true"></i>
+                                    @g.StartDate.ToString("dd.MM.") &ndash; @g.EndDate.ToString("dd.MM.yyyy")
+                                </span>
+                            </span>
+                            <span class="ff-result-card__type">Kolo</span>
+                            <i class="bi bi-arrow-right ff-result-card__arrow" aria-hidden="true"></i>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+    }
+}

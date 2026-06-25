@@ -23,6 +23,44 @@
             </p>
         </header>
 
+        @if (ViewBag.AiEnabled == true)
+        {
+            <section class="ff-ai-panel" aria-labelledby="ffAiTitle">
+                <div class="ff-ai-panel__head">
+                    <span class="ff-ai-panel__badge" aria-hidden="true">
+                        <i class="bi bi-stars"></i>
+                    </span>
+                    <div class="ff-ai-panel__intro">
+                        <h2 class="ff-ai-panel__title" id="ffAiTitle">AI unos</h2>
+                        <p class="ff-ai-panel__subtitle">
+                            Opiši igrača običnim rečenicama, a AI će popuniti polja umjesto tebe.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ff-ai-panel__field">
+                    <label class="ff-form-label" for="ffAiPrompt">Opis igrača</label>
+                    <textarea id="ffAiPrompt"
+                              class="ff-form-input ff-ai-panel__textarea"
+                              rows="3"
+                              maxlength="600"
+                              placeholder="npr. Dodaj Erling Haaland, napadač Manchester Cityja, 25 godina, 14 golova 3 asistencije, vrijednost 14M"
+                              aria-describedby="ffAiStatus"></textarea>
+                </div>
+
+                <div class="ff-ai-panel__actions">
+                    <button type="button" class="ff-ai-panel__btn" id="ffAiSubmit">
+                        <span class="ff-ai-panel__btn-spinner" aria-hidden="true"></span>
+                        <i class="bi bi-magic ff-ai-panel__btn-icon" aria-hidden="true"></i>
+                        <span class="ff-ai-panel__btn-text">Popuni AI-em</span>
+                    </button>
+                    <p class="ff-ai-panel__hint">Provjeri popunjena polja prije spremanja.</p>
+                </div>
+
+                <div class="ff-ai-panel__status" id="ffAiStatus" role="status" aria-live="polite"></div>
+            </section>
+        }
+
         <form asp-controller="Player" asp-action="Create" method="post" class="ff-form" novalidate>
             @Html.AntiForgeryToken()
 
@@ -161,4 +199,183 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    @if (ViewBag.AiEnabled == true)
+    {
+        <script>
+            (function () {
+                'use strict';
+
+                var submitBtn = document.getElementById('ffAiSubmit');
+                var promptEl = document.getElementById('ffAiPrompt');
+                var statusEl = document.getElementById('ffAiStatus');
+                var panel = document.querySelector('.ff-ai-panel');
+                if (!submitBtn || !promptEl || !statusEl) return;
+
+                function showStatus(type, message) {
+                    statusEl.className = 'ff-ai-panel__status ff-ai-panel__status--' + type + ' is-shown';
+                    var icon = type === 'error'
+                        ? 'bi-exclamation-triangle-fill'
+                        : (type === 'success' ? 'bi-check-circle-fill' : 'bi-info-circle-fill');
+                    statusEl.innerHTML = '<i class="bi ' + icon + '" aria-hidden="true"></i><span>' + message + '</span>';
+                }
+
+                function clearStatus() {
+                    statusEl.className = 'ff-ai-panel__status';
+                    statusEl.textContent = '';
+                }
+
+                function setLoading(isLoading) {
+                    submitBtn.disabled = isLoading;
+                    promptEl.disabled = isLoading;
+                    if (panel) panel.classList.toggle('is-loading', isLoading);
+                }
+
+                // --- Field helpers ---------------------------------------------------
+                function setInput(id, value) {
+                    var el = document.getElementById(id);
+                    if (!el || value === undefined || value === null) return;
+                    el.value = value;
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                    flash(el);
+                }
+
+                function setSelect(id, value) {
+                    var el = document.getElementById(id);
+                    if (!el || value === undefined || value === null) return;
+                    var v = String(value);
+                    var matched = false;
+                    Array.prototype.forEach.call(el.options, function (opt) {
+                        if (opt.value.toLowerCase() === v.toLowerCase()) {
+                            el.value = opt.value;
+                            matched = true;
+                        }
+                    });
+                    if (matched) {
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                        flash(el);
+                    }
+                }
+
+                // Autocomplete (Club): set hidden (binding) + visible (display) inputs.
+                function setAutocomplete(rootId, value) {
+                    if (value === undefined || value === null || value === '') return;
+                    var hidden = document.getElementById(rootId + '_hidden');
+                    var visible = document.getElementById(rootId + '_visible');
+                    if (hidden) {
+                        hidden.value = value;
+                        hidden.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    if (visible) {
+                        visible.value = value;
+                        flash(visible);
+                        var clearBtn = visible.closest('.ff-ac');
+                        clearBtn = clearBtn && clearBtn.querySelector('[data-ff-ac-clear]');
+                        if (clearBtn) clearBtn.style.display = '';
+                    }
+                }
+
+                // Datepicker (DateOfBirth): set hidden ISO + formatted visible value.
+                function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+                function setDatePicker(rootId, isoValue) {
+                    if (!isoValue) return;
+                    var parts = String(isoValue).split('-');
+                    if (parts.length !== 3) return;
+                    var year = parseInt(parts[0], 10);
+                    var month = parseInt(parts[1], 10);
+                    var day = parseInt(parts[2], 10);
+                    if (isNaN(year) || isNaN(month) || isNaN(day)) return;
+
+                    var hidden = document.getElementById(rootId + '_hidden');
+                    var visible = document.getElementById(rootId + '_visible');
+                    if (hidden) {
+                        hidden.value = year + '-' + pad2(month) + '-' + pad2(day);
+                        hidden.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    if (visible) {
+                        var root = visible.closest('[data-ff-datepicker]');
+                        var format = (root && root.getAttribute('data-format')) || 'dd.MM.yyyy';
+                        visible.value = format
+                            .replace('dd', pad2(day))
+                            .replace('MM', pad2(month))
+                            .replace('yyyy', year)
+                            .replace(/\s*HH:mm.*$/, '')
+                            .replace(/\s*hh:mm.*$/, '');
+                        flash(visible);
+                    }
+                }
+
+                function flash(el) {
+                    el.classList.add('ff-ai-filled');
+                    setTimeout(function () { el.classList.remove('ff-ai-filled'); }, 1200);
+                }
+
+                function fillForm(p) {
+                    if (!p) return;
+                    setInput('FirstName', p.firstName);
+                    setInput('LastName', p.lastName);
+                    setSelect('Position', p.position);
+                    setAutocomplete('Club', p.club);
+                    setInput('Nationality', p.nationality);
+                    setDatePicker('DateOfBirth', p.dateOfBirth);
+                    setInput('MarketValue', p.marketValue);
+                    setInput('Goals', p.goals);
+                    setInput('Assists', p.assists);
+                    setInput('CleanSheets', p.cleanSheets);
+                    setInput('TotalPoints', p.totalPoints);
+                }
+
+                // --- Submit ----------------------------------------------------------
+                submitBtn.addEventListener('click', function () {
+                    var prompt = (promptEl.value || '').trim();
+                    if (!prompt) {
+                        showStatus('error', 'Unesi opis igrača prije pokretanja AI-a.');
+                        promptEl.focus();
+                        return;
+                    }
+
+                    var tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+                    var fd = new FormData();
+                    fd.append('prompt', prompt);
+                    if (tokenEl) fd.append('__RequestVerificationToken', tokenEl.value);
+
+                    setLoading(true);
+                    showStatus('info', 'AI analizira opis...');
+
+                    fetch('/Player/AiParse', {
+                        method: 'POST',
+                        body: fd,
+                        credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                        .then(function (r) { return r.json().catch(function () { return null; }); })
+                        .then(function (data) {
+                            if (data && data.ok && data.player) {
+                                fillForm(data.player);
+                                showStatus('success', 'Polja su popunjena. Provjeri ih i spremi.');
+                            } else {
+                                var msg = (data && data.message) ? data.message : 'AI nije uspio obraditi opis.';
+                                showStatus('error', msg);
+                            }
+                        })
+                        .catch(function () {
+                            showStatus('error', 'Greška u komunikaciji s AI servisom. Pokušaj ponovno.');
+                        })
+                        .finally(function () {
+                            setLoading(false);
+                        });
+                });
+
+                // Ctrl/Cmd + Enter shortcut from textarea
+                promptEl.addEventListener('keydown', function (e) {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                        e.preventDefault();
+                        submitBtn.click();
+                    }
+                });
+            })();
+        </script>
+    }
 }

@@ -61,6 +61,27 @@
                             </a>
                         </li>
                     </ul>
+
+                    <form method="get" action="/Search" role="search" class="ff-navsearch" id="ffNavSearch" autocomplete="off">
+                        <label for="ffNavSearchInput" class="visually-hidden">Pretraži igrače, timove i lige</label>
+                        <i class="bi bi-search ff-navsearch__icon" aria-hidden="true"></i>
+                        <input type="search"
+                               name="q"
+                               id="ffNavSearchInput"
+                               class="ff-navsearch__input"
+                               placeholder="Pretraži igrače, timove, lige..."
+                               aria-label="Pretraži igrače, timove i lige"
+                               aria-autocomplete="list"
+                               aria-controls="ffNavSearchResults"
+                               aria-expanded="false"
+                               role="combobox"
+                               autocomplete="off" />
+                        <button type="submit" class="ff-navsearch__submit" aria-label="Pokreni pretragu">
+                            <i class="bi bi-arrow-return-left" aria-hidden="true"></i>
+                        </button>
+                        <div class="ff-navsearch__results" id="ffNavSearchResults" role="listbox" aria-label="Prijedlozi pretrage" hidden></div>
+                    </form>
+
                     <ul class="navbar-nav ff-navbar__nav ff-navbar__auth">
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
@@ -114,6 +135,7 @@
     <partial name="_ValidationScriptsPartial" />
     <script src="~/js/ff-datepicker.js" asp-append-version="true"></script>
     <script src="~/js/ff-autocomplete.js" asp-append-version="true"></script>
+    <script src="~/js/ff-search.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

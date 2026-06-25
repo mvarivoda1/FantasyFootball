@@ -8,8 +8,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog — logging mehanizam (konzola + rolling file u logs/ff-<datum>.log).
+// Razine i sinkovi čitaju se iz "Serilog" sekcije u appsettings.json.
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext());
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
@@ -75,6 +83,9 @@ builder.Services.AddScoped<TransferRepository>();
 builder.Services.AddScoped<LeagueRepository>();
 builder.Services.AddScoped<GameweekRepository>();
 
+// AI integracija — parser igrača (Claude / Anthropic)
+builder.Services.AddScoped<AiPlayerParser>();
+
 var app = builder.Build();
 
 // Primijeni migracije i pokreni seeder pri startu aplikacije
@@ -100,6 +111,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Serilog — strukturirani zapis svakog HTTP zahtjeva (metoda, putanja, status, trajanje).
+app.UseSerilogRequestLogging();
+
 app.UseRouting();
 
 // Lokalizacija — podržani jezici hr i en, default hr

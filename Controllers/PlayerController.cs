@@ -2,6 +2,7 @@ using FantasyFootball.DAL;
 using FantasyFootball.Models;
 using FantasyFootball.Models.ViewModels;
 using FantasyFootball.Repositories;
+using FantasyFootball.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +13,13 @@ namespace FantasyFootball.Controllers
     {
         private readonly PlayerRepository _playerRepo;
         private readonly FantasyFootballDbContext _ctx;
+        private readonly AiPlayerParser _aiParser;
 
-        public PlayerController(PlayerRepository playerRepo, FantasyFootballDbContext ctx)
+        public PlayerController(PlayerRepository playerRepo, FantasyFootballDbContext ctx, AiPlayerParser aiParser)
         {
             _playerRepo = playerRepo;
             _ctx = ctx;
+            _aiParser = aiParser;
         }
 
         [Route("igraci", Name = "PlayerIndex")]
@@ -40,7 +43,45 @@ namespace FantasyFootball.Controllers
         [Authorize(Roles = DbSeeder.AdminRole)]
         public IActionResult Create()
         {
+            ViewBag.AiEnabled = _aiParser.IsConfigured;
             return View(new PlayerFormViewModel());
+        }
+
+        // AI unos: prima prirodnojezični opis i vraća prijedlog popunjene forme (JSON).
+        // Graceful: app se ne ruši — vraća ok=false ako AI nije dostupan ili nije uspio.
+        [HttpPost]
+        [Authorize(Roles = DbSeeder.AdminRole)]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AiParse(string prompt)
+        {
+            if (!_aiParser.IsConfigured)
+                return Json(new { ok = false, message = "AI nije konfiguriran (nedostaje API ključ)." });
+
+            if (string.IsNullOrWhiteSpace(prompt))
+                return Json(new { ok = false, message = "Unesite opis igrača." });
+
+            var vm = await _aiParser.ParseAsync(prompt);
+            if (vm == null)
+                return Json(new { ok = false, message = "AI nije uspio prepoznati podatke. Pokušajte preciznije ili unesite ručno." });
+
+            return Json(new
+            {
+                ok = true,
+                player = new
+                {
+                    firstName = vm.FirstName,
+                    lastName = vm.LastName,
+                    position = vm.Position.ToString(),
+                    club = vm.Club,
+                    nationality = vm.Nationality,
+                    dateOfBirth = vm.DateOfBirth.ToString("yyyy-MM-dd"),
+                    marketValue = vm.MarketValue,
+                    goals = vm.Goals,
+                    assists = vm.Assists,
+                    cleanSheets = vm.CleanSheets,
+                    totalPoints = vm.TotalPoints
+                }
+            });
         }
 
         [HttpPost]

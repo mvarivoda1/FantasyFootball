@@ -7730,3 +7730,724 @@ body.ff-transfer-modal-open { overflow: hidden; }
     }
 }
 
+/* ============================================================
+   === Global Search — Navbar live dropdown (.ff-navsearch) ===
+   ============================================================ */
+.ff-navsearch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 0 1 320px;
+    min-width: 0;
+    margin: 0 0.25rem 0 0.5rem;
+    padding: 0.3rem 0.55rem;
+    background: var(--fpl-bg);
+    border: 1px solid rgba(55, 0, 60, 0.1);
+    border-radius: var(--fpl-radius-pill);
+    transition: var(--fpl-transition);
+}
+
+.ff-navsearch:focus-within {
+    background: #ffffff;
+    border-color: rgba(55, 0, 60, 0.2);
+    box-shadow: 0 0 0 3px rgba(0, 255, 135, 0.28);
+}
+
+.ff-navsearch__icon {
+    color: var(--fpl-purple);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    margin-left: 0.15rem;
+}
+
+.ff-navsearch__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--fpl-text);
+    font-family: var(--fpl-font);
+    font-size: 0.9rem;
+    padding: 0.15rem 0.1rem;
+    line-height: 1.4;
+}
+
+.ff-navsearch__input::placeholder {
+    color: var(--fpl-text-muted);
+}
+
+/* Sakrij native search "x" da koristimo vlastiti stil */
+.ff-navsearch__input::-webkit-search-decoration,
+.ff-navsearch__input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.ff-navsearch__submit {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: var(--fpl-purple);
+    color: var(--fpl-green);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: var(--fpl-transition);
+}
+
+.ff-navsearch__submit:hover,
+.ff-navsearch__submit:focus-visible {
+    background: var(--fpl-purple-light);
+    color: var(--fpl-teal);
+    outline: none;
+    transform: scale(1.06);
+}
+
+/* --- Dropdown prijedloga --- */
+.ff-navsearch__results {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    z-index: 1100;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid rgba(55, 0, 60, 0.1);
+    border-radius: var(--fpl-radius);
+    box-shadow: 0 12px 32px rgba(55, 0, 60, 0.18);
+    padding: 0.35rem;
+    overscroll-behavior: contain;
+}
+
+.ff-navsearch__results[hidden] {
+    display: none;
+}
+
+.ff-navsearch__item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 0.6rem;
+    border-radius: var(--fpl-radius-sm);
+    color: var(--fpl-text);
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.ff-navsearch__item:hover,
+.ff-navsearch__item--active {
+    background: rgba(55, 0, 60, 0.06);
+    color: var(--fpl-purple);
+    text-decoration: none;
+}
+
+.ff-navsearch__item-icon {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--fpl-radius-sm);
+    background: rgba(55, 0, 60, 0.06);
+    color: var(--fpl-purple);
+    font-size: 0.95rem;
+}
+
+.ff-navsearch__item--active .ff-navsearch__item-icon {
+    background: var(--fpl-purple);
+    color: var(--fpl-green);
+}
+
+.ff-navsearch__item-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.ff-navsearch__item-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ff-navsearch__item-sub {
+    font-size: 0.75rem;
+    color: var(--fpl-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ff-navsearch__item-type {
+    flex-shrink: 0;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fpl-purple);
+    background: rgba(0, 255, 135, 0.18);
+    border-radius: var(--fpl-radius-pill);
+    padding: 0.15rem 0.5rem;
+}
+
+.ff-navsearch__empty {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 0.7rem;
+    color: var(--fpl-text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.ff-navsearch__empty i {
+    color: var(--fpl-purple);
+    opacity: 0.5;
+}
+
+/* Mobile: search se "slomi" unutar collapse menija (puna širina, ispod nav linkova) */
+@media (max-width: 991.98px) {
+    .ff-navsearch {
+        order: 1;
+        flex: 1 1 100%;
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+
+    .ff-navsearch__results {
+        max-height: 60vh;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ff-navsearch,
+    .ff-navsearch__submit,
+    .ff-navsearch__item {
+        transition: none;
+    }
+}
+
+/* ============================================================
+   === Global Search — Results page (/Search) ===
+   ============================================================ */
+.ff-search-page__prompt {
+    text-align: center;
+    padding: 3rem 1.25rem 3.5rem;
+    background: var(--fpl-white);
+    border-radius: var(--fpl-radius);
+    box-shadow: var(--fpl-shadow);
+}
+
+.ff-search-page__prompt-icon {
+    font-size: 3rem;
+    color: var(--fpl-purple);
+    opacity: 0.35;
+    margin-bottom: 0.5rem;
+}
+
+.ff-search-page__prompt-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--fpl-text-dark);
+    margin: 0 0 0.5rem;
+}
+
+.ff-search-page__prompt-text {
+    max-width: 480px;
+    margin: 0 auto 1.5rem;
+    color: var(--fpl-text-secondary);
+}
+
+.ff-search-page__form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0.4rem 0.4rem 0.4rem 0.85rem;
+    background: var(--fpl-bg);
+    border: 1px solid rgba(55, 0, 60, 0.1);
+    border-radius: var(--fpl-radius-pill);
+}
+
+.ff-search-page__form:focus-within {
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 255, 135, 0.28);
+}
+
+.ff-search-page__form .ff-search-bar__input {
+    padding: 0.5rem 0.2rem;
+}
+
+.ff-search-page__form-btn {
+    flex-shrink: 0;
+}
+
+/* --- Grupirane sekcije rezultata --- */
+.ff-search-section {
+    margin-bottom: 2rem;
+}
+
+.ff-search-section__head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(55, 0, 60, 0.08);
+}
+
+.ff-search-section__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--fpl-text-dark);
+    margin: 0;
+}
+
+.ff-search-section__title i {
+    color: var(--fpl-purple);
+}
+
+.ff-search-section__count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--fpl-purple);
+    background: rgba(0, 255, 135, 0.18);
+    border-radius: var(--fpl-radius-pill);
+    padding: 0.15rem 0.65rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ff-search-section__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+}
+
+@media (min-width: 768px) {
+    .ff-search-section__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* --- Pojedinačna kartica rezultata --- */
+.ff-result-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    background: var(--fpl-white);
+    border: 1px solid rgba(55, 0, 60, 0.06);
+    border-left: 3px solid transparent;
+    border-radius: var(--fpl-radius);
+    box-shadow: var(--fpl-shadow-card);
+    color: var(--fpl-text);
+    text-decoration: none;
+    transition: var(--fpl-transition);
+}
+
+.ff-result-card:hover,
+.ff-result-card:focus-visible {
+    text-decoration: none;
+    color: var(--fpl-text);
+    border-left-color: var(--fpl-green);
+    box-shadow: var(--fpl-shadow-hover);
+    transform: translateY(-2px);
+    outline: none;
+}
+
+.ff-result-card:focus-visible {
+    box-shadow: 0 0 0 2px var(--fpl-green), var(--fpl-shadow-hover);
+}
+
+.ff-result-card__icon {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--fpl-radius);
+    background: rgba(55, 0, 60, 0.06);
+    color: var(--fpl-purple);
+    font-size: 1.25rem;
+}
+
+.ff-result-card:hover .ff-result-card__icon,
+.ff-result-card:focus-visible .ff-result-card__icon {
+    background: var(--fpl-purple);
+    color: var(--fpl-green);
+}
+
+.ff-result-card__body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.ff-result-card__title {
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: var(--fpl-text-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ff-result-card__sub {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--fpl-text-secondary);
+}
+
+.ff-result-card__sub i {
+    color: var(--fpl-text-muted);
+}
+
+.ff-result-card__dot {
+    color: var(--fpl-text-muted);
+    opacity: 0.6;
+}
+
+.ff-result-card__desc {
+    font-size: 0.78rem;
+    color: var(--fpl-text-muted);
+    margin-top: 0.1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ff-result-card__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+    font-size: 0.78rem;
+    color: var(--fpl-text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.ff-result-card__stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.ff-result-card__stat i {
+    color: var(--fpl-purple);
+}
+
+.ff-result-card__type {
+    flex-shrink: 0;
+    align-self: flex-start;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fpl-purple);
+    background: rgba(0, 255, 135, 0.18);
+    border-radius: var(--fpl-radius-pill);
+    padding: 0.18rem 0.55rem;
+}
+
+.ff-result-card__pos {
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+.ff-result-card__arrow {
+    flex-shrink: 0;
+    color: var(--fpl-text-muted);
+    font-size: 0.95rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.ff-result-card:hover .ff-result-card__arrow,
+.ff-result-card:focus-visible .ff-result-card__arrow {
+    color: var(--fpl-purple);
+    transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ff-result-card,
+    .ff-result-card__arrow {
+        transition: none;
+    }
+
+    .ff-result-card:hover,
+    .ff-result-card:focus-visible {
+        transform: none;
+    }
+}
+
+/* ============================================
+   AI Input Panel — Create Player form
+   ============================================ */
+.ff-ai-panel {
+    position: relative;
+    margin: 0 0 1.5rem;
+    padding: 1.25rem 1.25rem 1.1rem;
+    border-radius: calc(var(--fpl-radius) * 1.5);
+    background:
+        radial-gradient(120% 140% at 100% 0%, rgba(0, 255, 135, 0.10) 0%, rgba(0, 255, 135, 0) 55%),
+        linear-gradient(135deg, var(--fpl-purple) 0%, var(--fpl-purple-light) 100%);
+    border: 1px solid rgba(0, 255, 135, 0.25);
+    box-shadow: 0 14px 34px -16px rgba(55, 0, 60, 0.55);
+    overflow: hidden;
+}
+
+.ff-ai-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.10) 0 1px, transparent 1.6px),
+        radial-gradient(circle at 72% 64%, rgba(0, 255, 135, 0.14) 0 1px, transparent 1.8px);
+    background-size: 26px 26px, 34px 34px;
+    opacity: 0.6;
+}
+
+.ff-ai-panel > * {
+    position: relative;
+    z-index: 1;
+}
+
+.ff-ai-panel__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.ff-ai-panel__badge {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: var(--fpl-purple);
+    background: linear-gradient(135deg, var(--fpl-green) 0%, var(--fpl-teal) 100%);
+    box-shadow: 0 6px 16px -6px rgba(0, 255, 135, 0.65);
+}
+
+.ff-ai-panel__intro {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ff-ai-panel__title {
+    margin: 0 0 0.15rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--fpl-white);
+    line-height: 1.2;
+}
+
+.ff-ai-panel__subtitle {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.ff-ai-panel__field {
+    margin-bottom: 0.85rem;
+}
+
+.ff-ai-panel__field .ff-form-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.ff-ai-panel__textarea {
+    resize: vertical;
+    min-height: 78px;
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom-color: transparent;
+}
+
+.ff-ai-panel__textarea:focus {
+    background: var(--fpl-white);
+    border-color: var(--fpl-green);
+    box-shadow: 0 0 0 4px rgba(0, 255, 135, 0.25);
+}
+
+.ff-ai-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ff-ai-panel__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+    padding: 0.7rem 1.2rem;
+    border-radius: var(--fpl-radius);
+    font-size: 0.92rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: var(--fpl-purple);
+    background: linear-gradient(135deg, var(--fpl-green) 0%, var(--fpl-teal) 100%);
+    box-shadow: 0 8px 20px -8px rgba(0, 255, 135, 0.7);
+    transition: var(--fpl-transition);
+}
+
+.ff-ai-panel__btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px -8px rgba(0, 255, 135, 0.8);
+}
+
+.ff-ai-panel__btn:focus-visible {
+    outline: none;
+    box-shadow: 0 8px 20px -8px rgba(0, 255, 135, 0.7),
+                0 0 0 4px rgba(255, 255, 255, 0.55);
+}
+
+.ff-ai-panel__btn:disabled {
+    cursor: progress;
+    opacity: 0.85;
+}
+
+.ff-ai-panel__btn-spinner {
+    display: none;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(55, 0, 60, 0.3);
+    border-top-color: var(--fpl-purple);
+    border-radius: 50%;
+    animation: ffAiSpin 0.6s linear infinite;
+}
+
+.ff-ai-panel.is-loading .ff-ai-panel__btn-spinner {
+    display: inline-block;
+}
+
+.ff-ai-panel.is-loading .ff-ai-panel__btn-icon {
+    display: none;
+}
+
+@keyframes ffAiSpin {
+    to { transform: rotate(360deg); }
+}
+
+.ff-ai-panel__hint {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.ff-ai-panel__status {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--fpl-radius-sm);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.ff-ai-panel__status.is-shown {
+    display: flex;
+}
+
+.ff-ai-panel__status i {
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.ff-ai-panel__status--info {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.ff-ai-panel__status--success {
+    background: rgba(0, 255, 135, 0.16);
+    color: #d6ffe9;
+}
+
+.ff-ai-panel__status--success i {
+    color: var(--fpl-green);
+}
+
+.ff-ai-panel__status--error {
+    background: rgba(233, 0, 82, 0.18);
+    color: #ffd7e3;
+}
+
+.ff-ai-panel__status--error i {
+    color: #ff7aa6;
+}
+
+/* Brief highlight on fields filled by AI */
+.ff-ai-filled {
+    animation: ffAiFilled 1.2s ease;
+}
+
+@keyframes ffAiFilled {
+    0% { box-shadow: 0 0 0 0 rgba(0, 255, 135, 0.55); }
+    30% { box-shadow: 0 0 0 4px rgba(0, 255, 135, 0.35); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 255, 135, 0); }
+}
+
+@media (max-width: 575.98px) {
+    .ff-ai-panel {
+        padding: 1.05rem 1rem 1rem;
+    }
+
+    .ff-ai-panel__btn {
+        flex: 1 1 100%;
+    }
+
+    .ff-ai-panel__hint {
+        flex: 1 1 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ff-ai-panel__btn:hover:not(:disabled) {
+        transform: none;
+    }
+
+    .ff-ai-panel__btn-spinner {
+        animation-duration: 1.2s;
+    }
+
+    .ff-ai-filled {
+        animation: none;
+    }
+}
+

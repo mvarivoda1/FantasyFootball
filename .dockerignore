@@ -1,0 +1,20 @@
+# Build artefakti
+**/bin
+**/obj
+logs
+
+# Pod-projekti koji nisu dio web image-a
+FantasyFootball.Tests
+FantasyFootball.E2E
+FantasyFootball.Mcp
+
+# Razno
+.git
+.gitignore
+.vs
+.github
+**/*.user
+docker-compose.yml
+Dockerfile
+.dockerignore
+**/.claude

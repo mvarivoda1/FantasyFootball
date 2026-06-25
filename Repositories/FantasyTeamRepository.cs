@@ -26,5 +26,20 @@ namespace FantasyFootball.Repositories
                 .Include(t => t.Players)
                 .AsNoTracking()
                 .FirstOrDefault(t => t.Id == id);
+
+        // Pretraga timova po nazivu tima ili imenu vlasnika.
+        public List<FantasyTeam> Search(string term, int take = 10)
+        {
+            if (string.IsNullOrWhiteSpace(term)) return new List<FantasyTeam>();
+            term = term.Trim();
+
+            return _ctx.FantasyTeams
+                .Include(t => t.League)
+                .AsNoTracking()
+                .Where(t => t.Name.Contains(term) || t.OwnerName.Contains(term))
+                .OrderBy(t => t.Name)
+                .Take(take)
+                .ToList();
+        }
     }
 }

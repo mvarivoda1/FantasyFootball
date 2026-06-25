@@ -26,5 +26,22 @@ namespace FantasyFootball.Repositories
                     .ThenInclude(p => p.Player)
                 .AsNoTracking()
                 .FirstOrDefault(g => g.Id == id);
+
+        // Pretraga kola po broju (npr. "5" ili "kolo 5").
+        public List<Gameweek> Search(string term, int take = 10)
+        {
+            if (string.IsNullOrWhiteSpace(term)) return new List<Gameweek>();
+
+            // Izvuci prvi broj iz upita; ako ga nema, nema rezultata kola.
+            var digits = new string(term.Where(char.IsDigit).ToArray());
+            if (!int.TryParse(digits, out var weekNumber)) return new List<Gameweek>();
+
+            return _ctx.Gameweeks
+                .AsNoTracking()
+                .Where(g => g.WeekNumber == weekNumber)
+                .OrderBy(g => g.WeekNumber)
+                .Take(take)
+                .ToList();
+        }
     }
 }
