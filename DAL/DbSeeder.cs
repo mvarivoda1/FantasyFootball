@@ -199,7 +199,7 @@ namespace FantasyFootball.DAL
                 if (!overClub && !overBudget) continue;
 
                 var rng = new Random((idx + 1) * 23 + 91);
-                var fresh = BuildSquad(byPos, rng);
+                var fresh = BuildSquad(byPos, rng) ?? BuildValidSquad(byPos, rng);
                 if (fresh == null) continue; // ne uspijem li složiti valjan tim, ostavi kako jest
 
                 team.Players.Clear();
@@ -231,11 +231,15 @@ namespace FantasyFootball.DAL
 
                 // Postojeća jezgra ne dopušta proširenje (npr. već prelazi budžet
                 // nakon rebalansa cijena) — sastavi cijeli novi 15-igrački tim.
-                var fresh = BuildSquad(byPos, rng);
+                // BuildValidSquad je garantirani fallback ako nasumični BuildSquad promaši.
+                var fresh = BuildSquad(byPos, rng) ?? BuildValidSquad(byPos, rng);
                 if (fresh == null) continue;
 
                 team.Players.Clear();
                 foreach (var p in fresh) team.Players.Add(p);
+
+                // Sastav se promijenio — resetiraj startnu postavu (MyTeam je posloži nanovo).
+                team.StartingLineupIds = null;
             }
         }
 
@@ -355,6 +359,71 @@ namespace FantasyFootball.DAL
                 if (r <= acc) return candidates[i];
             }
             return candidates[candidates.Count - 1];
+        }
+
+        // Deterministički sastavi GARANTIRANO valjan 15-igrački tim (2/5/5/3,
+        // ≤ 100M, ≤ 3 igrača po klubu). BuildSquad radi nasumične pokušaje koji za
+        // neke bazene/seedove uvijek promaše (npr. minimalni sastav stane ~89M, ali
+        // weighted-random stalno prebaci budžet) — zbog čega su neki timovi ostajali
+        // na 11 igrača (bez klupe). Ova metoda kreće od najjeftinijeg valjanog sastava
+        // (uvijek postoji) pa ga, dok budžet dopušta, nasumično "nadograđuje" radi
+        // raznolikosti. Vraća null samo ako bazen igrača fizički nema dovoljno igrača.
+        private static List<Player>? BuildValidSquad(
+            Dictionary<Position, List<Player>> byPos, Random rng)
+        {
+            var chosen = new List<Player>();
+            var chosenIds = new HashSet<int>();
+            var clubCount = new Dictionary<string, int>();
+
+            // 1) Najjeftiniji valjani sastav po pozicijama — unutar budžeta i club-limita.
+            foreach (var kv in RequiredByPos)
+            {
+                if (!byPos.TryGetValue(kv.Key, out var pool)) return null;
+
+                int taken = 0;
+                foreach (var p in pool.OrderBy(pl => pl.MarketValue))
+                {
+                    if (taken == kv.Value) break;
+                    if (chosenIds.Contains(p.Id)) continue;
+                    if (clubCount.GetValueOrDefault(p.Club, 0) >= MaxPerClub) continue;
+
+                    chosen.Add(p);
+                    chosenIds.Add(p.Id);
+                    clubCount[p.Club] = clubCount.GetValueOrDefault(p.Club, 0) + 1;
+                    taken++;
+                }
+                if (taken < kv.Value) return null; // premalen bazen za ovu poziciju
+            }
+
+            double cost = chosen.Sum(p => p.MarketValue);
+            if (cost > SquadBudget + 1e-6) return null; // teorijski nemoguće
+
+            // 2) Nasumične nadogradnje radi raznolikosti — nikad ne prelaze budžet ni club-limit.
+            for (int iter = 0; iter < 60; iter++)
+            {
+                int slot = rng.Next(chosen.Count);
+                var current = chosen[slot];
+                double headroom = SquadBudget - cost;
+
+                var upgrade = byPos[current.Position]
+                    .Where(p => !chosenIds.Contains(p.Id)
+                             && p.MarketValue > current.MarketValue
+                             && p.MarketValue - current.MarketValue <= headroom + 1e-6
+                             && (p.Club == current.Club
+                                 || clubCount.GetValueOrDefault(p.Club, 0) < MaxPerClub))
+                    .OrderBy(_ => rng.Next())
+                    .FirstOrDefault();
+                if (upgrade == null) continue;
+
+                chosenIds.Remove(current.Id);
+                clubCount[current.Club]--;
+                chosenIds.Add(upgrade.Id);
+                clubCount[upgrade.Club] = clubCount.GetValueOrDefault(upgrade.Club, 0) + 1;
+                cost += upgrade.MarketValue - current.MarketValue;
+                chosen[slot] = upgrade;
+            }
+
+            return chosen;
         }
 
         private static async Task SeedUsersAsync(

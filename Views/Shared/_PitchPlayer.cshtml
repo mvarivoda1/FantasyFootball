@@ -10,6 +10,7 @@
     };
     var posCode = shirtVariant.ToUpperInvariant();
     var isStarter = ViewData["IsStarter"] as bool? ?? true;
+    var showValue = ViewData["ShowValue"] as bool? ?? false;
     var clubShort = string.IsNullOrEmpty(Model.Club)
         ? string.Empty
         : new string(Model.Club.Where(char.IsLetterOrDigit).Take(3).ToArray()).ToUpperInvariant();
@@ -33,5 +34,12 @@
         <span class="ff-totw-player__points">@Model.TotalPoints</span>
     </div>
     <div class="ff-totw-player__name">@Model.LastName</div>
-    <div class="ff-totw-player__stat">@Model.Goals G &middot; @Model.Assists A</div>
+    @if (showValue)
+    {
+        <div class="ff-totw-player__stat">@Model.MarketValue.ToString("N1")M</div>
+    }
+    else
+    {
+        <div class="ff-totw-player__stat">@Model.Goals G &middot; @Model.Assists A</div>
+    }
 </button>

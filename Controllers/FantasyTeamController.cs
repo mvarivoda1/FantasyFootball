@@ -128,7 +128,7 @@ namespace FantasyFootball.Controllers
             var team = new FantasyTeam
             {
                 Name = model.TeamName.Trim(),
-                OwnerName = user.Email ?? user.UserName ?? string.Empty,
+                OwnerName = DeriveOwnerName(user),
                 CreatedAt = DateTime.UtcNow,
                 SquadValue = totalCost,
                 TotalPoints = 0,
@@ -408,6 +408,48 @@ namespace FantasyFootball.Controllers
         {
             var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return string.IsNullOrEmpty(raw) ? null : raw;
+        }
+
+        // Ime vlasnika tima izvodi se iz postojećih podataka — bez zasebnog polja u
+        // registraciji. Prednost ima pravo ime iz vanjske prijave (npr. Google name
+        // claim); ako ga nema, prettifyira se lokalni dio emaila
+        // ("marko.maric@x.com" -> "Marko Maric"). Ostaje uredivo na Edit formi.
+        private string DeriveOwnerName(AppUser user)
+        {
+            var given = User.FindFirstValue(ClaimTypes.GivenName);
+            var surname = User.FindFirstValue(ClaimTypes.Surname);
+            var full = string.Join(' ',
+                new[] { given, surname }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+            if (string.IsNullOrWhiteSpace(full))
+            {
+                var nameClaim = User.FindFirstValue(ClaimTypes.Name);
+                if (!string.IsNullOrWhiteSpace(nameClaim)
+                    && !nameClaim.Contains('@')
+                    && !string.Equals(nameClaim, user.UserName, StringComparison.OrdinalIgnoreCase))
+                {
+                    full = nameClaim;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(full)) return full.Trim();
+
+            return PrettifyEmailLocalPart(user.Email ?? user.UserName);
+        }
+
+        // "marko.maric@x.com" -> "Marko Maric"; čisto brojčani tokeni se izbacuju.
+        private static string PrettifyEmailLocalPart(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return "Vlasnik";
+
+            var local = email.Split('@')[0];
+            var tokens = local
+                .Split(new[] { '.', '_', '-', '+' }, StringSplitOptions.RemoveEmptyEntries)
+                .Where(t => !t.All(char.IsDigit))
+                .Select(t => char.ToUpperInvariant(t[0]) + t.Substring(1).ToLowerInvariant())
+                .ToList();
+
+            return tokens.Count > 0 ? string.Join(' ', tokens) : "Vlasnik";
         }
 
         // ===== Upload loga tima (Dropzone) =====

@@ -85,25 +85,25 @@
                     <div class="ff-pitch__row ff-pitch__row--fwd ff-totw__row" data-row="FWD">
                         @foreach (var p in Model.SquadForwards)
                         {
-                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true, ["ShowValue"] = true }' />
                         }
                     </div>
                     <div class="ff-pitch__row ff-pitch__row--mid ff-totw__row" data-row="MID">
                         @foreach (var p in Model.SquadMidfielders)
                         {
-                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true, ["ShowValue"] = true }' />
                         }
                     </div>
                     <div class="ff-pitch__row ff-pitch__row--def ff-totw__row" data-row="DEF">
                         @foreach (var p in Model.SquadDefenders)
                         {
-                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true, ["ShowValue"] = true }' />
                         }
                     </div>
                     <div class="ff-pitch__row ff-pitch__row--gk ff-totw__row" data-row="GK">
                         @foreach (var p in Model.SquadGoalkeepers)
                         {
-                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true }' />
+                            <partial name="_PitchPlayer" model="p" view-data='new ViewDataDictionary(ViewData) { ["IsStarter"] = true, ["ShowValue"] = true }' />
                         }
                     </div>
                 </div>
