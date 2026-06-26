@@ -21,9 +21,11 @@ namespace FantasyFootball.DAL
         {
             await SeedRolesAsync(roleManager);
 
-            // Ako baza već ima podatke, preskoči seeding (ali ipak rebalansiraj cijene)
+            // Ako baza već ima podatke, preskoči puni seeding — ali dopuni nove igrače
+            // iz mock repozitorija koji još nisu u bazi i rebalansiraj cijene.
             if (context.Players.Any())
             {
+                EnsureAllMockPlayers(context);
                 RebalancePrices(context);
                 await SeedUsersAsync(context, userManager);
                 await EnsureAdminAsync(userManager);
@@ -111,6 +113,35 @@ namespace FantasyFootball.DAL
                 var t = (double)(p.TotalPoints - minPts) / range;
                 p.MarketValue = Math.Round(MinPrice + t * (MaxPrice - MinPrice), 1);
             }
+        }
+
+        // Dopuni bazu igračima iz mock repozitorija kojih još nema (npr. novododani
+        // klubovi). Igrači se uspoređuju po imenu + prezimenu + klubu. Novi zapisi
+        // dobivaju Id = 0 kako bi im SQL dodijelio svjež IDENTITY (mock Id-evi bi se
+        // inače sudarili s postojećim retcima). Idempotentno: na sljedećim pokretanjima
+        // ti igrači već postoje pa se ništa ne dodaje.
+        private static void EnsureAllMockPlayers(FantasyFootballDbContext context)
+        {
+            var existing = context.Players
+                .Select(p => new { p.FirstName, p.LastName, p.Club })
+                .ToList()
+                .Select(k => $"{k.FirstName}|{k.LastName}|{k.Club}")
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var toAdd = new PlayerMockRepository().GetAll()
+                .Where(p => !existing.Contains($"{p.FirstName}|{p.LastName}|{p.Club}"))
+                .ToList();
+
+            if (toAdd.Count == 0) return;
+
+            foreach (var p in toAdd)
+            {
+                p.Id = 0;                // neka SQL dodijeli novi IDENTITY
+                p.FantasyTeams.Clear();  // ne diramo postojeće timove
+            }
+
+            context.Players.AddRange(toAdd);
+            context.SaveChanges();
         }
 
         private static void RebalancePrices(FantasyFootballDbContext context)

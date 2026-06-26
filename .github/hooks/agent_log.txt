@@ -41726,3 +41726,529 @@
     "tool_use_id":  "toolu_019eJXRtA3rAfBm2TcKaYNmV"
 }
 
+{
+    "session_id":  "babe3a50-af2f-4f12-9f2f-c20861f3ecd6",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\babe3a50-af2f-4f12-9f2f-c20861f3ecd6.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "hook_event_name":  "UserPromptSubmit",
+    "prompt":  "https://fantasy.premierleague.com/help/rules can you read the rules from this file and make the .md file with all those rules?"
+}
+
+{
+    "session_id":  "babe3a50-af2f-4f12-9f2f-c20861f3ecd6",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\babe3a50-af2f-4f12-9f2f-c20861f3ecd6.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "ToolSearch",
+    "tool_input":  {
+                       "query":  "select:WebFetch",
+                       "max_results":  1
+                   },
+    "tool_use_id":  "toolu_018uGKfrazx9nPuFcSBBapBX"
+}
+
+{
+    "session_id":  "babe3a50-af2f-4f12-9f2f-c20861f3ecd6",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\babe3a50-af2f-4f12-9f2f-c20861f3ecd6.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "WebFetch",
+    "tool_input":  {
+                       "url":  "https://fantasy.premierleague.com/help/rules",
+                       "prompt":  "Extract ALL the Fantasy Premier League rules from this page in full detail. Include every section: squad selection/size, budget, positions, formations, selecting a captain and vice-captain, prioritising your bench/substitutions, transfers, free transfers, wildcards, chips (Bench Boost, Triple Captain, Free Hit, Assistant Manager etc.), scoring (points for goals, assists, clean sheets, saves, bonus points, BPS system, deductions/yellow/red cards, penalties missed/saved, own goals), assistant manager rules, leagues (classic and head-to-head), and any other details. Reproduce the exact point values and numbers. Output as structured text preserving all tables and numbers."
+                   },
+    "tool_use_id":  "toolu_01MmTwtpU3mEFFxvjf4TzJGD"
+}
+
+{
+    "session_id":  "babe3a50-af2f-4f12-9f2f-c20861f3ecd6",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\babe3a50-af2f-4f12-9f2f-c20861f3ecd6.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "WebFetch",
+    "tool_input":  {
+                       "url":  "https://www.premierleague.com/en/fantasy/help/rules",
+                       "prompt":  "Extract ALL Fantasy Premier League rules: squad selection, budget, positions, formations, captain/vice-captain, bench/substitutions, transfers, wildcards, chips, full scoring point values, bonus points BPS system, and leagues. Reproduce exact numbers."
+                   },
+    "tool_use_id":  "toolu_01LPRiRzyVRnE1DkGPY6V2Lr"
+}
+
+{
+    "session_id":  "babe3a50-af2f-4f12-9f2f-c20861f3ecd6",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\babe3a50-af2f-4f12-9f2f-c20861f3ecd6.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "ToolSearch",
+    "tool_input":  {
+                       "query":  "select:WebSearch",
+                       "max_results":  1
+                   },
+    "tool_use_id":  "toolu_0177bS5y1GttMkTEH2VBFdft"
+}
+
+{
+    "session_id":  "babe3a50-af2f-4f12-9f2f-c20861f3ecd6",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\babe3a50-af2f-4f12-9f2f-c20861f3ecd6.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "WebSearch",
+    "tool_input":  {
+                       "query":  "Fantasy Premier League rules 2025/26 scoring points BPS chips assistant manager full"
+                   },
+    "tool_use_id":  "toolu_014hzfXg1XzYLmHHMf7LTrkj"
+}
+
+{
+    "session_id":  "babe3a50-af2f-4f12-9f2f-c20861f3ecd6",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\babe3a50-af2f-4f12-9f2f-c20861f3ecd6.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Write",
+    "tool_input":  {
+                       "file_path":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\FPL-Scoring-Rules.md",
+                       "content":  "# Fantasy Premier League ÔÇô Points Scoring System\n\n> Source: https://fantasy.premierleague.com/help/rules\n> Players earn points based on their real-life performances in the Premier League.\n\n## Scoring Summary\n\n| Action | Points |\n|---|---|\n| Playing up to 60 minutes | 1 |\n| Playing 60 minutes or more (excluding stoppage time) | 2 |\n| Goal scored by a goalkeeper | 10 |\n| Goal scored by a defender | 6 |\n| Goal scored by a midfielder | 5 |\n| Goal scored by a forward | 4 |\n| Assist | 3 |\n| Clean sheet by a goalkeeper or defender | 4 |\n| Clean sheet by a midfielder | 1 |\n| Every 3 shot saves by a goalkeeper | 1 |\n| Penalty save | 5 |\n| Penalty miss | -2 |\n| Every 2 goals conceded by a goalkeeper or defender | -1 |\n| Yellow card | -1 |\n| Red card | -3 |\n| Own goal | -2 |\n| Bonus points (best performers in a match) | 1ÔÇô3 |\n\n## Defensive Contribution\n\nOutfield players can earn points for defensive actions across a match:\n\n| Position | Threshold | Points |\n|---|---|---|\n| Defender | 10+ clearances, blocks, interceptions and tackles (CBIT) | 2 |\n| Midfielder / Forward | 12+ clearances, blocks, interceptions, tackles and ball recoveries | 2 |\n\nThese points are awarded once per match when the threshold is reached.\n\n## Clean Sheets\n\n- A **clean sheet** is awarded for not conceding a goal while on the pitch, and only counts if the player has played **at least 60 minutes** (excluding stoppage time).\n- If a player is substituted before the team concedes, the clean sheet still stands for that player (provided 60+ minutes were played).\n- **Goalkeepers** and **defenders**: 4 points.\n- **Midfielders**: 1 point.\n- **Forwards**: no clean sheet points.\n\n## Goals Conceded\n\n- Goalkeepers and defenders lose **1 point for every 2 goals** their team concedes while they are on the pitch.\n\n## Saves\n\n- Goalkeepers earn **1 point for every 3 saves** they make in a match.\n\n## Assists\n\n- An assist is awarded to the player from the team scoring a goal who makes the **final touch** (pass, shot, or any other intentional contribution) before a teammate scores.\n- An assist is worth **3 points** for all positions.\n\n## Bonus Points (BPS ÔÇô Bonus Points System)\n\nThe three best-performing players in each match are awarded bonus points based on a separate **Bonus Points System (BPS)** that uses a range of statistics to create a score:\n\n- Highest BPS in a match: **3 bonus points**\n- Second highest: **2 bonus points**\n- Third highest: **1 bonus point**\n\nIf two or more players tie, bonus points are shared (e.g. two players tied for the top score each receive 3 points, and the next player receives 1).\n\n### Example BPS factors\n\nThe BPS rewards positive actions (and penalises negative ones), including:\n\n- Playing 1 to 60 minutes / over 60 minutes\n- Goals scored (weighted by position)\n- Assists\n- Goal-line clearances, blocks, interceptions, tackles and recoveries\n- Successful dribbles, key passes, big chances created\n- Saves and penalty saves\n- Errors leading to a goal, missed big chances, goals conceded\n- Yellow/red cards, own goals, penalties missed\n\n## Captaincy\n\n- The **captain's** points are **doubled** (+Œ2).\n- If the captain does not play in the gameweek, the **vice-captain** becomes the captain and their points are doubled instead.\n\n## Final Notes\n\n- A player's total points are the sum of all the actions above for each gameweek.\n- Points are provisional during live matches and are finalised (including bonus points) once the gameweek's data is confirmed.\n\n---\n\n*This file documents the FPL points scoring system. Point values are subject to change each season ÔÇö verify against the official rules page above for the current campaign.*\n"
+                   },
+    "tool_use_id":  "toolu_01BNC3NiBXN4PjKTaME2KyMB"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "hook_event_name":  "UserPromptSubmit",
+    "prompt":  "i need you to update the database so that we add more players from the remaining premier league clubs (20 clubs in total). use the existing chunks of code to decide their price"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Grep",
+    "tool_input":  {
+                       "pattern":  "new Player|Players.Add|HasData|Price",
+                       "output_mode":  "files_with_matches"
+                   },
+    "tool_use_id":  "toolu_01TyQFtfY2b1ebd6rUxLxU8N"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Glob",
+    "tool_input":  {
+                       "pattern":  "**/*.cs"
+                   },
+    "tool_use_id":  "toolu_01S9RdJUgSkP92GpoYtzWybR"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Read",
+    "tool_input":  {
+                       "file_path":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\DAL\\DbSeeder.cs"
+                   },
+    "tool_use_id":  "toolu_01NhiT6wQFRkYjK1jRUrj9AL"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Read",
+    "tool_input":  {
+                       "file_path":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\Models\\Player.cs"
+                   },
+    "tool_use_id":  "toolu_01JVNnKVyf8kC2Pm4GXKr8zW"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Read",
+    "tool_input":  {
+                       "file_path":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\Repositories\\PlayerMockRepository.cs"
+                   },
+    "tool_use_id":  "toolu_01L2MrLdYLWqkPCBFqmLErvV"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Edit",
+    "tool_input":  {
+                       "file_path":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\Repositories\\PlayerMockRepository.cs",
+                       "old_string":  "                new Player { Id = 105, FirstName = \"Moussa\",    LastName = \"Diaby\",        Position = Position.Forward,    Club = \"Aston Villa\", Nationality = \"France\",      DateOfBirth = new DateTime(1999, 7, 7),   MarketValue = 42.0,  Goals = 7,  Assists = 6,  CleanSheets = 0,  TotalPoints = 118 },\n            };",
+                       "new_string":  "                new Player { Id = 105, FirstName = \"Moussa\",    LastName = \"Diaby\",        Position = Position.Forward,    Club = \"Aston Villa\", Nationality = \"France\",      DateOfBirth = new DateTime(1999, 7, 7),   MarketValue = 42.0,  Goals = 7,  Assists = 6,  CleanSheets = 0,  TotalPoints = 118 },\n\n                // ==========================================\n                // TOTTENHAM (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 106, FirstName = \"Guglielmo\", LastName = \"Vicario\",      Position = Position.Goalkeeper, Club = \"Tottenham\", Nationality = \"Italy\",        DateOfBirth = new DateTime(1996, 10, 7),  MarketValue = 32.0,  Goals = 0,  Assists = 0,  CleanSheets = 11, TotalPoints = 138 },\n                new Player { Id = 107, FirstName = \"Antonin\",   LastName = \"Kinsky\",       Position = Position.Goalkeeper, Club = \"Tottenham\", Nationality = \"Czech Republic\", DateOfBirth = new DateTime(2003, 5, 22), MarketValue = 12.0,  Goals = 0,  Assists = 0,  CleanSheets = 4,  TotalPoints = 55 },\n                new Player { Id = 108, FirstName = \"Cristian\",  LastName = \"Romero\",       Position = Position.Defender,   Club = \"Tottenham\", Nationality = \"Argentina\",    DateOfBirth = new DateTime(1998, 4, 27),  MarketValue = 55.0,  Goals = 3,  Assists = 1,  CleanSheets = 10, TotalPoints = 142 },\n                new Player { Id = 109, FirstName = \"Micky\",     LastName = \"van de Ven\",   Position = Position.Defender,   Club = \"Tottenham\", Nationality = \"Netherlands\",  DateOfBirth = new DateTime(2001, 4, 19),  MarketValue = 50.0,  Goals = 2,  Assists = 2,  CleanSheets = 10, TotalPoints = 135 },\n                new Player { Id = 110, FirstName = \"Pedro\",     LastName = \"Porro\",        Position = Position.Defender,   Club = \"Tottenham\", Nationality = \"Spain\",        DateOfBirth = new DateTime(1999, 9, 13),  MarketValue = 45.0,  Goals = 3,  Assists = 6,  CleanSheets = 8,  TotalPoints = 138 },\n                new Player { Id = 111, FirstName = \"Destiny\",   LastName = \"Udogie\",       Position = Position.Defender,   Club = \"Tottenham\", Nationality = \"Italy\",        DateOfBirth = new DateTime(2002, 11, 28), MarketValue = 38.0,  Goals = 1,  Assists = 4,  CleanSheets = 8,  TotalPoints = 118 },\n                new Player { Id = 112, FirstName = \"Kevin\",     LastName = \"Danso\",        Position = Position.Defender,   Club = \"Tottenham\", Nationality = \"Austria\",      DateOfBirth = new DateTime(1998, 9, 19),  MarketValue = 25.0,  Goals = 1,  Assists = 0,  CleanSheets = 7,  TotalPoints = 88 },\n                new Player { Id = 113, FirstName = \"James\",     LastName = \"Maddison\",     Position = Position.Midfielder, Club = \"Tottenham\", Nationality = \"England\",      DateOfBirth = new DateTime(1996, 11, 23), MarketValue = 55.0,  Goals = 9,  Assists = 10, CleanSheets = 0,  TotalPoints = 165 },\n                new Player { Id = 114, FirstName = \"Dejan\",     LastName = \"Kulusevski\",   Position = Position.Midfielder, Club = \"Tottenham\", Nationality = \"Sweden\",       DateOfBirth = new DateTime(2000, 4, 25),  MarketValue = 50.0,  Goals = 7,  Assists = 8,  CleanSheets = 0,  TotalPoints = 152 },\n                new Player { Id = 115, FirstName = \"Pape\",      LastName = \"Sarr\",         Position = Position.Midfielder, Club = \"Tottenham\", Nationality = \"Senegal\",      DateOfBirth = new DateTime(2002, 9, 14),  MarketValue = 35.0,  Goals = 3,  Assists = 4,  CleanSheets = 0,  TotalPoints = 108 },\n                new Player { Id = 116, FirstName = \"Rodrigo\",   LastName = \"Bentancur\",    Position = Position.Midfielder, Club = \"Tottenham\", Nationality = \"Uruguay\",      DateOfBirth = new DateTime(1997, 6, 25),  MarketValue = 30.0,  Goals = 2,  Assists = 2,  CleanSheets = 0,  TotalPoints = 95 },\n                new Player { Id = 117, FirstName = \"Lucas\",     LastName = \"Bergvall\",     Position = Position.Midfielder, Club = \"Tottenham\", Nationality = \"Sweden\",       DateOfBirth = new DateTime(2006, 2, 2),   MarketValue = 28.0,  Goals = 2,  Assists = 3,  CleanSheets = 0,  TotalPoints = 92 },\n                new Player { Id = 118, FirstName = \"Dominic\",   LastName = \"Solanke\",      Position = Position.Forward,    Club = \"Tottenham\", Nationality = \"England\",      DateOfBirth = new DateTime(1997, 9, 14),  MarketValue = 55.0,  Goals = 14, Assists = 5,  CleanSheets = 0,  TotalPoints = 168 },\n                new Player { Id = 119, FirstName = \"Brennan\",   LastName = \"Johnson\",      Position = Position.Forward,    Club = \"Tottenham\", Nationality = \"Wales\",        DateOfBirth = new DateTime(2001, 5, 23),  MarketValue = 42.0,  Goals = 11, Assists = 6,  CleanSheets = 0,  TotalPoints = 148 },\n                new Player { Id = 120, FirstName = \"Richarlison\", LastName = \"Andrade\",    Position = Position.Forward,    Club = \"Tottenham\", Nationality = \"Brazil\",       DateOfBirth = new DateTime(1997, 5, 10),  MarketValue = 35.0,  Goals = 7,  Assists = 3,  CleanSheets = 0,  TotalPoints = 102 },\n\n                // ==========================================\n                // WEST HAM (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 121, FirstName = \"Alphonse\",  LastName = \"Areola\",       Position = Position.Goalkeeper, Club = \"West Ham\", Nationality = \"France\",        DateOfBirth = new DateTime(1993, 2, 27),  MarketValue = 18.0,  Goals = 0,  Assists = 0,  CleanSheets = 8,  TotalPoints = 112 },\n                new Player { Id = 122, FirstName = \"Lukasz\",    LastName = \"Fabianski\",    Position = Position.Goalkeeper, Club = \"West Ham\", Nationality = \"Poland\",        DateOfBirth = new DateTime(1985, 4, 18),  MarketValue = 4.0,   Goals = 0,  Assists = 0,  CleanSheets = 2,  TotalPoints = 30 },\n                new Player { Id = 123, FirstName = \"Max\",       LastName = \"Kilman\",       Position = Position.Defender,   Club = \"West Ham\", Nationality = \"England\",       DateOfBirth = new DateTime(1997, 5, 23),  MarketValue = 28.0,  Goals = 1,  Assists = 1,  CleanSheets = 7,  TotalPoints = 98 },\n                new Player { Id = 124, FirstName = \"Jean-Clair\", LastName = \"Todibo\",      Position = Position.Defender,   Club = \"West Ham\", Nationality = \"France\",        DateOfBirth = new DateTime(1999, 12, 30), MarketValue = 30.0,  Goals = 0,  Assists = 1,  CleanSheets = 7,  TotalPoints = 95 },\n                new Player { Id = 125, FirstName = \"Aaron\",     LastName = \"Wan-Bissaka\",  Position = Position.Defender,   Club = \"West Ham\", Nationality = \"England\",       DateOfBirth = new DateTime(1997, 11, 26), MarketValue = 32.0,  Goals = 1,  Assists = 4,  CleanSheets = 7,  TotalPoints = 110 },\n                new Player { Id = 126, FirstName = \"Emerson\",   LastName = \"Palmieri\",     Position = Position.Defender,   Club = \"West Ham\", Nationality = \"Italy\",         DateOfBirth = new DateTime(1994, 8, 3),   MarketValue = 22.0,  Goals = 1,  Assists = 3,  CleanSheets = 6,  TotalPoints = 95 },\n                new Player { Id = 127, FirstName = \"Konstantinos\", LastName = \"Mavropanos\", Position = Position.Defender,  Club = \"West Ham\", Nationality = \"Greece\",        DateOfBirth = new DateTime(1997, 12, 11), MarketValue = 18.0,  Goals = 1,  Assists = 0,  CleanSheets = 6,  TotalPoints = 78 },\n                new Player { Id = 128, FirstName = \"Lucas\",     LastName = \"Paqueta\",      Position = Position.Midfielder, Club = \"West Ham\", Nationality = \"Brazil\",        DateOfBirth = new DateTime(1997, 8, 27),  MarketValue = 45.0,  Goals = 5,  Assists = 7,  CleanSheets = 0,  TotalPoints = 135 },\n                new Player { Id = 129, FirstName = \"Tomas\",     LastName = \"Soucek\",       Position = Position.Midfielder, Club = \"West Ham\", Nationality = \"Czech Republic\", DateOfBirth = new DateTime(1995, 2, 27), MarketValue = 28.0,  Goals = 6,  Assists = 2,  CleanSheets = 0,  TotalPoints = 118 },\n                new Player { Id = 130, FirstName = \"Edson\",     LastName = \"Alvarez\",      Position = Position.Midfielder, Club = \"West Ham\", Nationality = \"Mexico\",        DateOfBirth = new DateTime(1997, 10, 24), MarketValue = 25.0,  Goals = 1,  Assists = 1,  CleanSheets = 0,  TotalPoints = 82 },\n                new Player { Id = 131, FirstName = \"James\",     LastName = \"Ward-Prowse\",  Position = Position.Midfielder, Club = \"West Ham\", Nationality = \"England\",       DateOfBirth = new DateTime(1994, 11, 1),  MarketValue = 30.0,  Goals = 4,  Assists = 6,  CleanSheets = 0,  TotalPoints = 122 },\n                new Player { Id = 132, FirstName = \"Guido\",     LastName = \"Rodriguez\",    Position = Position.Midfielder, Club = \"West Ham\", Nationality = \"Argentina\",     DateOfBirth = new DateTime(1994, 4, 12),  MarketValue = 18.0,  Goals = 1,  Assists = 1,  CleanSheets = 0,  TotalPoints = 70 },\n                new Player { Id = 133, FirstName = \"Jarrod\",    LastName = \"Bowen\",        Position = Position.Forward,    Club = \"West Ham\", Nationality = \"England\",       DateOfBirth = new DateTime(1996, 12, 20), MarketValue = 55.0,  Goals = 13, Assists = 8,  CleanSheets = 0,  TotalPoints = 172 },\n                new Player { Id = 134, FirstName = \"Niclas\",    LastName = \"Fullkrug\",     Position = Position.Forward,    Club = \"West Ham\", Nationality = \"Germany\",       DateOfBirth = new DateTime(1993, 2, 9),   MarketValue = 32.0,  Goals = 9,  Assists = 3,  CleanSheets = 0,  TotalPoints = 118 },\n                new Player { Id = 135, FirstName = \"Crysencio\", LastName = \"Summerville\",  Position = Position.Forward,    Club = \"West Ham\", Nationality = \"Netherlands\",   DateOfBirth = new DateTime(2001, 10, 30), MarketValue = 30.0,  Goals = 6,  Assists = 4,  CleanSheets = 0,  TotalPoints = 105 },\n\n                // ==========================================\n                // BRIGHTON (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 136, FirstName = \"Bart\",      LastName = \"Verbruggen\",   Position = Position.Goalkeeper, Club = \"Brighton\", Nationality = \"Netherlands\",   DateOfBirth = new DateTime(2002, 8, 18),  MarketValue = 22.0,  Goals = 0,  Assists = 0,  CleanSheets = 9,  TotalPoints = 120 },\n                new Player { Id = 137, FirstName = \"Jason\",     LastName = \"Steele\",       Position = Position.Goalkeeper, Club = \"Brighton\", Nationality = \"England\",       DateOfBirth = new DateTime(1990, 8, 18),  MarketValue = 3.0,   Goals = 0,  Assists = 0,  CleanSheets = 2,  TotalPoints = 28 },\n                new Player { Id = 138, FirstName = \"Lewis\",     LastName = \"Dunk\",         Position = Position.Defender,   Club = \"Brighton\", Nationality = \"England\",       DateOfBirth = new DateTime(1991, 11, 21), MarketValue = 28.0,  Goals = 2,  Assists = 1,  CleanSheets = 8,  TotalPoints = 105 },\n                new Player { Id = 139, FirstName = \"Jan Paul\",  LastName = \"van Hecke\",    Position = Position.Defender,   Club = \"Brighton\", Nationality = \"Netherlands\",   DateOfBirth = new DateTime(2000, 6, 8),   MarketValue = 30.0,  Goals = 1,  Assists = 1,  CleanSheets = 8,  TotalPoints = 102 },\n                new Player { Id = 140, FirstName = \"Pervis\",    LastName = \"Estupinan\",    Position = Position.Defender,   Club = \"Brighton\", Nationality = \"Ecuador\",       DateOfBirth = new DateTime(1998, 1, 21),  MarketValue = 30.0,  Goals = 1,  Assists = 4,  CleanSheets = 7,  TotalPoints = 108 },\n                new Player { Id = 141, FirstName = \"Tariq\",     LastName = \"Lamptey\",      Position = Position.Defender,   Club = \"Brighton\", Nationality = \"Ghana\",         DateOfBirth = new DateTime(2000, 9, 30),  MarketValue = 18.0,  Goals = 0,  Assists = 3,  CleanSheets = 6,  TotalPoints = 82 },\n                new Player { Id = 142, FirstName = \"Igor\",      LastName = \"Julio\",        Position = Position.Defender,   Club = \"Brighton\", Nationality = \"Brazil\",        DateOfBirth = new DateTime(1998, 2, 7),   MarketValue = 18.0,  Goals = 1,  Assists = 0,  CleanSheets = 6,  TotalPoints = 78 },\n                new Player { Id = 143, FirstName = \"Kaoru\",     LastName = \"Mitoma\",       Position = Position.Midfielder, Club = \"Brighton\", Nationality = \"Japan\",         DateOfBirth = new DateTime(1997, 5, 20),  MarketValue = 50.0,  Goals = 10, Assists = 7,  CleanSheets = 0,  TotalPoints = 158 },\n                new Player { Id = 144, FirstName = \"Yankuba\",   LastName = \"Minteh\",       Position = Position.Midfielder, Club = \"Brighton\", Nationality = \"Gambia\",        DateOfBirth = new DateTime(2004, 7, 22),  MarketValue = 38.0,  Goals = 7,  Assists = 5,  CleanSheets = 0,  TotalPoints = 132 },\n                new Player { Id = 145, FirstName = \"Carlos\",    LastName = \"Baleba\",       Position = Position.Midfielder, Club = \"Brighton\", Nationality = \"Cameroon\",      DateOfBirth = new DateTime(2004, 1, 3),   MarketValue = 45.0,  Goals = 2,  Assists = 3,  CleanSheets = 0,  TotalPoints = 110 },\n                new Player { Id = 146, FirstName = \"James\",     LastName = \"Milner\",       Position = Position.Midfielder, Club = \"Brighton\", Nationality = \"England\",       DateOfBirth = new DateTime(1986, 1, 4),   MarketValue = 5.0,   Goals = 1,  Assists = 2,  CleanSheets = 0,  TotalPoints = 58 },\n                new Player { Id = 147, FirstName = \"Yasin\",     LastName = \"Ayari\",        Position = Position.Midfielder, Club = \"Brighton\", Nationality = \"Sweden\",        DateOfBirth = new DateTime(2003, 10, 6),  MarketValue = 22.0,  Goals = 2,  Assists = 2,  CleanSheets = 0,  TotalPoints = 80 },\n                new Player { Id = 148, FirstName = \"Danny\",     LastName = \"Welbeck\",      Position = Position.Forward,    Club = \"Brighton\", Nationality = \"England\",       DateOfBirth = new DateTime(1990, 11, 26), MarketValue = 25.0,  Goals = 9,  Assists = 4,  CleanSheets = 0,  TotalPoints = 118 },\n                new Player { Id = 149, FirstName = \"Georginio\", LastName = \"Rutter\",       Position = Position.Forward,    Club = \"Brighton\", Nationality = \"France\",        DateOfBirth = new DateTime(2002, 4, 20),  MarketValue = 35.0,  Goals = 8,  Assists = 6,  CleanSheets = 0,  TotalPoints = 125 },\n                new Player { Id = 150, FirstName = \"Simon\",     LastName = \"Adingra\",      Position = Position.Forward,    Club = \"Brighton\", Nationality = \"Ivory Coast\",   DateOfBirth = new DateTime(2002, 1, 1),   MarketValue = 28.0,  Goals = 5,  Assists = 4,  CleanSheets = 0,  TotalPoints = 98 },\n\n                // ==========================================\n                // WOLVES (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 151, FirstName = \"Jose\",      LastName = \"Sa\",           Position = Position.Goalkeeper, Club = \"Wolverhampton\", Nationality = \"Portugal\",  DateOfBirth = new DateTime(1993, 1, 17),  MarketValue = 18.0,  Goals = 0,  Assists = 0,  CleanSheets = 7,  TotalPoints = 105 },\n                new Player { Id = 152, FirstName = \"Daniel\",    LastName = \"Bentley\",      Position = Position.Goalkeeper, Club = \"Wolverhampton\", Nationality = \"England\",   DateOfBirth = new DateTime(1993, 7, 13),  MarketValue = 3.0,   Goals = 0,  Assists = 0,  CleanSheets = 2,  TotalPoints = 28 },\n                new Player { Id = 153, FirstName = \"Toti\",      LastName = \"Gomes\",        Position = Position.Defender,   Club = \"Wolverhampton\", Nationality = \"Portugal\",  DateOfBirth = new DateTime(1999, 1, 16),  MarketValue = 20.0,  Goals = 1,  Assists = 1,  CleanSheets = 6,  TotalPoints = 85 },\n                new Player { Id = 154, FirstName = \"Craig\",     LastName = \"Dawson\",       Position = Position.Defender,   Club = \"Wolverhampton\", Nationality = \"England\",   DateOfBirth = new DateTime(1990, 5, 6),   MarketValue = 8.0,   Goals = 1,  Assists = 0,  CleanSheets = 5,  TotalPoints = 65 },\n                new Player { Id = 155, FirstName = \"Rayan\",     LastName = \"Ait-Nouri\",    Position = Position.Defender,   Club = \"Wolverhampton\", Nationality = \"Algeria\",   DateOfBirth = new DateTime(2001, 6, 6),   MarketValue = 32.0,  Goals = 2,  Assists = 5,  CleanSheets = 6,  TotalPoints = 118 },\n                new Player { Id = 156, FirstName = \"Matt\",      LastName = \"Doherty\",      Position = Position.Defender,   Club = \"Wolverhampton\", Nationality = \"Ireland\",   DateOfBirth = new DateTime(1992, 1, 16),  MarketValue = 10.0,  Goals = 0,  Assists = 2,  CleanSheets = 5,  TotalPoints = 72 },\n                new Player { Id = 157, FirstName = \"Santiago\",  LastName = \"Bueno\",        Position = Position.Defender,   Club = \"Wolverhampton\", Nationality = \"Uruguay\",   DateOfBirth = new DateTime(1998, 11, 9),  MarketValue = 15.0,  Goals = 1,  Assists = 0,  CleanSheets = 5,  TotalPoints = 70 },\n                new Player { Id = 158, FirstName = \"Joao\",      LastName = \"Gomes\",        Position = Position.Midfielder, Club = \"Wolverhampton\", Nationality = \"Brazil\",    DateOfBirth = new DateTime(2001, 2, 12),  MarketValue = 35.0,  Goals = 3,  Assists = 4,  CleanSheets = 0,  TotalPoints = 112 },\n                new Player { Id = 159, FirstName = \"Mario\",     LastName = \"Lemina\",       Position = Position.Midfielder, Club = \"Wolverhampton\", Nationality = \"Gabon\",     DateOfBirth = new DateTime(1993, 9, 1),   MarketValue = 22.0,  Goals = 2,  Assists = 2,  CleanSheets = 0,  TotalPoints = 85 },\n                new Player { Id = 160, FirstName = \"Andre\",     LastName = \"Trindade\",     Position = Position.Midfielder, Club = \"Wolverhampton\", Nationality = \"Brazil\",    DateOfBirth = new DateTime(2001, 7, 16),  MarketValue = 28.0,  Goals = 1,  Assists = 2,  CleanSheets = 0,  TotalPoints = 88 },\n                new Player { Id = 161, FirstName = \"Tommy\",     LastName = \"Doyle\",        Position = Position.Midfielder, Club = \"Wolverhampton\", Nationality = \"England\",   DateOfBirth = new DateTime(2001, 10, 17), MarketValue = 15.0,  Goals = 2,  Assists = 3,  CleanSheets = 0,  TotalPoints = 78 },\n                new Player { Id = 162, FirstName = \"Pablo\",     LastName = \"Sarabia\",      Position = Position.Midfielder, Club = \"Wolverhampton\", Nationality = \"Spain\",     DateOfBirth = new DateTime(1992, 5, 11),  MarketValue = 18.0,  Goals = 5,  Assists = 5,  CleanSheets = 0,  TotalPoints = 105 },\n                new Player { Id = 163, FirstName = \"Jorgen\",    LastName = \"Strand Larsen\", Position = Position.Forward,   Club = \"Wolverhampton\", Nationality = \"Norway\",    DateOfBirth = new DateTime(2000, 2, 6),   MarketValue = 35.0,  Goals = 12, Assists = 3,  CleanSheets = 0,  TotalPoints = 138 },\n                new Player { Id = 164, FirstName = \"Hwang\",     LastName = \"Hee-chan\",     Position = Position.Forward,    Club = \"Wolverhampton\", Nationality = \"South Korea\", DateOfBirth = new DateTime(1996, 1, 26), MarketValue = 28.0,  Goals = 6,  Assists = 4,  CleanSheets = 0,  TotalPoints = 105 },\n                new Player { Id = 165, FirstName = \"Goncalo\",   LastName = \"Guedes\",       Position = Position.Forward,    Club = \"Wolverhampton\", Nationality = \"Portugal\",  DateOfBirth = new DateTime(1996, 11, 29), MarketValue = 20.0,  Goals = 4,  Assists = 3,  CleanSheets = 0,  TotalPoints = 85 },\n\n                // ==========================================\n                // CRYSTAL PALACE (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 166, FirstName = \"Dean\",      LastName = \"Henderson\",    Position = Position.Goalkeeper, Club = \"Crystal Palace\", Nationality = \"England\",  DateOfBirth = new DateTime(1997, 3, 12),  MarketValue = 22.0,  Goals = 0,  Assists = 0,  CleanSheets = 9,  TotalPoints = 122 },\n                new Player { Id = 167, FirstName = \"Remi\",      LastName = \"Matthews\",     Position = Position.Goalkeeper, Club = \"Crystal Palace\", Nationality = \"England\",  DateOfBirth = new DateTime(1994, 2, 10),  MarketValue = 3.0,   Goals = 0,  Assists = 0,  CleanSheets = 1,  TotalPoints = 22 },\n                new Player { Id = 168, FirstName = \"Marc\",      LastName = \"Guehi\",        Position = Position.Defender,   Club = \"Crystal Palace\", Nationality = \"England\",  DateOfBirth = new DateTime(2000, 7, 13),  MarketValue = 45.0,  Goals = 2,  Assists = 1,  CleanSheets = 9,  TotalPoints = 128 },\n                new Player { Id = 169, FirstName = \"Maxence\",   LastName = \"Lacroix\",      Position = Position.Defender,   Club = \"Crystal Palace\", Nationality = \"France\",   DateOfBirth = new DateTime(2000, 4, 6),   MarketValue = 30.0,  Goals = 2,  Assists = 1,  CleanSheets = 8,  TotalPoints = 110 },\n                new Player { Id = 170, FirstName = \"Tyrick\",    LastName = \"Mitchell\",     Position = Position.Defender,   Club = \"Crystal Palace\", Nationality = \"England\",  DateOfBirth = new DateTime(1999, 9, 1),   MarketValue = 28.0,  Goals = 1,  Assists = 4,  CleanSheets = 8,  TotalPoints = 112 },\n                new Player { Id = 171, FirstName = \"Daniel\",    LastName = \"Munoz\",        Position = Position.Defender,   Club = \"Crystal Palace\", Nationality = \"Colombia\", DateOfBirth = new DateTime(1996, 5, 26),  MarketValue = 32.0,  Goals = 3,  Assists = 5,  CleanSheets = 8,  TotalPoints = 128 },\n                new Player { Id = 172, FirstName = \"Chris\",     LastName = \"Richards\",     Position = Position.Defender,   Club = \"Crystal Palace\", Nationality = \"United States\", DateOfBirth = new DateTime(2000, 3, 28), MarketValue = 22.0,  Goals = 2,  Assists = 0,  CleanSheets = 7,  TotalPoints = 92 },\n                new Player { Id = 173, FirstName = \"Eberechi\",  LastName = \"Eze\",          Position = Position.Midfielder, Club = \"Crystal Palace\", Nationality = \"England\",  DateOfBirth = new DateTime(1998, 6, 29),  MarketValue = 55.0,  Goals = 11, Assists = 7,  CleanSheets = 0,  TotalPoints = 165 },\n                new Player { Id = 174, FirstName = \"Adam\",      LastName = \"Wharton\",      Position = Position.Midfielder, Club = \"Crystal Palace\", Nationality = \"England\",  DateOfBirth = new DateTime(2004, 2, 6),   MarketValue = 40.0,  Goals = 1,  Assists = 5,  CleanSheets = 0,  TotalPoints = 108 },\n                new Player { Id = 175, FirstName = \"Will\",      LastName = \"Hughes\",       Position = Position.Midfielder, Club = \"Crystal Palace\", Nationality = \"England\",  DateOfBirth = new DateTime(1995, 4, 17),  MarketValue = 15.0,  Goals = 1,  Assists = 3,  CleanSheets = 0,  TotalPoints = 78 },\n                new Player { Id = 176, FirstName = \"Jefferson\", LastName = \"Lerma\",        Position = Position.Midfielder, Club = \"Crystal Palace\", Nationality = \"Colombia\", DateOfBirth = new DateTime(1994, 10, 25), MarketValue = 18.0,  Goals = 2,  Assists = 2,  CleanSheets = 0,  TotalPoints = 82 },\n                new Player { Id = 177, FirstName = \"Daichi\",    LastName = \"Kamada\",       Position = Position.Midfielder, Club = \"Crystal Palace\", Nationality = \"Japan\",    DateOfBirth = new DateTime(1996, 8, 5),   MarketValue = 22.0,  Goals = 4,  Assists = 4,  CleanSheets = 0,  TotalPoints = 98 },\n                new Player { Id = 178, FirstName = \"Jean-Philippe\", LastName = \"Mateta\",   Position = Position.Forward,    Club = \"Crystal Palace\", Nationality = \"France\",   DateOfBirth = new DateTime(1997, 6, 28),  MarketValue = 48.0,  Goals = 15, Assists = 4,  CleanSheets = 0,  TotalPoints = 168 },\n                new Player { Id = 179, FirstName = \"Ismaila\",   LastName = \"Sarr\",         Position = Position.Forward,    Club = \"Crystal Palace\", Nationality = \"Senegal\",  DateOfBirth = new DateTime(1998, 2, 25),  MarketValue = 35.0,  Goals = 9,  Assists = 6,  CleanSheets = 0,  TotalPoints = 135 },\n                new Player { Id = 180, FirstName = \"Odsonne\",   LastName = \"Edouard\",      Position = Position.Forward,    Club = \"Crystal Palace\", Nationality = \"France\",   DateOfBirth = new DateTime(1998, 1, 16),  MarketValue = 18.0,  Goals = 4,  Assists = 2,  CleanSheets = 0,  TotalPoints = 78 },\n\n                // ==========================================\n                // FULHAM (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 181, FirstName = \"Bernd\",     LastName = \"Leno\",         Position = Position.Goalkeeper, Club = \"Fulham\", Nationality = \"Germany\",        DateOfBirth = new DateTime(1992, 3, 4),   MarketValue = 20.0,  Goals = 0,  Assists = 0,  CleanSheets = 9,  TotalPoints = 122 },\n                new Player { Id = 182, FirstName = \"Steven\",    LastName = \"Benda\",        Position = Position.Goalkeeper, Club = \"Fulham\", Nationality = \"Germany\",        DateOfBirth = new DateTime(1998, 10, 1),  MarketValue = 3.0,   Goals = 0,  Assists = 0,  CleanSheets = 1,  TotalPoints = 20 },\n                new Player { Id = 183, FirstName = \"Calvin\",    LastName = \"Bassey\",       Position = Position.Defender,   Club = \"Fulham\", Nationality = \"Nigeria\",        DateOfBirth = new DateTime(1999, 12, 31), MarketValue = 28.0,  Goals = 1,  Assists = 1,  CleanSheets = 8,  TotalPoints = 105 },\n                new Player { Id = 184, FirstName = \"Joachim\",   LastName = \"Andersen\",     Position = Position.Defender,   Club = \"Fulham\", Nationality = \"Denmark\",        DateOfBirth = new DateTime(1996, 5, 31),  MarketValue = 25.0,  Goals = 1,  Assists = 2,  CleanSheets = 8,  TotalPoints = 102 },\n                new Player { Id = 185, FirstName = \"Antonee\",   LastName = \"Robinson\",     Position = Position.Defender,   Club = \"Fulham\", Nationality = \"United States\",  DateOfBirth = new DateTime(1997, 8, 8),   MarketValue = 35.0,  Goals = 2,  Assists = 7,  CleanSheets = 8,  TotalPoints = 130 },\n                new Player { Id = 186, FirstName = \"Kenny\",     LastName = \"Tete\",         Position = Position.Defender,   Club = \"Fulham\", Nationality = \"Netherlands\",    DateOfBirth = new DateTime(1995, 10, 9),  MarketValue = 18.0,  Goals = 1,  Assists = 2,  CleanSheets = 6,  TotalPoints = 88 },\n                new Player { Id = 187, FirstName = \"Issa\",      LastName = \"Diop\",         Position = Position.Defender,   Club = \"Fulham\", Nationality = \"France\",         DateOfBirth = new DateTime(1997, 1, 9),   MarketValue = 15.0,  Goals = 1,  Assists = 0,  CleanSheets = 6,  TotalPoints = 75 },\n                new Player { Id = 188, FirstName = \"Andreas\",   LastName = \"Pereira\",      Position = Position.Midfielder, Club = \"Fulham\", Nationality = \"Brazil\",         DateOfBirth = new DateTime(1996, 1, 1),   MarketValue = 32.0,  Goals = 6,  Assists = 6,  CleanSheets = 0,  TotalPoints = 128 },\n                new Player { Id = 189, FirstName = \"Sasa\",      LastName = \"Lukic\",        Position = Position.Midfielder, Club = \"Fulham\", Nationality = \"Serbia\",         DateOfBirth = new DateTime(1996, 8, 13),  MarketValue = 20.0,  Goals = 2,  Assists = 2,  CleanSheets = 0,  TotalPoints = 85 },\n                new Player { Id = 190, FirstName = \"Harrison\",  LastName = \"Reed\",         Position = Position.Midfielder, Club = \"Fulham\", Nationality = \"England\",        DateOfBirth = new DateTime(1995, 1, 27),  MarketValue = 15.0,  Goals = 1,  Assists = 1,  CleanSheets = 0,  TotalPoints = 72 },\n                new Player { Id = 191, FirstName = \"Emile\",     LastName = \"Smith Rowe\",   Position = Position.Midfielder, Club = \"Fulham\", Nationality = \"England\",        DateOfBirth = new DateTime(2000, 7, 28),  MarketValue = 30.0,  Goals = 5,  Assists = 5,  CleanSheets = 0,  TotalPoints = 115 },\n                new Player { Id = 192, FirstName = \"Alex\",      LastName = \"Iwobi\",        Position = Position.Midfielder, Club = \"Fulham\", Nationality = \"Nigeria\",        DateOfBirth = new DateTime(1996, 5, 3),   MarketValue = 35.0,  Goals = 8,  Assists = 7,  CleanSheets = 0,  TotalPoints = 142 },\n                new Player { Id = 193, FirstName = \"Raul\",      LastName = \"Jimenez\",      Position = Position.Forward,    Club = \"Fulham\", Nationality = \"Mexico\",         DateOfBirth = new DateTime(1991, 5, 5),   MarketValue = 28.0,  Goals = 10, Assists = 4,  CleanSheets = 0,  TotalPoints = 128 },\n                new Player { Id = 194, FirstName = \"Rodrigo\",   LastName = \"Muniz\",        Position = Position.Forward,    Club = \"Fulham\", Nationality = \"Brazil\",         DateOfBirth = new DateTime(2001, 5, 4),   MarketValue = 30.0,  Goals = 9,  Assists = 2,  CleanSheets = 0,  TotalPoints = 118 },\n                new Player { Id = 195, FirstName = \"Adama\",     LastName = \"Traore\",       Position = Position.Forward,    Club = \"Fulham\", Nationality = \"Spain\",          DateOfBirth = new DateTime(1996, 1, 25),  MarketValue = 22.0,  Goals = 3,  Assists = 6,  CleanSheets = 0,  TotalPoints = 102 },\n\n                // ==========================================\n                // BRENTFORD (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 196, FirstName = \"Mark\",      LastName = \"Flekken\",      Position = Position.Goalkeeper, Club = \"Brentford\", Nationality = \"Netherlands\",  DateOfBirth = new DateTime(1993, 6, 13),  MarketValue = 15.0,  Goals = 0,  Assists = 1,  CleanSheets = 7,  TotalPoints = 108 },\n                new Player { Id = 197, FirstName = \"Hakon\",     LastName = \"Valdimarsson\",  Position = Position.Goalkeeper, Club = \"Brentford\", Nationality = \"Iceland\",     DateOfBirth = new DateTime(2001, 12, 14), MarketValue = 4.0,   Goals = 0,  Assists = 0,  CleanSheets = 1,  TotalPoints = 22 },\n                new Player { Id = 198, FirstName = \"Nathan\",    LastName = \"Collins\",      Position = Position.Defender,   Club = \"Brentford\", Nationality = \"Ireland\",      DateOfBirth = new DateTime(2001, 4, 30),  MarketValue = 30.0,  Goals = 2,  Assists = 1,  CleanSheets = 7,  TotalPoints = 105 },\n                new Player { Id = 199, FirstName = \"Ethan\",     LastName = \"Pinnock\",      Position = Position.Defender,   Club = \"Brentford\", Nationality = \"Jamaica\",      DateOfBirth = new DateTime(1993, 5, 29),  MarketValue = 18.0,  Goals = 2,  Assists = 0,  CleanSheets = 7,  TotalPoints = 90 },\n                new Player { Id = 200, FirstName = \"Kristoffer\", LastName = \"Ajer\",        Position = Position.Defender,   Club = \"Brentford\", Nationality = \"Norway\",       DateOfBirth = new DateTime(1998, 4, 17),  MarketValue = 18.0,  Goals = 1,  Assists = 2,  CleanSheets = 6,  TotalPoints = 88 },\n                new Player { Id = 201, FirstName = \"Rico\",      LastName = \"Henry\",        Position = Position.Defender,   Club = \"Brentford\", Nationality = \"England\",      DateOfBirth = new DateTime(1997, 7, 8),   MarketValue = 15.0,  Goals = 0,  Assists = 3,  CleanSheets = 6,  TotalPoints = 82 },\n                new Player { Id = 202, FirstName = \"Sepp\",      LastName = \"van den Berg\",  Position = Position.Defender,  Club = \"Brentford\", Nationality = \"Netherlands\",  DateOfBirth = new DateTime(2001, 12, 20), MarketValue = 16.0,  Goals = 1,  Assists = 1,  CleanSheets = 6,  TotalPoints = 80 },\n                new Player { Id = 203, FirstName = \"Mathias\",   LastName = \"Jensen\",       Position = Position.Midfielder, Club = \"Brentford\", Nationality = \"Denmark\",      DateOfBirth = new DateTime(1996, 1, 1),   MarketValue = 22.0,  Goals = 3,  Assists = 5,  CleanSheets = 0,  TotalPoints = 108 },\n                new Player { Id = 204, FirstName = \"Vitaly\",    LastName = \"Janelt\",       Position = Position.Midfielder, Club = \"Brentford\", Nationality = \"Germany\",      DateOfBirth = new DateTime(1998, 5, 10),  MarketValue = 18.0,  Goals = 2,  Assists = 2,  CleanSheets = 0,  TotalPoints = 85 },\n                new Player { Id = 205, FirstName = \"Mikkel\",    LastName = \"Damsgaard\",    Position = Position.Midfielder, Club = \"Brentford\", Nationality = \"Denmark\",      DateOfBirth = new DateTime(2000, 7, 3),   MarketValue = 28.0,  Goals = 4,  Assists = 8,  CleanSheets = 0,  TotalPoints = 128 },\n                new Player { Id = 206, FirstName = \"Yehor\",     LastName = \"Yarmolyuk\",    Position = Position.Midfielder, Club = \"Brentford\", Nationality = \"Ukraine\",      DateOfBirth = new DateTime(2004, 3, 1),   MarketValue = 18.0,  Goals = 1,  Assists = 2,  CleanSheets = 0,  TotalPoints = 78 },\n                new Player { Id = 207, FirstName = \"Kevin\",     LastName = \"Schade\",       Position = Position.Midfielder, Club = \"Brentford\", Nationality = \"Germany\",      DateOfBirth = new DateTime(2001, 11, 27), MarketValue = 25.0,  Goals = 7,  Assists = 4,  CleanSheets = 0,  TotalPoints = 115 },\n                new Player { Id = 208, FirstName = \"Yoane\",     LastName = \"Wissa\",        Position = Position.Forward,    Club = \"Brentford\", Nationality = \"DR Congo\",     DateOfBirth = new DateTime(1996, 9, 3),   MarketValue = 42.0,  Goals = 16, Assists = 4,  CleanSheets = 0,  TotalPoints = 162 },\n                new Player { Id = 209, FirstName = \"Igor\",      LastName = \"Thiago\",       Position = Position.Forward,    Club = \"Brentford\", Nationality = \"Brazil\",       DateOfBirth = new DateTime(2001, 6, 26),  MarketValue = 28.0,  Goals = 8,  Assists = 2,  CleanSheets = 0,  TotalPoints = 108 },\n                new Player { Id = 210, FirstName = \"Fabio\",     LastName = \"Carvalho\",     Position = Position.Forward,    Club = \"Brentford\", Nationality = \"Portugal\",     DateOfBirth = new DateTime(2002, 8, 30),  MarketValue = 22.0,  Goals = 5,  Assists = 3,  CleanSheets = 0,  TotalPoints = 95 },\n\n                // ==========================================\n                // BOURNEMOUTH (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 211, FirstName = \"Kepa\",      LastName = \"Arrizabalaga\", Position = Position.Goalkeeper, Club = \"Bournemouth\", Nationality = \"Spain\",      DateOfBirth = new DateTime(1994, 10, 3),  MarketValue = 18.0,  Goals = 0,  Assists = 0,  CleanSheets = 8,  TotalPoints = 112 },\n                new Player { Id = 212, FirstName = \"Mark\",      LastName = \"Travers\",      Position = Position.Goalkeeper, Club = \"Bournemouth\", Nationality = \"Ireland\",    DateOfBirth = new DateTime(1999, 5, 18),  MarketValue = 4.0,   Goals = 0,  Assists = 0,  CleanSheets = 1,  TotalPoints = 22 },\n                new Player { Id = 213, FirstName = \"Illia\",     LastName = \"Zabarnyi\",     Position = Position.Defender,   Club = \"Bournemouth\", Nationality = \"Ukraine\",    DateOfBirth = new DateTime(2002, 9, 1),   MarketValue = 35.0,  Goals = 1,  Assists = 1,  CleanSheets = 8,  TotalPoints = 112 },\n                new Player { Id = 214, FirstName = \"Marcos\",    LastName = \"Senesi\",       Position = Position.Defender,   Club = \"Bournemouth\", Nationality = \"Argentina\",  DateOfBirth = new DateTime(1997, 5, 10),  MarketValue = 28.0,  Goals = 2,  Assists = 1,  CleanSheets = 8,  TotalPoints = 108 },\n                new Player { Id = 215, FirstName = \"Adam\",      LastName = \"Smith\",        Position = Position.Defender,   Club = \"Bournemouth\", Nationality = \"England\",    DateOfBirth = new DateTime(1991, 4, 29),  MarketValue = 8.0,   Goals = 0,  Assists = 2,  CleanSheets = 6,  TotalPoints = 72 },\n                new Player { Id = 216, FirstName = \"Chris\",     LastName = \"Mepham\",       Position = Position.Defender,   Club = \"Bournemouth\", Nationality = \"Wales\",      DateOfBirth = new DateTime(1997, 11, 5),  MarketValue = 10.0,  Goals = 1,  Assists = 0,  CleanSheets = 5,  TotalPoints = 68 },\n                new Player { Id = 217, FirstName = \"Julio\",     LastName = \"Soler\",        Position = Position.Defender,   Club = \"Bournemouth\", Nationality = \"Argentina\",  DateOfBirth = new DateTime(2005, 4, 16),  MarketValue = 12.0,  Goals = 0,  Assists = 1,  CleanSheets = 5,  TotalPoints = 62 },\n                new Player { Id = 218, FirstName = \"Ryan\",      LastName = \"Christie\",     Position = Position.Midfielder, Club = \"Bournemouth\", Nationality = \"Scotland\",   DateOfBirth = new DateTime(1995, 2, 22),  MarketValue = 20.0,  Goals = 3,  Assists = 4,  CleanSheets = 0,  TotalPoints = 102 },\n                new Player { Id = 219, FirstName = \"Lewis\",     LastName = \"Cook\",         Position = Position.Midfielder, Club = \"Bournemouth\", Nationality = \"England\",    DateOfBirth = new DateTime(1997, 2, 3),   MarketValue = 22.0,  Goals = 2,  Assists = 3,  CleanSheets = 0,  TotalPoints = 95 },\n                new Player { Id = 220, FirstName = \"Tyler\",     LastName = \"Adams\",        Position = Position.Midfielder, Club = \"Bournemouth\", Nationality = \"United States\", DateOfBirth = new DateTime(1999, 2, 14), MarketValue = 25.0, Goals = 2, Assists = 2,  CleanSheets = 0,  TotalPoints = 92 },\n                new Player { Id = 221, FirstName = \"Marcus\",    LastName = \"Tavernier\",    Position = Position.Midfielder, Club = \"Bournemouth\", Nationality = \"England\",    DateOfBirth = new DateTime(1999, 3, 22),  MarketValue = 24.0,  Goals = 4,  Assists = 5,  CleanSheets = 0,  TotalPoints = 110 },\n                new Player { Id = 222, FirstName = \"Alex\",      LastName = \"Scott\",        Position = Position.Midfielder, Club = \"Bournemouth\", Nationality = \"England\",    DateOfBirth = new DateTime(2003, 8, 21),  MarketValue = 22.0,  Goals = 2,  Assists = 3,  CleanSheets = 0,  TotalPoints = 88 },\n                new Player { Id = 223, FirstName = \"Antoine\",   LastName = \"Semenyo\",      Position = Position.Forward,    Club = \"Bournemouth\", Nationality = \"Ghana\",      DateOfBirth = new DateTime(2000, 1, 7),   MarketValue = 45.0,  Goals = 13, Assists = 6,  CleanSheets = 0,  TotalPoints = 162 },\n                new Player { Id = 224, FirstName = \"Justin\",    LastName = \"Kluivert\",     Position = Position.Forward,    Club = \"Bournemouth\", Nationality = \"Netherlands\", DateOfBirth = new DateTime(1999, 5, 5),   MarketValue = 35.0,  Goals = 11, Assists = 5,  CleanSheets = 0,  TotalPoints = 142 },\n                new Player { Id = 225, FirstName = \"Evanilson\", LastName = \"de Lima\",      Position = Position.Forward,    Club = \"Bournemouth\", Nationality = \"Brazil\",     DateOfBirth = new DateTime(1999, 10, 6),  MarketValue = 38.0,  Goals = 10, Assists = 3,  CleanSheets = 0,  TotalPoints = 128 },\n\n                // ==========================================\n                // EVERTON (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 226, FirstName = \"Jordan\",    LastName = \"Pickford\",     Position = Position.Goalkeeper, Club = \"Everton\", Nationality = \"England\",        DateOfBirth = new DateTime(1994, 3, 7),   MarketValue = 28.0,  Goals = 0,  Assists = 1,  CleanSheets = 11, TotalPoints = 145 },\n                new Player { Id = 227, FirstName = \"Joao\",      LastName = \"Virginia\",     Position = Position.Goalkeeper, Club = \"Everton\", Nationality = \"Portugal\",       DateOfBirth = new DateTime(1999, 10, 10), MarketValue = 3.0,   Goals = 0,  Assists = 0,  CleanSheets = 1,  TotalPoints = 20 },\n                new Player { Id = 228, FirstName = \"James\",     LastName = \"Tarkowski\",    Position = Position.Defender,   Club = \"Everton\", Nationality = \"England\",        DateOfBirth = new DateTime(1992, 11, 19), MarketValue = 22.0,  Goals = 2,  Assists = 1,  CleanSheets = 10, TotalPoints = 115 },\n                new Player { Id = 229, FirstName = \"Jarrad\",    LastName = \"Branthwaite\",  Position = Position.Defender,   Club = \"Everton\", Nationality = \"England\",        DateOfBirth = new DateTime(2002, 6, 27),  MarketValue = 40.0,  Goals = 2,  Assists = 1,  CleanSheets = 10, TotalPoints = 122 },\n                new Player { Id = 230, FirstName = \"Vitalii\",   LastName = \"Mykolenko\",    Position = Position.Defender,   Club = \"Everton\", Nationality = \"Ukraine\",        DateOfBirth = new DateTime(1999, 5, 29),  MarketValue = 20.0,  Goals = 1,  Assists = 2,  CleanSheets = 9,  TotalPoints = 102 },\n                new Player { Id = 231, FirstName = \"Seamus\",    LastName = \"Coleman\",      Position = Position.Defender,   Club = \"Everton\", Nationality = \"Ireland\",        DateOfBirth = new DateTime(1988, 10, 11), MarketValue = 4.0,   Goals = 0,  Assists = 1,  CleanSheets = 5,  TotalPoints = 52 },\n                new Player { Id = 232, FirstName = \"Michael\",   LastName = \"Keane\",        Position = Position.Defender,   Club = \"Everton\", Nationality = \"England\",        DateOfBirth = new DateTime(1993, 1, 11),  MarketValue = 10.0,  Goals = 1,  Assists = 0,  CleanSheets = 6,  TotalPoints = 70 },\n                new Player { Id = 233, FirstName = \"Idrissa\",   LastName = \"Gueye\",        Position = Position.Midfielder, Club = \"Everton\", Nationality = \"Senegal\",        DateOfBirth = new DateTime(1989, 9, 26),  MarketValue = 15.0,  Goals = 2,  Assists = 2,  CleanSheets = 0,  TotalPoints = 88 },\n                new Player { Id = 234, FirstName = \"James\",     LastName = \"Garner\",       Position = Position.Midfielder, Club = \"Everton\", Nationality = \"England\",        DateOfBirth = new DateTime(2001, 3, 13),  MarketValue = 22.0,  Goals = 2,  Assists = 4,  CleanSheets = 0,  TotalPoints = 95 },\n                new Player { Id = 235, FirstName = \"Abdoulaye\", LastName = \"Doucoure\",     Position = Position.Midfielder, Club = \"Everton\", Nationality = \"Mali\",           DateOfBirth = new DateTime(1993, 1, 1),   MarketValue = 20.0,  Goals = 6,  Assists = 3,  CleanSheets = 0,  TotalPoints = 112 },\n                new Player { Id = 236, FirstName = \"Dwight\",    LastName = \"McNeil\",       Position = Position.Midfielder, Club = \"Everton\", Nationality = \"England\",        DateOfBirth = new DateTime(1999, 11, 22), MarketValue = 25.0,  Goals = 5,  Assists = 5,  CleanSheets = 0,  TotalPoints = 115 },\n                new Player { Id = 237, FirstName = \"Jack\",      LastName = \"Harrison\",     Position = Position.Midfielder, Club = \"Everton\", Nationality = \"England\",        DateOfBirth = new DateTime(1996, 11, 20), MarketValue = 18.0,  Goals = 3,  Assists = 4,  CleanSheets = 0,  TotalPoints = 92 },\n                new Player { Id = 238, FirstName = \"Beto\",      LastName = \"Betuncal\",     Position = Position.Forward,    Club = \"Everton\", Nationality = \"Portugal\",       DateOfBirth = new DateTime(1998, 1, 31),  MarketValue = 28.0,  Goals = 9,  Assists = 2,  CleanSheets = 0,  TotalPoints = 112 },\n                new Player { Id = 239, FirstName = \"Iliman\",    LastName = \"Ndiaye\",       Position = Position.Forward,    Club = \"Everton\", Nationality = \"Senegal\",        DateOfBirth = new DateTime(2000, 3, 6),   MarketValue = 32.0,  Goals = 8,  Assists = 5,  CleanSheets = 0,  TotalPoints = 122 },\n                new Player { Id = 240, FirstName = \"Youssef\",   LastName = \"Chermiti\",     Position = Position.Forward,    Club = \"Everton\", Nationality = \"Portugal\",       DateOfBirth = new DateTime(2004, 5, 24),  MarketValue = 15.0,  Goals = 3,  Assists = 1,  CleanSheets = 0,  TotalPoints = 68 },\n\n                // ==========================================\n                // NOTTINGHAM FOREST (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 241, FirstName = \"Matz\",      LastName = \"Sels\",         Position = Position.Goalkeeper, Club = \"Nottingham Forest\", Nationality = \"Belgium\", DateOfBirth = new DateTime(1992, 2, 26),  MarketValue = 22.0,  Goals = 0,  Assists = 0,  CleanSheets = 13, TotalPoints = 148 },\n                new Player { Id = 242, FirstName = \"Carlos\",    LastName = \"Miguel\",       Position = Position.Goalkeeper, Club = \"Nottingham Forest\", Nationality = \"Brazil\",  DateOfBirth = new DateTime(1998, 8, 26),  MarketValue = 6.0,   Goals = 0,  Assists = 0,  CleanSheets = 2,  TotalPoints = 30 },\n                new Player { Id = 243, FirstName = \"Murillo\",   LastName = \"Costa\",        Position = Position.Defender,   Club = \"Nottingham Forest\", Nationality = \"Brazil\",  DateOfBirth = new DateTime(2002, 4, 11),  MarketValue = 38.0,  Goals = 2,  Assists = 2,  CleanSheets = 11, TotalPoints = 130 },\n                new Player { Id = 244, FirstName = \"Nikola\",    LastName = \"Milenkovic\",   Position = Position.Defender,   Club = \"Nottingham Forest\", Nationality = \"Serbia\",  DateOfBirth = new DateTime(1997, 10, 12), MarketValue = 30.0,  Goals = 4,  Assists = 1,  CleanSheets = 11, TotalPoints = 132 },\n                new Player { Id = 245, FirstName = \"Neco\",      LastName = \"Williams\",     Position = Position.Defender,   Club = \"Nottingham Forest\", Nationality = \"Wales\",   DateOfBirth = new DateTime(2001, 4, 13),  MarketValue = 22.0,  Goals = 2,  Assists = 4,  CleanSheets = 9,  TotalPoints = 118 },\n                new Player { Id = 246, FirstName = \"Ola\",       LastName = \"Aina\",         Position = Position.Defender,   Club = \"Nottingham Forest\", Nationality = \"Nigeria\", DateOfBirth = new DateTime(1996, 10, 8),  MarketValue = 24.0,  Goals = 1,  Assists = 2,  CleanSheets = 10, TotalPoints = 115 },\n                new Player { Id = 247, FirstName = \"Morato\",    LastName = \"Silva\",        Position = Position.Defender,   Club = \"Nottingham Forest\", Nationality = \"Brazil\",  DateOfBirth = new DateTime(2001, 4, 16),  MarketValue = 14.0,  Goals = 0,  Assists = 0,  CleanSheets = 6,  TotalPoints = 68 },\n                new Player { Id = 248, FirstName = \"Morgan\",    LastName = \"Gibbs-White\",  Position = Position.Midfielder, Club = \"Nottingham Forest\", Nationality = \"England\", DateOfBirth = new DateTime(2000, 1, 27),  MarketValue = 48.0,  Goals = 8,  Assists = 9,  CleanSheets = 0,  TotalPoints = 158 },\n                new Player { Id = 249, FirstName = \"Elliot\",    LastName = \"Anderson\",     Position = Position.Midfielder, Club = \"Nottingham Forest\", Nationality = \"England\", DateOfBirth = new DateTime(2002, 11, 6),  MarketValue = 35.0,  Goals = 3,  Assists = 5,  CleanSheets = 0,  TotalPoints = 118 },\n                new Player { Id = 250, FirstName = \"Ryan\",      LastName = \"Yates\",        Position = Position.Midfielder, Club = \"Nottingham Forest\", Nationality = \"England\", DateOfBirth = new DateTime(1997, 11, 21), MarketValue = 18.0,  Goals = 2,  Assists = 2,  CleanSheets = 0,  TotalPoints = 82 },\n                new Player { Id = 251, FirstName = \"Nicolas\",   LastName = \"Dominguez\",    Position = Position.Midfielder, Club = \"Nottingham Forest\", Nationality = \"Argentina\", DateOfBirth = new DateTime(1998, 6, 28), MarketValue = 20.0, Goals = 3, Assists = 2,  CleanSheets = 0,  TotalPoints = 88 },\n                new Player { Id = 252, FirstName = \"Callum\",    LastName = \"Hudson-Odoi\",  Position = Position.Midfielder, Club = \"Nottingham Forest\", Nationality = \"England\", DateOfBirth = new DateTime(2000, 11, 7),  MarketValue = 28.0,  Goals = 6,  Assists = 4,  CleanSheets = 0,  TotalPoints = 118 },\n                new Player { Id = 253, FirstName = \"Chris\",     LastName = \"Wood\",         Position = Position.Forward,    Club = \"Nottingham Forest\", Nationality = \"New Zealand\", DateOfBirth = new DateTime(1991, 12, 7), MarketValue = 42.0, Goals = 18, Assists = 3,  CleanSheets = 0,  TotalPoints = 175 },\n                new Player { Id = 254, FirstName = \"Taiwo\",     LastName = \"Awoniyi\",      Position = Position.Forward,    Club = \"Nottingham Forest\", Nationality = \"Nigeria\", DateOfBirth = new DateTime(1997, 8, 12),  MarketValue = 25.0,  Goals = 6,  Assists = 2,  CleanSheets = 0,  TotalPoints = 95 },\n                new Player { Id = 255, FirstName = \"Ramon\",     LastName = \"Sosa\",         Position = Position.Forward,    Club = \"Nottingham Forest\", Nationality = \"Paraguay\", DateOfBirth = new DateTime(2001, 8, 28), MarketValue = 20.0,  Goals = 4,  Assists = 3,  CleanSheets = 0,  TotalPoints = 82 },\n\n                // ==========================================\n                // LEEDS UNITED (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 256, FirstName = \"Illan\",     LastName = \"Meslier\",      Position = Position.Goalkeeper, Club = \"Leeds United\", Nationality = \"France\",     DateOfBirth = new DateTime(2000, 3, 2),   MarketValue = 15.0,  Goals = 0,  Assists = 0,  CleanSheets = 7,  TotalPoints = 102 },\n                new Player { Id = 257, FirstName = \"Lucas\",     LastName = \"Perri\",        Position = Position.Goalkeeper, Club = \"Leeds United\", Nationality = \"Brazil\",     DateOfBirth = new DateTime(1997, 12, 10), MarketValue = 8.0,   Goals = 0,  Assists = 0,  CleanSheets = 3,  TotalPoints = 48 },\n                new Player { Id = 258, FirstName = \"Pascal\",    LastName = \"Struijk\",      Position = Position.Defender,   Club = \"Leeds United\", Nationality = \"Netherlands\", DateOfBirth = new DateTime(1999, 8, 11), MarketValue = 18.0,  Goals = 2,  Assists = 1,  CleanSheets = 7,  TotalPoints = 92 },\n                new Player { Id = 259, FirstName = \"Joe\",       LastName = \"Rodon\",        Position = Position.Defender,   Club = \"Leeds United\", Nationality = \"Wales\",      DateOfBirth = new DateTime(1997, 10, 22), MarketValue = 16.0,  Goals = 1,  Assists = 0,  CleanSheets = 7,  TotalPoints = 82 },\n                new Player { Id = 260, FirstName = \"Jayden\",    LastName = \"Bogle\",        Position = Position.Defender,   Club = \"Leeds United\", Nationality = \"England\",    DateOfBirth = new DateTime(2000, 7, 27),  MarketValue = 15.0,  Goals = 1,  Assists = 3,  CleanSheets = 6,  TotalPoints = 85 },\n                new Player { Id = 261, FirstName = \"Junior\",    LastName = \"Firpo\",        Position = Position.Defender,   Club = \"Leeds United\", Nationality = \"Dominican Republic\", DateOfBirth = new DateTime(1996, 8, 22), MarketValue = 12.0, Goals = 1, Assists = 3, CleanSheets = 6, TotalPoints = 80 },\n                new Player { Id = 262, FirstName = \"Max\",       LastName = \"Wober\",        Position = Position.Defender,   Club = \"Leeds United\", Nationality = \"Austria\",    DateOfBirth = new DateTime(1998, 2, 16),  MarketValue = 12.0,  Goals = 0,  Assists = 1,  CleanSheets = 5,  TotalPoints = 65 },\n                new Player { Id = 263, FirstName = \"Ethan\",     LastName = \"Ampadu\",       Position = Position.Midfielder, Club = \"Leeds United\", Nationality = \"Wales\",      DateOfBirth = new DateTime(2000, 9, 14),  MarketValue = 22.0,  Goals = 1,  Assists = 2,  CleanSheets = 0,  TotalPoints = 88 },\n                new Player { Id = 264, FirstName = \"Ilia\",      LastName = \"Gruev\",        Position = Position.Midfielder, Club = \"Leeds United\", Nationality = \"Bulgaria\",   DateOfBirth = new DateTime(2000, 5, 6),   MarketValue = 14.0,  Goals = 1,  Assists = 2,  CleanSheets = 0,  TotalPoints = 72 },\n                new Player { Id = 265, FirstName = \"Brenden\",   LastName = \"Aaronson\",     Position = Position.Midfielder, Club = \"Leeds United\", Nationality = \"United States\", DateOfBirth = new DateTime(2000, 10, 22), MarketValue = 20.0, Goals = 5, Assists = 5, CleanSheets = 0, TotalPoints = 112 },\n                new Player { Id = 266, FirstName = \"Daniel\",    LastName = \"James\",        Position = Position.Midfielder, Club = \"Leeds United\", Nationality = \"Wales\",      DateOfBirth = new DateTime(1997, 11, 10), MarketValue = 22.0,  Goals = 6,  Assists = 6,  CleanSheets = 0,  TotalPoints = 118 },\n                new Player { Id = 267, FirstName = \"Anton\",     LastName = \"Stach\",        Position = Position.Midfielder, Club = \"Leeds United\", Nationality = \"Germany\",    DateOfBirth = new DateTime(1998, 11, 15), MarketValue = 16.0,  Goals = 2,  Assists = 2,  CleanSheets = 0,  TotalPoints = 78 },\n                new Player { Id = 268, FirstName = \"Joel\",      LastName = \"Piroe\",        Position = Position.Forward,    Club = \"Leeds United\", Nationality = \"Netherlands\", DateOfBirth = new DateTime(1999, 8, 2),   MarketValue = 28.0,  Goals = 12, Assists = 3,  CleanSheets = 0,  TotalPoints = 128 },\n                new Player { Id = 269, FirstName = \"Patrick\",   LastName = \"Bamford\",      Position = Position.Forward,    Club = \"Leeds United\", Nationality = \"England\",    DateOfBirth = new DateTime(1993, 9, 5),   MarketValue = 12.0,  Goals = 5,  Assists = 2,  CleanSheets = 0,  TotalPoints = 78 },\n                new Player { Id = 270, FirstName = \"Largie\",    LastName = \"Ramazani\",     Position = Position.Forward,    Club = \"Leeds United\", Nationality = \"Belgium\",    DateOfBirth = new DateTime(2001, 2, 27),  MarketValue = 15.0,  Goals = 4,  Assists = 3,  CleanSheets = 0,  TotalPoints = 78 },\n\n                // ==========================================\n                // BURNLEY (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 271, FirstName = \"James\",     LastName = \"Trafford\",     Position = Position.Goalkeeper, Club = \"Burnley\", Nationality = \"England\",        DateOfBirth = new DateTime(2002, 10, 10), MarketValue = 18.0,  Goals = 0,  Assists = 0,  CleanSheets = 12, TotalPoints = 138 },\n                new Player { Id = 272, FirstName = \"Vaclav\",    LastName = \"Hladky\",       Position = Position.Goalkeeper, Club = \"Burnley\", Nationality = \"Czech Republic\", DateOfBirth = new DateTime(1990, 11, 14), MarketValue = 3.0,   Goals = 0,  Assists = 0,  CleanSheets = 2,  TotalPoints = 28 },\n                new Player { Id = 273, FirstName = \"Maxime\",    LastName = \"Esteve\",       Position = Position.Defender,   Club = \"Burnley\", Nationality = \"France\",         DateOfBirth = new DateTime(2002, 6, 26),  MarketValue = 18.0,  Goals = 1,  Assists = 1,  CleanSheets = 10, TotalPoints = 102 },\n                new Player { Id = 274, FirstName = \"Dara\",      LastName = \"O'Shea\",       Position = Position.Defender,   Club = \"Burnley\", Nationality = \"Ireland\",        DateOfBirth = new DateTime(1999, 3, 4),   MarketValue = 16.0,  Goals = 1,  Assists = 0,  CleanSheets = 10, TotalPoints = 95 },\n                new Player { Id = 275, FirstName = \"Connor\",    LastName = \"Roberts\",      Position = Position.Defender,   Club = \"Burnley\", Nationality = \"Wales\",          DateOfBirth = new DateTime(1995, 9, 23),  MarketValue = 12.0,  Goals = 1,  Assists = 3,  CleanSheets = 9,  TotalPoints = 92 },\n                new Player { Id = 276, FirstName = \"CJ\",        LastName = \"Egan-Riley\",   Position = Position.Defender,   Club = \"Burnley\", Nationality = \"England\",        DateOfBirth = new DateTime(2003, 1, 2),   MarketValue = 14.0,  Goals = 1,  Assists = 1,  CleanSheets = 9,  TotalPoints = 88 },\n                new Player { Id = 277, FirstName = \"Jordan\",    LastName = \"Beyer\",        Position = Position.Defender,   Club = \"Burnley\", Nationality = \"Germany\",        DateOfBirth = new DateTime(2000, 5, 19),  MarketValue = 12.0,  Goals = 0,  Assists = 0,  CleanSheets = 8,  TotalPoints = 78 },\n                new Player { Id = 278, FirstName = \"Josh\",      LastName = \"Cullen\",       Position = Position.Midfielder, Club = \"Burnley\", Nationality = \"Ireland\",        DateOfBirth = new DateTime(1996, 4, 7),   MarketValue = 15.0,  Goals = 2,  Assists = 3,  CleanSheets = 0,  TotalPoints = 88 },\n                new Player { Id = 279, FirstName = \"Josh\",      LastName = \"Brownhill\",    Position = Position.Midfielder, Club = \"Burnley\", Nationality = \"England\",        DateOfBirth = new DateTime(1995, 12, 19), MarketValue = 16.0,  Goals = 5,  Assists = 4,  CleanSheets = 0,  TotalPoints = 108 },\n                new Player { Id = 280, FirstName = \"Hannibal\",  LastName = \"Mejbri\",       Position = Position.Midfielder, Club = \"Burnley\", Nationality = \"Tunisia\",        DateOfBirth = new DateTime(2003, 1, 21),  MarketValue = 14.0,  Goals = 2,  Assists = 3,  CleanSheets = 0,  TotalPoints = 82 },\n                new Player { Id = 281, FirstName = \"Jacob\",     LastName = \"Bruun Larsen\",  Position = Position.Midfielder, Club = \"Burnley\", Nationality = \"Denmark\",       DateOfBirth = new DateTime(1998, 9, 19),  MarketValue = 12.0,  Goals = 3,  Assists = 3,  CleanSheets = 0,  TotalPoints = 80 },\n                new Player { Id = 282, FirstName = \"Lesley\",    LastName = \"Ugochukwu\",    Position = Position.Midfielder, Club = \"Burnley\", Nationality = \"France\",         DateOfBirth = new DateTime(2004, 3, 26),  MarketValue = 16.0,  Goals = 1,  Assists = 1,  CleanSheets = 0,  TotalPoints = 72 },\n                new Player { Id = 283, FirstName = \"Lyle\",      LastName = \"Foster\",       Position = Position.Forward,    Club = \"Burnley\", Nationality = \"South Africa\",   DateOfBirth = new DateTime(2000, 9, 3),   MarketValue = 20.0,  Goals = 8,  Assists = 3,  CleanSheets = 0,  TotalPoints = 105 },\n                new Player { Id = 284, FirstName = \"Zian\",      LastName = \"Flemming\",     Position = Position.Forward,    Club = \"Burnley\", Nationality = \"Netherlands\",    DateOfBirth = new DateTime(1998, 7, 17),  MarketValue = 16.0,  Goals = 6,  Assists = 4,  CleanSheets = 0,  TotalPoints = 95 },\n                new Player { Id = 285, FirstName = \"Jaidon\",    LastName = \"Anthony\",      Position = Position.Forward,    Club = \"Burnley\", Nationality = \"England\",        DateOfBirth = new DateTime(1999, 12, 1),  MarketValue = 15.0,  Goals = 5,  Assists = 5,  CleanSheets = 0,  TotalPoints = 92 },\n\n                // ==========================================\n                // SUNDERLAND (2 GK, 5 DEF, 5 MID, 3 FWD)\n                // ==========================================\n                new Player { Id = 286, FirstName = \"Anthony\",   LastName = \"Patterson\",    Position = Position.Goalkeeper, Club = \"Sunderland\", Nationality = \"England\",     DateOfBirth = new DateTime(2000, 5, 10),  MarketValue = 12.0,  Goals = 0,  Assists = 0,  CleanSheets = 9,  TotalPoints = 118 },\n                new Player { Id = 287, FirstName = \"Simon\",     LastName = \"Moore\",        Position = Position.Goalkeeper, Club = \"Sunderland\", Nationality = \"England\",     DateOfBirth = new DateTime(1990, 5, 19),  MarketValue = 3.0,   Goals = 0,  Assists = 0,  CleanSheets = 1,  TotalPoints = 20 },\n                new Player { Id = 288, FirstName = \"Dan\",       LastName = \"Ballard\",      Position = Position.Defender,   Club = \"Sunderland\", Nationality = \"Northern Ireland\", DateOfBirth = new DateTime(1999, 9, 22), MarketValue = 18.0, Goals = 2, Assists = 0, CleanSheets = 9, TotalPoints = 100 },\n                new Player { Id = 289, FirstName = \"Luke\",      LastName = \"O'Nien\",       Position = Position.Defender,   Club = \"Sunderland\", Nationality = \"England\",     DateOfBirth = new DateTime(1994, 11, 21), MarketValue = 14.0,  Goals = 2,  Assists = 1,  CleanSheets = 8,  TotalPoints = 92 },\n                new Player { Id = 290, FirstName = \"Trai\",      LastName = \"Hume\",         Position = Position.Defender,   Club = \"Sunderland\", Nationality = \"Northern Ireland\", DateOfBirth = new DateTime(2002, 4, 7), MarketValue = 16.0, Goals = 1, Assists = 3, CleanSheets = 8, TotalPoints = 95 },\n                new Player { Id = 291, FirstName = \"Dennis\",    LastName = \"Cirkin\",       Position = Position.Defender,   Club = \"Sunderland\", Nationality = \"England\",     DateOfBirth = new DateTime(2002, 4, 6),   MarketValue = 12.0,  Goals = 1,  Assists = 2,  CleanSheets = 7,  TotalPoints = 82 },\n                new Player { Id = 292, FirstName = \"Leo\",       LastName = \"Hjelde\",       Position = Position.Defender,   Club = \"Sunderland\", Nationality = \"Norway\",      DateOfBirth = new DateTime(2003, 8, 26),  MarketValue = 10.0,  Goals = 0,  Assists = 0,  CleanSheets = 6,  TotalPoints = 62 },\n                new Player { Id = 293, FirstName = \"Dan\",       LastName = \"Neil\",         Position = Position.Midfielder, Club = \"Sunderland\", Nationality = \"England\",     DateOfBirth = new DateTime(2001, 12, 1),  MarketValue = 18.0,  Goals = 2,  Assists = 4,  CleanSheets = 0,  TotalPoints = 95 },\n                new Player { Id = 294, FirstName = \"Chris\",     LastName = \"Rigg\",         Position = Position.Midfielder, Club = \"Sunderland\", Nationality = \"England\",     DateOfBirth = new DateTime(2007, 6, 1),   MarketValue = 20.0,  Goals = 4,  Assists = 3,  CleanSheets = 0,  TotalPoints = 98 },\n                new Player { Id = 295, FirstName = \"Romaine\",   LastName = \"Mundle\",       Position = Position.Midfielder, Club = \"Sunderland\", Nationality = \"England\",     DateOfBirth = new DateTime(2003, 4, 31 % 29 + 1), MarketValue = 14.0, Goals = 3, Assists = 4, CleanSheets = 0, TotalPoints = 88 },\n                new Player { Id = 296, FirstName = \"Alan\",      LastName = \"Browne\",       Position = Position.Midfielder, Club = \"Sunderland\", Nationality = \"Ireland\",     DateOfBirth = new DateTime(1995, 4, 15),  MarketValue = 12.0,  Goals = 2,  Assists = 2,  CleanSheets = 0,  TotalPoints = 78 },\n                new Player { Id = 297, FirstName = \"Patrick\",   LastName = \"Roberts\",      Position = Position.Midfielder, Club = \"Sunderland\", Nationality = \"England\",     DateOfBirth = new DateTime(1997, 2, 5),   MarketValue = 14.0,  Goals = 3,  Assists = 5,  CleanSheets = 0,  TotalPoints = 92 },\n                new Player { Id = 298, FirstName = \"Wilson\",    LastName = \"Isidor\",       Position = Position.Forward,    Club = \"Sunderland\", Nationality = \"France\",      DateOfBirth = new DateTime(2000, 8, 27),  MarketValue = 22.0,  Goals = 11, Assists = 3,  CleanSheets = 0,  TotalPoints = 122 },\n                new Player { Id = 299, FirstName = \"Eliezer\",   LastName = \"Mayenda\",      Position = Position.Forward,    Club = \"Sunderland\", Nationality = \"Spain\",       DateOfBirth = new DateTime(2005, 5, 4),   MarketValue = 16.0,  Goals = 6,  Assists = 3,  CleanSheets = 0,  TotalPoints = 92 },\n                new Player { Id = 300, FirstName = \"Ahmed\",     LastName = \"Abdullahi\",    Position = Position.Forward,    Club = \"Sunderland\", Nationality = \"Nigeria\",     DateOfBirth = new DateTime(2002, 1, 6),   MarketValue = 12.0,  Goals = 4,  Assists = 2,  CleanSheets = 0,  TotalPoints = 78 },\n            };",
+                       "replace_all":  false
+                   },
+    "tool_use_id":  "toolu_011uZYbfsuQ1e9oayM7yZg2H"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Edit",
+    "tool_input":  {
+                       "file_path":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\Repositories\\PlayerMockRepository.cs",
+                       "old_string":  "DateOfBirth = new DateTime(2003, 4, 31 % 29 + 1), MarketValue = 14.0, Goals = 3, Assists = 4, CleanSheets = 0, TotalPoints = 88 },",
+                       "new_string":  "DateOfBirth = new DateTime(2003, 4, 15), MarketValue = 14.0, Goals = 3, Assists = 4, CleanSheets = 0, TotalPoints = 88 },",
+                       "replace_all":  false
+                   },
+    "tool_use_id":  "toolu_018MGvi8vnPXbp23XVs8K4eZ"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Bash",
+    "tool_input":  {
+                       "command":  "cd \"c:\\Users\\marijan.varivoda\\source\\FantasyFootball\" \u0026\u0026 grep -oE 'Club = \"[^\"]+\"' Repositories/PlayerMockRepository.cs | sort | uniq -c | sort -rn",
+                       "description":  "Count players per club"
+                   },
+    "tool_use_id":  "toolu_01JBpn8QjhhRPG59q6dgCDdu"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "C:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Bash",
+    "tool_input":  {
+                       "command":  "cd \"c:\\Users\\marijan.varivoda\\source\\FantasyFootball\" \u0026\u0026 python - <<'PY'\nimport re\ntxt=open('Repositories/PlayerMockRepository.cs',encoding='utf-8').read()\nrows=re.findall(r'Position = Position\\.(\\w+),\\s*Club = \"([^\"]+)\"',txt)\nfrom collections import defaultdict\nd=defaultdict(lambda: defaultdict(int))\nfor pos,club in rows: d[club][pos]+=1\nwant={'Goalkeeper':2,'Defender':5,'Midfielder':5,'Forward':3}\nbad=0\nfor club,c in d.items():\n    cur={k:c.get(k,0) for k in want}\n    if cur!=want:\n        print(\"MISMATCH\",club,cur); bad+=1\nprint(\"clubs:\",len(d),\"all_ok:\",bad==0)\n# id check\nids=[int(x) for x in re.findall(r'Id = (\\d+),',txt)]\nprint(\"ids:\",len(ids),\"unique:\",len(set(ids)),\"min:\",min(ids),\"max:\",max(ids))\nPY",
+                       "description":  "Validate position counts and IDs"
+                   },
+    "tool_use_id":  "toolu_01GLggxQ5PCVKTQWEhh1Q2Gb"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "C:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "PowerShell",
+    "tool_input":  {
+                       "command":  "dotnet build FantasyFootball.csproj -c Debug --nologo -v q 2>\u00261 | Select-Object -Last 15",
+                       "description":  "Build the project"
+                   },
+    "tool_use_id":  "toolu_01GCVQ6LcK8L9aLEToFhv8Xi"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "hook_event_name":  "UserPromptSubmit",
+    "prompt":  "i need those new players in database"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Grep",
+    "tool_input":  {
+                       "pattern":  "SeedAsync|DbSeeder|Migrate|EnsureCreated",
+                       "path":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\Program.cs",
+                       "output_mode":  "content",
+                       "-n":  true
+                   },
+    "tool_use_id":  "toolu_01KvQPDPYVbHhhgWiXatM2tA"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Read",
+    "tool_input":  {
+                       "file_path":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\Program.cs",
+                       "offset":  88,
+                       "limit":  25
+                   },
+    "tool_use_id":  "toolu_018aXhUxiFfE9nbKUUGz7agU"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Edit",
+    "tool_input":  {
+                       "file_path":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\DAL\\DbSeeder.cs",
+                       "old_string":  "            // Ako baza ve¦ç ima podatke, presko¦i seeding (ali ipak rebalansiraj cijene)\n            if (context.Players.Any())\n            {\n                RebalancePrices(context);\n                await SeedUsersAsync(context, userManager);\n                await EnsureAdminAsync(userManager);\n                return;\n            }",
+                       "new_string":  "            // Ako baza ve¦ç ima podatke, presko¦i puni seeding ÔÇö ali dopuni nove igra¦e\n            // iz mock repozitorija koji jo+í nisu u bazi i rebalansiraj cijene.\n            if (context.Players.Any())\n            {\n                EnsureAllMockPlayers(context);\n                RebalancePrices(context);\n                await SeedUsersAsync(context, userManager);\n                await EnsureAdminAsync(userManager);\n                return;\n            }",
+                       "replace_all":  false
+                   },
+    "tool_use_id":  "toolu_013Sn4x1i89Yzd5M1fgmY4MT"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Edit",
+    "tool_input":  {
+                       "file_path":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball\\DAL\\DbSeeder.cs",
+                       "old_string":  "        private static void RebalancePrices(FantasyFootballDbContext context)",
+                       "new_string":  "        // Dopuni bazu igra¦ima iz mock repozitorija kojih jo+í nema (npr. novododani\n        // klubovi). Igra¦i se uspore¦Åuju po imenu + prezimenu + klubu. Novi zapisi\n        // dobivaju Id = 0 kako bi im SQL dodijelio svje+¿ IDENTITY (mock Id-evi bi se\n        // ina¦e sudarili s postoje¦çim retcima). Idempotentno: na sljede¦çim pokretanjima\n        // ti igra¦i ve¦ç postoje pa se ni+íta ne dodaje.\n        private static void EnsureAllMockPlayers(FantasyFootballDbContext context)\n        {\n            var existing = context.Players\n                .Select(p => new { p.FirstName, p.LastName, p.Club })\n                .ToList()\n                .Select(k => $\"{k.FirstName}|{k.LastName}|{k.Club}\")\n                .ToHashSet(StringComparer.OrdinalIgnoreCase);\n\n            var toAdd = new PlayerMockRepository().GetAll()\n                .Where(p => !existing.Contains($\"{p.FirstName}|{p.LastName}|{p.Club}\"))\n                .ToList();\n\n            if (toAdd.Count == 0) return;\n\n            foreach (var p in toAdd)\n            {\n                p.Id = 0;                // neka SQL dodijeli novi IDENTITY\n                p.FantasyTeams.Clear();  // ne diramo postoje¦çe timove\n            }\n\n            context.Players.AddRange(toAdd);\n            context.SaveChanges();\n        }\n\n        private static void RebalancePrices(FantasyFootballDbContext context)",
+                       "replace_all":  false
+                   },
+    "tool_use_id":  "toolu_01H9oHukibfP18y8MLA3LwZZ"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "c:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "PowerShell",
+    "tool_input":  {
+                       "command":  "Get-Process -Name FantasyFootball -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime",
+                       "description":  "Check for running FantasyFootball process"
+                   },
+    "tool_use_id":  "toolu_019L5AFb92Fx7MuunfYM411F"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "C:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "PowerShell",
+    "tool_input":  {
+                       "command":  "Stop-Process -Id 29604 -Force; Start-Sleep -Seconds 2; \"stopped\"",
+                       "description":  "Stop the running app"
+                   },
+    "tool_use_id":  "toolu_014478ZZQkKTie2CjvsDSmi6"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "C:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "PowerShell",
+    "tool_input":  {
+                       "command":  "dotnet build FantasyFootball.csproj -c Debug --nologo -v q 2>\u00261 | Select-Object -Last 8",
+                       "description":  "Build the project"
+                   },
+    "tool_use_id":  "toolu_0141JGuHHvD224tm1J8ZeW7H"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "C:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "Bash",
+    "tool_input":  {
+                       "command":  "cd \"c:\\Users\\marijan.varivoda\\source\\FantasyFootball\" \u0026\u0026 cat appsettings.json appsettings.Development.json 2>/dev/null | grep -iA1 \"ConnectionStrings\\|DefaultConnection\"",
+                       "description":  "Find DB connection string"
+                   },
+    "tool_use_id":  "toolu_01KQpGZiT1JLt9Hqa5nLaRB9"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "C:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "PowerShell",
+    "tool_input":  {
+                       "command":  "$cs=\"Server=127.0.0.1,1433;Database=FantasyFootball_;User ID=sa;Password=ffPass123!;TrustServerCertificate=True;\"\n$c=New-Object System.Data.SqlClient.SqlConnection($cs); $c.Open()\n$cmd=$c.CreateCommand(); $cmd.CommandText=\"SELECT COUNT(*) FROM Players; SELECT COUNT(DISTINCT Club) FROM Players\"\n$cmd.CommandText=\"SELECT COUNT(*) AS Players, COUNT(DISTINCT Club) AS Clubs FROM Players\"\n$r=$cmd.ExecuteReader(); while($r.Read()){ \"Players={0} Clubs={1}\" -f $r['Players'],$r['Clubs'] }\n$c.Close()",
+                       "description":  "Count players and clubs in DB before reseed"
+                   },
+    "tool_use_id":  "toolu_01RpfxS1gocsCExBjZhAUtwi"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "C:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "PowerShell",
+    "tool_input":  {
+                       "command":  "$env:ASPNETCORE_ENVIRONMENT=\"Development\"\n$p=Start-Process -FilePath \"dotnet\" -ArgumentList \"run --project FantasyFootball.csproj --no-build --no-launch-profile\" -PassThru -RedirectStandardOutput \"$env:TEMP\\ff_out.log\" -RedirectStandardError \"$env:TEMP\\ff_err.log\"\n\"PID=$($p.Id)\"",
+                       "description":  "Start the app to trigger seeder"
+                   },
+    "tool_use_id":  "toolu_014mHfE2n4i3Q9Y557z6LWDf"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "C:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "PowerShell",
+    "tool_input":  {
+                       "command":  "$cs=\"Server=127.0.0.1,1433;Database=FantasyFootball_;User ID=sa;Password=ffPass123!;TrustServerCertificate=True;\"\n$deadline=(Get-Date).AddSeconds(90)\ndo {\n  Start-Sleep -Seconds 5\n  try {\n    $c=New-Object System.Data.SqlClient.SqlConnection($cs); $c.Open()\n    $cmd=$c.CreateCommand(); $cmd.CommandText=\"SELECT COUNT(*) AS P, COUNT(DISTINCT Club) AS C FROM Players\"\n    $r=$cmd.ExecuteReader(); $r.Read(); $p=$r['P']; $cl=$r['C']; $c.Close()\n    \"t=$(Get-Date -Format HH:mm:ss) Players=$p Clubs=$cl\"\n  } catch { \"query err: $($_.Exception.Message)\" }\n} while ($p -lt 300 -and (Get-Date) -lt $deadline)",
+                       "description":  "Poll DB until 300 players seeded"
+                   },
+    "tool_use_id":  "toolu_011go8y1RzXmiQNZXU3PsZMi"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "C:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "PowerShell",
+    "tool_input":  {
+                       "command":  "$cs=\"Server=127.0.0.1,1433;Database=FantasyFootball_;User ID=sa;Password=ffPass123!;TrustServerCertificate=True;\"\n$c=New-Object System.Data.SqlClient.SqlConnection($cs); $c.Open()\n$cmd=$c.CreateCommand()\n$cmd.CommandText=\"SELECT COUNT(*) bad FROM (SELECT Club FROM Players GROUP BY Club HAVING COUNT(*)<>15) t\"\n\"Clubs not at 15 players: $($cmd.ExecuteScalar())\"\n$cmd.CommandText=\"SELECT MIN(MarketValue) mn, MAX(MarketValue) mx FROM Players\"\n$r=$cmd.ExecuteReader(); $r.Read(); \"Price range: $($r['mn']) - $($r['mx'])\"; $r.Close()\n$cmd.CommandText=\"SELECT TOP 5 FirstName+' '+LastName nm, Club, MarketValue, TotalPoints FROM Players ORDER BY MarketValue DESC\"\n$r=$cmd.ExecuteReader(); while($r.Read()){ \"{0,-22} {1,-18} M={2,-5} Pts={3}\" -f $r['nm'],$r['Club'],$r['MarketValue'],$r['TotalPoints'] }\n$c.Close()",
+                       "description":  "Verify squad sizes and price application"
+                   },
+    "tool_use_id":  "toolu_01QDViLW4TkdnKBDnMefZ6vi"
+}
+
+{
+    "session_id":  "eea1d6a7-2fea-4c71-a29a-802f1240fda1",
+    "transcript_path":  "C:\\Users\\marijan.varivoda\\.claude\\projects\\c--Users-marijan-varivoda-source-FantasyFootball\\eea1d6a7-2fea-4c71-a29a-802f1240fda1.jsonl",
+    "cwd":  "C:\\Users\\marijan.varivoda\\source\\FantasyFootball",
+    "permission_mode":  "default",
+    "effort":  {
+                   "level":  "high"
+               },
+    "hook_event_name":  "PreToolUse",
+    "tool_name":  "PowerShell",
+    "tool_input":  {
+                       "command":  "Get-Process -Name FantasyFootball,dotnet -ErrorAction SilentlyContinue | Where-Object { $_.Id -eq 9452 -or $_.ProcessName -eq 'FantasyFootball' } | Stop-Process -Force\nStart-Sleep -Seconds 1\n\"running FF procs: \" + ((Get-Process -Name FantasyFootball -ErrorAction SilentlyContinue | Measure-Object).Count)",
+                       "description":  "Stop the app started for seeding"
+                   },
+    "tool_use_id":  "toolu_01UjCV35ba4woJYkWxpmxv2y"
+}
+
