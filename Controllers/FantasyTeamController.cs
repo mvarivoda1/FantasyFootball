@@ -324,6 +324,10 @@ namespace FantasyFootball.Controllers
             var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user?.FantasyTeamId != team.Id) return Forbid();
 
+            // Obriši povijest transfera tima (FK_Transfers_FantasyTeams_TeamId je Restrict)
+            var transfers = await _ctx.Transfers.Where(tr => tr.TeamId == team.Id).ToListAsync();
+            _ctx.Transfers.RemoveRange(transfers);
+
             team.Players.Clear();
             user.FantasyTeamId = null;
             user.Budget = InitialBudget;
