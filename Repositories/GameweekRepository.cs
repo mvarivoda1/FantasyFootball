@@ -24,6 +24,7 @@ namespace FantasyFootball.Repositories
             _ctx.Gameweeks
                 .Include(g => g.Performances)
                     .ThenInclude(p => p.Player)
+                .Include(g => g.Fixtures)
                 .AsNoTracking()
                 .FirstOrDefault(g => g.Id == id);
 

@@ -24,9 +24,13 @@ namespace FantasyFootball.Models
 
         public virtual ICollection<MatchPerformance> Performances { get; set; }
 
+        // Odigrane utakmice kola (10 po kolu). Kolo je "odigrano" ako ima fixture-a.
+        public virtual ICollection<Fixture> Fixtures { get; set; }
+
         public Gameweek()
         {
             Performances = new List<MatchPerformance>();
+            Fixtures = new List<Fixture>();
         }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

@@ -2,6 +2,7 @@ using FantasyFootball.DAL;
 using FantasyFootball.Models;
 using FantasyFootball.Models.ViewModels;
 using FantasyFootball.Repositories;
+using FantasyFootball.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +13,16 @@ namespace FantasyFootball.Controllers
     {
         private readonly GameweekRepository _gameweekRepo;
         private readonly FantasyFootballDbContext _ctx;
+        private readonly GameweekSimulationService _sim;
 
-        public GameweekController(GameweekRepository gameweekRepo, FantasyFootballDbContext ctx)
+        public GameweekController(
+            GameweekRepository gameweekRepo,
+            FantasyFootballDbContext ctx,
+            GameweekSimulationService sim)
         {
             _gameweekRepo = gameweekRepo;
             _ctx = ctx;
+            _sim = sim;
         }
 
         [Route("kola", Name = "GameweekIndex")]
@@ -31,7 +37,62 @@ namespace FantasyFootball.Controllers
         {
             var gameweek = _gameweekRepo.GetById(id);
             if (gameweek == null) return NotFound();
-            return View(gameweek);
+
+            var vm = new GameweekDetailsViewModel
+            {
+                Gameweek = gameweek,
+                Fixtures = gameweek.Fixtures
+                    .OrderBy(f => f.HomeClub)
+                    .ToList(),
+                CanSimulate = User.IsInRole(DbSeeder.AdminRole) && gameweek.Fixtures.Count == 0
+            };
+            return View(vm);
+        }
+
+        // ===== Simulacija rezultata kola (admin) =====
+
+        // Generira nasumične rezultate i prikazuje ih za pregled — ništa se ne sprema.
+        [HttpPost]
+        [Authorize(Roles = DbSeeder.AdminRole)]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Simulate(int id)
+        {
+            var gw = await _ctx.Gameweeks.Include(g => g.Fixtures)
+                .FirstOrDefaultAsync(g => g.Id == id);
+            if (gw == null) return NotFound();
+
+            if (gw.Fixtures.Any())
+            {
+                TempData["GameweekError"] = $"Kolo {gw.WeekNumber} je već odigrano.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            int seed = Random.Shared.Next(1, int.MaxValue);
+            var draft = await _sim.PreviewAsync(id, seed);
+
+            var vm = new SimulatePreviewViewModel
+            {
+                GameweekId = id,
+                WeekNumber = gw.WeekNumber,
+                Seed = seed,
+                Draft = draft
+            };
+            return View("SimulatePreview", vm);
+        }
+
+        // Potvrđuje pregledani rezultat (po seedu) — sprema učinke i bodove.
+        [HttpPost]
+        [Authorize(Roles = DbSeeder.AdminRole)]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Confirm(int id, int seed)
+        {
+            var gw = await _ctx.Gameweeks.AsNoTracking().FirstOrDefaultAsync(g => g.Id == id);
+            if (gw == null) return NotFound();
+
+            await _sim.ConfirmAsync(id, seed);
+
+            TempData["GameweekInfo"] = $"Kolo {gw.WeekNumber} je simulirano i potvrđeno.";
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         [HttpGet]
@@ -140,21 +201,14 @@ namespace FantasyFootball.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var gw = await _ctx.Gameweeks
-                .Include(g => g.Performances)
+            var gw = await _ctx.Gameweeks.AsNoTracking()
                 .FirstOrDefaultAsync(g => g.Id == id);
             if (gw == null) return NotFound();
 
-            if (gw.Performances.Any())
-            {
-                TempData["GameweekError"] = $"Nije moguće obrisati kolo {gw.WeekNumber} — postoje povezane utakmice.";
-                return RedirectToAction(nameof(Delete), new { id });
-            }
+            // Brisanje poništava sve bodove kola (igrači + timovi).
+            await _sim.DeleteWithReversalAsync(id);
 
-            _ctx.Gameweeks.Remove(gw);
-            await _ctx.SaveChangesAsync();
-
-            TempData["GameweekInfo"] = $"Kolo {gw.WeekNumber} je obrisano.";
+            TempData["GameweekInfo"] = $"Kolo {gw.WeekNumber} je obrisano i bodovi su poništeni.";
             return RedirectToRoute("GameweekIndex");
         }
 

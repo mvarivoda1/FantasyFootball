@@ -19,6 +19,8 @@ namespace FantasyFootball.DAL
         public DbSet<Transfer> Transfers { get; set; }
         public DbSet<Gameweek> Gameweeks { get; set; }
         public DbSet<MatchPerformance> MatchPerformances { get; set; }
+        public DbSet<Fixture> Fixtures { get; set; }
+        public DbSet<GameweekTeamScore> GameweekTeamScores { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -69,6 +71,28 @@ namespace FantasyFootball.DAL
                 .HasOne(mp => mp.Player)
                 .WithMany()
                 .HasForeignKey(mp => mp.PlayerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 1-N: Gameweek -> Fixture (brisanjem kola brišu se i utakmice)
+            modelBuilder.Entity<Fixture>()
+                .HasOne(f => f.Gameweek)
+                .WithMany(g => g.Fixtures)
+                .HasForeignKey(f => f.GameweekId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 1-N: Gameweek -> GameweekTeamScore (Cascade — kao MatchPerformance)
+            modelBuilder.Entity<GameweekTeamScore>()
+                .HasOne(s => s.Gameweek)
+                .WithMany()
+                .HasForeignKey(s => s.GameweekId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 1-N: FantasyTeam -> GameweekTeamScore (Restrict — izbjegava multiple
+            // cascade paths; tim se prije brisanja mora ručno očistiti od rezultata)
+            modelBuilder.Entity<GameweekTeamScore>()
+                .HasOne(s => s.FantasyTeam)
+                .WithMany()
+                .HasForeignKey(s => s.FantasyTeamId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // 1-1: AppUser <-> FantasyTeam (AppUser drži FK)

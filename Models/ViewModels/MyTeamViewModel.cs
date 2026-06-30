@@ -29,5 +29,39 @@ namespace FantasyFootball.Models.ViewModels
 
         public string FormationLabel =>
             $"{StarterDefenders.Count}-{StarterMidfielders.Count}-{StarterForwards.Count}";
+
+        // ===== Gameweek slider =====
+
+        // Sva odigrana kola (za navigaciju strelicama). Prazno = još nema simulacija.
+        public List<GameweekOption> Gameweeks { get; set; } = new();
+
+        // Odabrano kolo (WeekNumber). null = prikaz ukupne sezone.
+        public int? SelectedGameweek { get; set; }
+
+        // Bodovi tima u odabranom kolu (snapshot iz GameweekTeamScore).
+        public int? GameweekTeamPoints { get; set; }
+
+        // Ukupni bodovi tima u sezoni (zbroj svih kola).
+        public int SeasonTotalPoints { get; set; }
+
+        // PlayerId -> bodovi u odabranom kolu (0 ako igrač nije nastupio).
+        public Dictionary<int, int> PlayerGameweekPoints { get; set; } = new();
+
+        public bool ShowingGameweek => SelectedGameweek.HasValue;
+
+        public GameweekOption? PrevGameweek => Gameweeks
+            .Where(g => g.Number < (SelectedGameweek ?? int.MaxValue))
+            .OrderByDescending(g => g.Number).FirstOrDefault();
+
+        public GameweekOption? NextGameweek => SelectedGameweek.HasValue
+            ? Gameweeks.Where(g => g.Number > SelectedGameweek.Value)
+                .OrderBy(g => g.Number).FirstOrDefault()
+            : null;
+    }
+
+    public class GameweekOption
+    {
+        public int Id { get; set; }
+        public int Number { get; set; }
     }
 }

@@ -82,6 +82,7 @@ builder.Services.AddScoped<FantasyTeamRepository>();
 builder.Services.AddScoped<TransferRepository>();
 builder.Services.AddScoped<LeagueRepository>();
 builder.Services.AddScoped<GameweekRepository>();
+builder.Services.AddScoped<GameweekSimulationService>();
 
 // AI integracija — parser igrača (Claude / Anthropic)
 builder.Services.AddScoped<AiPlayerParser>();

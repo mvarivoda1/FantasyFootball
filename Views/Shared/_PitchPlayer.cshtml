@@ -11,27 +11,36 @@
     var posCode = shirtVariant.ToUpperInvariant();
     var isStarter = ViewData["IsStarter"] as bool? ?? true;
     var showValue = ViewData["ShowValue"] as bool? ?? false;
+
+    // Per-gameweek points context (set by My Team when a played gameweek is selected).
+    // Absent elsewhere (e.g. Build) => defaults keep the season TotalPoints behaviour.
+    var showGw = ViewData["ShowGwPoints"] as bool? ?? false;
+    var gwPoints = ViewData["GwPoints"] as Dictionary<int, int>;
+    var displayPoints = showGw
+        ? (gwPoints != null && gwPoints.TryGetValue(Model.Id, out var p) ? p : 0)
+        : Model.TotalPoints;
+
     var clubShort = string.IsNullOrEmpty(Model.Club)
         ? string.Empty
         : new string(Model.Club.Where(char.IsLetterOrDigit).Take(3).ToArray()).ToUpperInvariant();
 }
 
 <button type="button"
-        class="ff-pitch-player ff-totw-player ff-pitch-player--@(isStarter ? "starter" : "bench")"
+        class="ff-pitch-player ff-totw-player ff-pitch-player--@(isStarter ? "starter" : "bench")@(showGw ? " ff-totw-player--gw" : "")"
         data-player-id="@Model.Id"
         data-position="@posCode"
         data-starter="@(isStarter ? "true" : "false")"
         data-name="@Model.LastName"
         data-full-name="@Model.FullName"
         data-club="@clubShort"
-        data-points="@Model.TotalPoints"
+        data-points="@displayPoints"
         data-goals="@Model.Goals"
         data-assists="@Model.Assists"
         aria-pressed="false"
-        title="@Model.FullName — @Model.TotalPoints pts">
+        title="@Model.FullName — @displayPoints pts">
     <span class="ff-pitch-player__pos-tag ff-pitch-player__pos-tag--@shirtVariant" aria-hidden="true">@posCode</span>
     <div class="ff-totw-player__shirt ff-totw-player__shirt--@shirtVariant">
-        <span class="ff-totw-player__points">@Model.TotalPoints</span>
+        <span class="ff-totw-player__points">@displayPoints</span>
     </div>
     <div class="ff-totw-player__name">@Model.LastName</div>
     @if (showValue)

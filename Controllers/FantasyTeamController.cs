@@ -148,7 +148,7 @@ namespace FantasyFootball.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> MyTeam()
+        public async Task<IActionResult> MyTeam(int? gw = null)
         {
             var userId = GetCurrentUserId();
             if (userId == null) return RedirectToAction("Login", "Account");
@@ -178,6 +178,32 @@ namespace FantasyFootball.Controllers
             }
 
             var vm = BuildMyTeamViewModel(team, starters, bench);
+
+            // ===== Gameweek slider =====
+            vm.SeasonTotalPoints = team.TotalPoints;
+            vm.Gameweeks = await _ctx.Gameweeks
+                .Where(g => g.Fixtures.Any())
+                .OrderBy(g => g.WeekNumber)
+                .Select(g => new GameweekOption { Id = g.Id, Number = g.WeekNumber })
+                .ToListAsync();
+
+            var selected = gw.HasValue ? vm.Gameweeks.FirstOrDefault(g => g.Number == gw.Value) : null;
+            if (selected != null)
+            {
+                vm.SelectedGameweek = selected.Number;
+                var squadIds = allPlayers.Select(p => p.Id).ToList();
+
+                vm.PlayerGameweekPoints = await _ctx.MatchPerformances
+                    .Where(mp => mp.GameweekId == selected.Id && squadIds.Contains(mp.PlayerId))
+                    .GroupBy(mp => mp.PlayerId)
+                    .Select(g => new { g.Key, Pts = g.Sum(x => x.PointsEarned) })
+                    .ToDictionaryAsync(x => x.Key, x => x.Pts);
+
+                var score = await _ctx.GameweekTeamScores
+                    .FirstOrDefaultAsync(s => s.GameweekId == selected.Id && s.FantasyTeamId == team.Id);
+                vm.GameweekTeamPoints = score?.Points ?? 0;
+            }
+
             return View(vm);
         }
 
@@ -327,6 +353,10 @@ namespace FantasyFootball.Controllers
             // Obriši povijest transfera tima (FK_Transfers_FantasyTeams_TeamId je Restrict)
             var transfers = await _ctx.Transfers.Where(tr => tr.TeamId == team.Id).ToListAsync();
             _ctx.Transfers.RemoveRange(transfers);
+
+            // Obriši rezultate kola tima (FK_GameweekTeamScores_FantasyTeams je Restrict)
+            var teamScores = await _ctx.GameweekTeamScores.Where(s => s.FantasyTeamId == team.Id).ToListAsync();
+            _ctx.GameweekTeamScores.RemoveRange(teamScores);
 
             team.Players.Clear();
             user.FantasyTeamId = null;

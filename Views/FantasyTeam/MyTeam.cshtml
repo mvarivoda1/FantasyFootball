@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "My Team";
     var savedMsg = TempData["LineupSaved"] as string;
+    var firstGw = Model.Gameweeks.OrderBy(g => g.Number).FirstOrDefault();
 }
 
 <section class="ff-myteam"
@@ -83,6 +84,96 @@
     }
 
     <div class="ff-myteam-feedback" data-role="swap-feedback" aria-live="polite"></div>
+
+    @if (Model.Gameweeks.Any())
+    {
+        <nav class="ff-gw-slider" aria-label="Navigacija po kolima">
+            <div class="ff-gw-slider__nav">
+                @if (Model.ShowingGameweek)
+                {
+                    @if (Model.PrevGameweek != null)
+                    {
+                        <a class="ff-gw-slider__arrow"
+                           asp-controller="FantasyTeam" asp-action="MyTeam" asp-route-gw="@Model.PrevGameweek.Number"
+                           aria-label="Prethodno kolo (Kolo @Model.PrevGameweek.Number)" rel="prev">
+                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="ff-gw-slider__arrow"
+                           asp-controller="FantasyTeam" asp-action="MyTeam"
+                           aria-label="Natrag na sezonu" rel="prev">
+                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                        </a>
+                    }
+
+                    <span class="ff-gw-slider__current" aria-current="true">Kolo @Model.SelectedGameweek</span>
+
+                    @if (Model.NextGameweek != null)
+                    {
+                        <a class="ff-gw-slider__arrow"
+                           asp-controller="FantasyTeam" asp-action="MyTeam" asp-route-gw="@Model.NextGameweek.Number"
+                           aria-label="Sljedeće kolo (Kolo @Model.NextGameweek.Number)" rel="next">
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="ff-gw-slider__arrow ff-gw-slider__arrow--disabled" aria-disabled="true">
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </span>
+                    }
+                }
+                else
+                {
+                    <span class="ff-gw-slider__arrow ff-gw-slider__arrow--disabled" aria-disabled="true">
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    </span>
+
+                    <span class="ff-gw-slider__current ff-gw-slider__current--season" aria-current="true">Sezona</span>
+
+                    @if (firstGw != null)
+                    {
+                        <a class="ff-gw-slider__arrow"
+                           asp-controller="FantasyTeam" asp-action="MyTeam" asp-route-gw="@firstGw.Number"
+                           aria-label="Prvo kolo (Kolo @firstGw.Number)" rel="next">
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    }
+                }
+            </div>
+
+            <div class="ff-gw-slider__readout" aria-live="polite">
+                @if (Model.ShowingGameweek)
+                {
+                    <span>Kolo @Model.SelectedGameweek:</span>
+                    <span class="ff-gw-slider__readout-value">@(Model.GameweekTeamPoints ?? 0)</span>
+                    <span>bodova</span>
+                }
+                else
+                {
+                    <span>Ukupno:</span>
+                    <span class="ff-gw-slider__readout-value">@Model.SeasonTotalPoints</span>
+                    <span>bodova</span>
+                }
+            </div>
+
+            @if (Model.ShowingGameweek)
+            {
+                <a class="ff-gw-slider__reset" asp-controller="FantasyTeam" asp-action="MyTeam">
+                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                    <span>Sezona</span>
+                </a>
+            }
+        </nav>
+    }
+
+    @{
+        // Per-gameweek points context for the pitch shirts (consumed by _PitchPlayer).
+        ViewData["ShowGwPoints"] = Model.ShowingGameweek;
+        ViewData["GwPoints"] = Model.PlayerGameweekPoints;
+    }
 
     <form asp-controller="FantasyTeam" asp-action="SaveLineup" method="post"
           class="ff-myteam__form" id="ffMyTeamForm">

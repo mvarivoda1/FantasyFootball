@@ -1,0 +1,190 @@
+@model FantasyFootball.Models.ViewModels.SimulatePreviewViewModel
+@{
+    ViewData["Title"] = $"Pregled simulacije — Kolo {Model.WeekNumber}";
+
+    // Poredaj učinke po grupi pozicije, pa po bodovima (silazno) za čitljivost.
+    var grouped = Model.Draft.Performances
+        .GroupBy(p => p.Position)
+        .OrderBy(g => (int)g.Key)
+        .ToList();
+
+    string PosLabel(Position pos) => pos switch
+    {
+        Position.Goalkeeper => "Vratari",
+        Position.Defender => "Obrana",
+        Position.Midfielder => "Vezni red",
+        Position.Forward => "Napad",
+        _ => "Ostali"
+    };
+
+    string PosAbbr(Position pos) => pos switch
+    {
+        Position.Goalkeeper => "GK",
+        Position.Defender => "DEF",
+        Position.Midfielder => "MID",
+        Position.Forward => "FWD",
+        _ => "MID"
+    };
+
+    string PosBadge(Position pos) => pos switch
+    {
+        Position.Goalkeeper => "ff-badge--gk",
+        Position.Defender => "ff-badge--def",
+        Position.Midfielder => "ff-badge--mid",
+        Position.Forward => "ff-badge--fwd",
+        _ => "ff-badge--mid"
+    };
+}
+
+<!-- Breadcrumb -->
+<ul class="ff-breadcrumb">
+    <li class="ff-breadcrumb__item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="Gameweek" asp-action="Index">Gameweeks</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item"><a asp-controller="Gameweek" asp-action="Details" asp-route-id="@Model.GameweekId">Kolo @Model.WeekNumber</a></li>
+    <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Pregled simulacije</li>
+</ul>
+
+<h1 class="ff-page-title"><i class="bi bi-dice-5-fill"></i> Pregled simulacije &mdash; Kolo @Model.WeekNumber</h1>
+
+<!-- Note: nothing saved yet -->
+<div class="ff-sim-note" role="status">
+    <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+    <span>
+        Ovo je samo pregled &mdash; <strong>ništa nije spremljeno</strong>.
+        Klikni <strong>Potvrdi</strong> da spremiš rezultate i bodove, ili
+        <strong>Ponovno simuliraj</strong> za novi nasumični ishod.
+    </span>
+</div>
+
+<!-- Fixtures -->
+<section class="ff-fixtures" aria-label="Rezultati utakmica (pregled)">
+    <h2 class="ff-section-title"><i class="bi bi-list-ol"></i> Rezultati utakmica</h2>
+    <div class="ff-fixtures__grid">
+        @foreach (var fx in Model.Draft.Fixtures)
+        {
+            var homeWin = fx.HomeGoals > fx.AwayGoals;
+            var awayWin = fx.AwayGoals > fx.HomeGoals;
+            <article class="ff-scoreline">
+                <span class="ff-scoreline__club ff-scoreline__club--home @(homeWin ? "ff-scoreline__club--win" : "")">
+                    <span class="ff-scoreline__club-name">@fx.HomeClub</span>
+                    <span class="ff-scoreline__dot" aria-hidden="true"></span>
+                </span>
+                <span class="ff-scoreline__score" aria-label="@fx.HomeGoals naprema @fx.AwayGoals">
+                    <span>@fx.HomeGoals</span>
+                    <span class="ff-scoreline__sep" aria-hidden="true">&ndash;</span>
+                    <span>@fx.AwayGoals</span>
+                </span>
+                <span class="ff-scoreline__club ff-scoreline__club--away @(awayWin ? "ff-scoreline__club--win" : "")">
+                    <span class="ff-scoreline__dot" aria-hidden="true"></span>
+                    <span class="ff-scoreline__club-name">@fx.AwayClub</span>
+                </span>
+            </article>
+        }
+    </div>
+</section>
+
+<!-- Performances summary (grouped by position, scrollable) -->
+<section aria-label="Učinci igrača (pregled)">
+    <h2 class="ff-section-title"><i class="bi bi-people-fill"></i> Učinci igrača (@Model.Draft.Performances.Count)</h2>
+
+    @if (Model.Draft.Performances.Any())
+    {
+        <div class="ff-table-scroll">
+            <div class="ff-table-responsive">
+                <table class="ff-table" aria-label="Pregled učinaka igrača">
+                    <thead>
+                        <tr>
+                            <th scope="col">Igrač</th>
+                            <th scope="col">Klub</th>
+                            <th scope="col">Poz</th>
+                            <th scope="col">Protivnik</th>
+                            <th scope="col">G</th>
+                            <th scope="col">A</th>
+                            <th scope="col">CS</th>
+                            <th scope="col">Min</th>
+                            <th scope="col">Obrane</th>
+                            <th scope="col">Primljeni</th>
+                            <th scope="col">Bonus</th>
+                            <th scope="col">Bodovi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var group in grouped)
+                        {
+                            <tr class="ff-table__group-head">
+                                <td colspan="12">@PosLabel(group.Key)</td>
+                            </tr>
+                            @foreach (var perf in group.OrderByDescending(p => p.PointsEarned))
+                            {
+                                <tr>
+                                    <td>@perf.PlayerName</td>
+                                    <td>@perf.Club</td>
+                                    <td><span class="ff-badge @PosBadge(perf.Position)">@PosAbbr(perf.Position)</span></td>
+                                    <td>@perf.Opponent</td>
+                                    <td class="ff-num">@perf.Goals</td>
+                                    <td class="ff-num">@perf.Assists</td>
+                                    <td>
+                                        @if (perf.CleanSheet)
+                                        {
+                                            <i class="bi bi-check-circle-fill ff-bool--true" aria-label="Da"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-x-circle-fill ff-bool--false" aria-label="Ne"></i>
+                                        }
+                                    </td>
+                                    <td class="ff-num">@perf.MinutesPlayed'</td>
+                                    <td class="ff-num">@perf.Saves</td>
+                                    <td class="ff-num">@perf.GoalsConceded</td>
+                                    <td class="ff-num">
+                                        @if (perf.Bonus > 0)
+                                        {
+                                            <span class="ff-text-accent"><strong>+@perf.Bonus</strong></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="ff-text-muted">0</span>
+                                        }
+                                    </td>
+                                    <td class="ff-num ff-num--accent"><strong>@perf.PointsEarned</strong></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="ff-empty">
+            <div class="ff-empty__icon"><i class="bi bi-list-stars"></i></div>
+            <div class="ff-empty__text">Simulacija nije proizvela nijedan nastup.</div>
+        </div>
+    }
+</section>
+
+<!-- Actions: Potvrdi / Ponovno simuliraj / Odustani -->
+<div class="ff-sim-actions" role="group" aria-label="Akcije pregleda simulacije">
+    <form asp-controller="Gameweek" asp-action="Confirm" asp-route-id="@Model.GameweekId" method="post" class="ff-sim-actions__form">
+        <input type="hidden" name="seed" value="@Model.Seed" />
+        <button type="submit" class="ff-sim-confirm-btn">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Potvrdi</span>
+        </button>
+    </form>
+
+    <form asp-controller="Gameweek" asp-action="Simulate" asp-route-id="@Model.GameweekId" method="post" class="ff-sim-actions__form">
+        <button type="submit" class="ff-sim-reroll-btn">
+            <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+            <span>Ponovno simuliraj</span>
+        </button>
+    </form>
+
+    <span class="ff-sim-actions__spacer" aria-hidden="true"></span>
+
+    <a asp-controller="Gameweek" asp-action="Details" asp-route-id="@Model.GameweekId" class="ff-form-cancel">Odustani</a>
+</div>

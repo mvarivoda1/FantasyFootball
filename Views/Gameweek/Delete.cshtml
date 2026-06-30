@@ -21,7 +21,14 @@
                 <span>Brisanje kola @Model.WeekNumber</span>
             </h1>
             <p class="ff-form-card__subtitle">
-                Jesi li siguran/sigurna da želiš obrisati ovo kolo? Akciju nije moguće poništiti.
+                @if (hasPerformances)
+                {
+                    <text>Brisanjem ovog odigranog kola <strong>poništavaju se svi njegovi bodovi</strong> (igračima i timovima). Akciju nije moguće poništiti.</text>
+                }
+                else
+                {
+                    <text>Jesi li siguran/sigurna da želiš obrisati ovo kolo? Akciju nije moguće poništiti.</text>
+                }
             </p>
         </header>
 
@@ -56,7 +63,7 @@
         {
             <div class="ff-form-alert" role="alert" style="margin-top: 1rem;">
                 <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-                <span>Ovo kolo ima @perfCount povezanih performansi i ne može se obrisati.</span>
+                <span>Ovo kolo je odigrano i sadrži @perfCount nastupa. Brisanjem se svi pripadni bodovi poništavaju igračima i timovima.</span>
             </div>
         }
 
@@ -64,7 +71,7 @@
             @Html.AntiForgeryToken()
 
             <div class="ff-form-actions">
-                <button type="submit" class="ff-form-submit ff-form-submit--danger" @(hasPerformances ? "disabled" : "")>
+                <button type="submit" class="ff-form-submit ff-form-submit--danger">
                     <i class="bi bi-trash-fill" aria-hidden="true"></i>
                     <span>Obriši kolo</span>
                 </button>

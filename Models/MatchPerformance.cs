@@ -24,6 +24,14 @@ namespace FantasyFootball.Models
         public int YellowCards { get; set; }
         public int RedCards { get; set; }
         public int MinutesPlayed { get; set; }
+
+        // Golman: obrane (1 bod na svake 3). GK/DEF: primljeni golovi (-1 na svaka 2).
+        public int Saves { get; set; }
+        public int GoalsConceded { get; set; }
+
+        // Bonus bodovi (1–3) za najbolje igrače utakmice.
+        public int Bonus { get; set; }
+
         public int PointsEarned { get; set; }
     }
 }

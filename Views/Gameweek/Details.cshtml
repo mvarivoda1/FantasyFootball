@@ -1,7 +1,8 @@
-@model Gameweek
+@model FantasyFootball.Models.ViewModels.GameweekDetailsViewModel
 @{
-    ViewData["Title"] = $"Gameweek {Model.WeekNumber}";
-    var totalPerformances = Model.Performances?.Count ?? 0;
+    var gw = Model.Gameweek;
+    ViewData["Title"] = $"Gameweek {gw.WeekNumber}";
+    var totalPerformances = gw.Performances?.Count ?? 0;
 }
 
 <!-- Breadcrumb -->
@@ -10,170 +11,278 @@
     <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
     <li class="ff-breadcrumb__item"><a asp-controller="Gameweek" asp-action="Index">Gameweeks</a></li>
     <li class="ff-breadcrumb__separator"><i class="bi bi-chevron-right"></i></li>
-    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Gameweek @Model.WeekNumber</li>
+    <li class="ff-breadcrumb__item ff-breadcrumb__item--active">Gameweek @gw.WeekNumber</li>
 </ul>
 
 <!-- Compact Title -->
-<h1 class="ff-page-title"><i class="bi bi-calendar-event-fill"></i> Gameweek @Model.WeekNumber</h1>
+<h1 class="ff-page-title"><i class="bi bi-calendar-event-fill"></i> Gameweek @gw.WeekNumber</h1>
 <div class="ff-page-title__meta">
-    <span><i class="bi bi-calendar3"></i>@Model.StartDate.ToString("dd MMM yyyy") &ndash; @Model.EndDate.ToString("dd MMM yyyy")</span>
+    <span><i class="bi bi-calendar3"></i>@gw.StartDate.ToString("dd MMM yyyy") &ndash; @gw.EndDate.ToString("dd MMM yyyy")</span>
     <span class="ff-page-title__meta-sep">|</span>
-    <span><i class="bi bi-people-fill"></i>@totalPerformances performances</span>
+    @if (Model.IsSimulated)
+    {
+        <span><i class="bi bi-trophy-fill"></i>@Model.Fixtures.Count utakmica</span>
+        <span class="ff-page-title__meta-sep">|</span>
+        <span><i class="bi bi-people-fill"></i>@totalPerformances nastupa</span>
+    }
+    else
+    {
+        <span><i class="bi bi-hourglass-split"></i>Još nije odigrano</span>
+    }
 </div>
 
-@if (Model.Performances != null && Model.Performances.Any())
+@if (TempData["GameweekError"] != null)
 {
-    <!-- Filter Bar -->
-    <div class="ff-locker-filter ff-animate-in" role="search" aria-label="Filter performances">
-        <div class="ff-locker-filter__controls">
-            <div class="ff-locker-filter__group">
-                <label for="filterPosition" class="ff-locker-filter__label">
-                    <i class="bi bi-person-badge-fill" aria-hidden="true"></i>
-                    <span class="ff-locker-filter__label-text">Position</span>
-                </label>
-                <select id="filterPosition" class="ff-locker-filter__select" aria-label="Filter performances by position">
-                    <option value="">All Positions</option>
-                    <option value="Goalkeeper">Goalkeeper</option>
-                    <option value="Defender">Defender</option>
-                    <option value="Midfielder">Midfielder</option>
-                    <option value="Forward">Forward</option>
-                </select>
+    <div class="ff-alert ff-alert--danger" role="alert">
+        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+        <span>@TempData["GameweekError"]</span>
+    </div>
+}
+
+@if (!Model.IsSimulated)
+{
+    @if (Model.CanSimulate)
+    {
+        <!-- Admin CTA: simuliraj rezultate kola -->
+        <section class="ff-sim-cta ff-animate-in" aria-label="Simulacija rezultata kola">
+            <div class="ff-sim-cta__icon" aria-hidden="true"><i class="bi bi-dice-5-fill"></i></div>
+            <div class="ff-sim-cta__text">
+                <h2 class="ff-sim-cta__title">Simuliraj rezultate</h2>
+                <p class="ff-sim-cta__subtitle">
+                    Generiraj nasumične ishode utakmica i učinke igrača za ovo kolo.
+                    Prvo ćeš vidjeti pregled &mdash; ništa se ne sprema dok ne potvrdiš.
+                </p>
             </div>
+            <form asp-controller="Gameweek" asp-action="Simulate" asp-route-id="@gw.Id" method="post" class="ff-sim-cta__form">
+                <button type="submit" class="ff-sim-btn">
+                    <i class="bi bi-play-circle-fill" aria-hidden="true"></i>
+                    <span>Simuliraj rezultate</span>
+                </button>
+            </form>
+        </section>
+    }
+    else
+    {
+        <!-- Themed empty state: kolo nije odigrano -->
+        <div class="ff-empty ff-empty--sim">
+            <div class="ff-empty__icon"><i class="bi bi-calendar2-x"></i></div>
+            <div class="ff-empty__text">Kolo još nije odigrano.</div>
         </div>
-        <div class="ff-locker-filter__status">
-            <span class="ff-locker-filter__count" id="filterCount">
-                Showing <strong>@totalPerformances</strong> of <strong>@totalPerformances</strong> performances
-            </span>
-        </div>
-    </div>
-
-    <!-- Empty Filter State -->
-    <div class="ff-locker-filter-empty" id="filterEmptyState" style="display:none;">
-        <div class="ff-locker-filter-empty__icon"><i class="bi bi-funnel"></i></div>
-        <div class="ff-locker-filter-empty__text">No performances match the selected position</div>
-        <button type="button" class="ff-locker-filter-empty__clear" id="filterClearAll">
-            <i class="bi bi-arrow-counterclockwise"></i> Clear filter
-        </button>
-    </div>
-
-    <!-- Performances Table -->
-    <div class="ff-table-responsive">
-        <table class="ff-table ff-table--sortable" id="ff-performances-table" aria-label="Gameweek performances">
-            <thead>
-                <tr>
-                    <th scope="col">Player</th>
-                    <th scope="col">Pos</th>
-                    <th scope="col">Opponent</th>
-                    <th class="ff-th-sort" data-sort-key="goals" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
-                        <span class="ff-th-sort__inner">
-                            Goals <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
-                        </span>
-                    </th>
-                    <th class="ff-th-sort" data-sort-key="assists" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
-                        <span class="ff-th-sort__inner">
-                            Assists <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
-                        </span>
-                    </th>
-                    <th scope="col">Clean Sheet</th>
-                    <th scope="col">YC</th>
-                    <th scope="col">RC</th>
-                    <th class="ff-th-sort" data-sort-key="minutes" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
-                        <span class="ff-th-sort__inner">
-                            Minutes <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
-                        </span>
-                    </th>
-                    <th class="ff-th-sort" data-sort-key="points" data-sort-type="number" tabindex="0" role="button" aria-sort="descending" scope="col">
-                        <span class="ff-th-sort__inner">
-                            Points <i class="bi bi-arrow-down ff-th-sort__icon" aria-hidden="true"></i>
-                        </span>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    // Default sort: Points desc
-                    var sortedPerformances = Model.Performances
-                        .OrderByDescending(p => p.PointsEarned)
-                        .ToList();
-                }
-                @foreach (var perf in sortedPerformances)
-                {
-                    string badgeClass = perf.Player.Position switch
-                    {
-                        Position.Goalkeeper => "ff-badge--gk",
-                        Position.Defender   => "ff-badge--def",
-                        Position.Midfielder => "ff-badge--mid",
-                        Position.Forward    => "ff-badge--fwd",
-                        _ => "ff-badge--mid"
-                    };
-
-                    string posAbbr = perf.Player.Position switch
-                    {
-                        Position.Goalkeeper => "GK",
-                        Position.Defender   => "DEF",
-                        Position.Midfielder => "MID",
-                        Position.Forward    => "FWD",
-                        _ => "MID"
-                    };
-
-                    <tr data-position="@perf.Player.Position">
-                        <td>
-                            <a asp-controller="Player" asp-action="Details" asp-route-id="@perf.Player.Id">
-                                @perf.Player.FullName
-                            </a>
-                        </td>
-                        <td>
-                            <span class="ff-badge @badgeClass">@posAbbr</span>
-                        </td>
-                        <td>@perf.Opponent</td>
-                        <td class="ff-num" data-sort-value="@perf.Goals">@perf.Goals</td>
-                        <td class="ff-num" data-sort-value="@perf.Assists">@perf.Assists</td>
-                        <td>
-                            @if (perf.CleanSheet)
-                            {
-                                <i class="bi bi-check-circle-fill ff-bool--true"></i>
-                            }
-                            else
-                            {
-                                <i class="bi bi-x-circle-fill ff-bool--false"></i>
-                            }
-                        </td>
-                        <td>
-                            @if (perf.YellowCards > 0)
-                            {
-                                <span style="color: var(--ff-status-pending);">@perf.YellowCards</span>
-                            }
-                            else
-                            {
-                                <span class="ff-text-muted">0</span>
-                            }
-                        </td>
-                        <td>
-                            @if (perf.RedCards > 0)
-                            {
-                                <span style="color: var(--ff-status-rejected);">@perf.RedCards</span>
-                            }
-                            else
-                            {
-                                <span class="ff-text-muted">0</span>
-                            }
-                        </td>
-                        <td class="ff-num" data-sort-value="@perf.MinutesPlayed">@perf.MinutesPlayed'</td>
-                        <td class="ff-num ff-num--accent" data-sort-value="@perf.PointsEarned">
-                            <strong>@perf.PointsEarned</strong>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    }
 }
 else
 {
-    <div class="ff-empty">
-        <div class="ff-empty__icon"><i class="bi bi-list-stars"></i></div>
-        <div class="ff-empty__text">No performances recorded for this gameweek.</div>
-    </div>
+    <!-- (1) Rezultati utakmica -->
+    <section class="ff-fixtures" aria-label="Rezultati utakmica">
+        <h2 class="ff-section-title"><i class="bi bi-list-ol"></i> Rezultati utakmica</h2>
+        <div class="ff-fixtures__grid">
+            @foreach (var fx in Model.Fixtures)
+            {
+                var homeWin = fx.HomeGoals > fx.AwayGoals;
+                var awayWin = fx.AwayGoals > fx.HomeGoals;
+                <article class="ff-scoreline">
+                    <span class="ff-scoreline__club ff-scoreline__club--home @(homeWin ? "ff-scoreline__club--win" : "")">
+                        <span class="ff-scoreline__club-name">@fx.HomeClub</span>
+                        <span class="ff-scoreline__dot" aria-hidden="true"></span>
+                    </span>
+                    <span class="ff-scoreline__score" aria-label="@fx.HomeGoals naprema @fx.AwayGoals">
+                        <span>@fx.HomeGoals</span>
+                        <span class="ff-scoreline__sep" aria-hidden="true">&ndash;</span>
+                        <span>@fx.AwayGoals</span>
+                    </span>
+                    <span class="ff-scoreline__club ff-scoreline__club--away @(awayWin ? "ff-scoreline__club--win" : "")">
+                        <span class="ff-scoreline__dot" aria-hidden="true"></span>
+                        <span class="ff-scoreline__club-name">@fx.AwayClub</span>
+                    </span>
+                </article>
+            }
+        </div>
+    </section>
+
+    <!-- (2) Učinci igrača -->
+    <h2 class="ff-section-title"><i class="bi bi-people-fill"></i> Učinci igrača</h2>
+
+    @if (gw.Performances != null && gw.Performances.Any())
+    {
+        <!-- Filter Bar -->
+        <div class="ff-locker-filter ff-animate-in" role="search" aria-label="Filtriraj učinke">
+            <div class="ff-locker-filter__controls">
+                <div class="ff-locker-filter__group">
+                    <label for="filterPosition" class="ff-locker-filter__label">
+                        <i class="bi bi-person-badge-fill" aria-hidden="true"></i>
+                        <span class="ff-locker-filter__label-text">Pozicija</span>
+                    </label>
+                    <select id="filterPosition" class="ff-locker-filter__select" aria-label="Filtriraj učinke po poziciji">
+                        <option value="">Sve pozicije</option>
+                        <option value="Goalkeeper">Vratar</option>
+                        <option value="Defender">Obrana</option>
+                        <option value="Midfielder">Vezni</option>
+                        <option value="Forward">Napad</option>
+                    </select>
+                </div>
+            </div>
+            <div class="ff-locker-filter__status">
+                <span class="ff-locker-filter__count" id="filterCount">
+                    Prikaz <strong>@totalPerformances</strong> od <strong>@totalPerformances</strong> nastupa
+                </span>
+            </div>
+        </div>
+
+        <!-- Empty Filter State -->
+        <div class="ff-locker-filter-empty" id="filterEmptyState" style="display:none;">
+            <div class="ff-locker-filter-empty__icon"><i class="bi bi-funnel"></i></div>
+            <div class="ff-locker-filter-empty__text">Nijedan nastup ne odgovara odabranoj poziciji</div>
+            <button type="button" class="ff-locker-filter-empty__clear" id="filterClearAll">
+                <i class="bi bi-arrow-counterclockwise"></i> Očisti filter
+            </button>
+        </div>
+
+        <!-- Performances Table -->
+        <div class="ff-table-responsive">
+            <table class="ff-table ff-table--sortable" id="ff-performances-table" aria-label="Učinci igrača u kolu">
+                <thead>
+                    <tr>
+                        <th scope="col">Igrač</th>
+                        <th scope="col">Poz</th>
+                        <th scope="col">Protivnik</th>
+                        <th class="ff-th-sort" data-sort-key="goals" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                            <span class="ff-th-sort__inner">
+                                Golovi <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                            </span>
+                        </th>
+                        <th class="ff-th-sort" data-sort-key="assists" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                            <span class="ff-th-sort__inner">
+                                Asist. <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                            </span>
+                        </th>
+                        <th scope="col">Bez primljenog</th>
+                        <th scope="col">ŽK</th>
+                        <th scope="col">CK</th>
+                        <th class="ff-th-sort" data-sort-key="minutes" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                            <span class="ff-th-sort__inner">
+                                Minute <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                            </span>
+                        </th>
+                        <th class="ff-th-sort" data-sort-key="saves" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                            <span class="ff-th-sort__inner">
+                                Obrane <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                            </span>
+                        </th>
+                        <th class="ff-th-sort" data-sort-key="conceded" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                            <span class="ff-th-sort__inner">
+                                Primljeni <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                            </span>
+                        </th>
+                        <th class="ff-th-sort" data-sort-key="bonus" data-sort-type="number" tabindex="0" role="button" aria-sort="none" scope="col">
+                            <span class="ff-th-sort__inner">
+                                Bonus <i class="bi bi-arrow-down-up ff-th-sort__icon" aria-hidden="true"></i>
+                            </span>
+                        </th>
+                        <th class="ff-th-sort" data-sort-key="points" data-sort-type="number" tabindex="0" role="button" aria-sort="descending" scope="col">
+                            <span class="ff-th-sort__inner">
+                                Bodovi <i class="bi bi-arrow-down ff-th-sort__icon" aria-hidden="true"></i>
+                            </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        // Default sort: Points desc
+                        var sortedPerformances = gw.Performances
+                            .OrderByDescending(p => p.PointsEarned)
+                            .ToList();
+                    }
+                    @foreach (var perf in sortedPerformances)
+                    {
+                        string badgeClass = perf.Player.Position switch
+                        {
+                            Position.Goalkeeper => "ff-badge--gk",
+                            Position.Defender   => "ff-badge--def",
+                            Position.Midfielder => "ff-badge--mid",
+                            Position.Forward    => "ff-badge--fwd",
+                            _ => "ff-badge--mid"
+                        };
+
+                        string posAbbr = perf.Player.Position switch
+                        {
+                            Position.Goalkeeper => "GK",
+                            Position.Defender   => "DEF",
+                            Position.Midfielder => "MID",
+                            Position.Forward    => "FWD",
+                            _ => "MID"
+                        };
+
+                        <tr data-position="@perf.Player.Position">
+                            <td>
+                                <a asp-controller="Player" asp-action="Details" asp-route-id="@perf.Player.Id">
+                                    @perf.Player.FullName
+                                </a>
+                            </td>
+                            <td>
+                                <span class="ff-badge @badgeClass">@posAbbr</span>
+                            </td>
+                            <td>@perf.Opponent</td>
+                            <td class="ff-num" data-sort-value="@perf.Goals">@perf.Goals</td>
+                            <td class="ff-num" data-sort-value="@perf.Assists">@perf.Assists</td>
+                            <td>
+                                @if (perf.CleanSheet)
+                                {
+                                    <i class="bi bi-check-circle-fill ff-bool--true"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle-fill ff-bool--false"></i>
+                                }
+                            </td>
+                            <td>
+                                @if (perf.YellowCards > 0)
+                                {
+                                    <span class="ff-yc">@perf.YellowCards</span>
+                                }
+                                else
+                                {
+                                    <span class="ff-text-muted">0</span>
+                                }
+                            </td>
+                            <td>
+                                @if (perf.RedCards > 0)
+                                {
+                                    <span class="ff-rc">@perf.RedCards</span>
+                                }
+                                else
+                                {
+                                    <span class="ff-text-muted">0</span>
+                                }
+                            </td>
+                            <td class="ff-num" data-sort-value="@perf.MinutesPlayed">@perf.MinutesPlayed'</td>
+                            <td class="ff-num" data-sort-value="@perf.Saves">@perf.Saves</td>
+                            <td class="ff-num" data-sort-value="@perf.GoalsConceded">@perf.GoalsConceded</td>
+                            <td class="ff-num" data-sort-value="@perf.Bonus">
+                                @if (perf.Bonus > 0)
+                                {
+                                    <span class="ff-text-accent"><strong>+@perf.Bonus</strong></span>
+                                }
+                                else
+                                {
+                                    <span class="ff-text-muted">0</span>
+                                }
+                            </td>
+                            <td class="ff-num ff-num--accent" data-sort-value="@perf.PointsEarned">
+                                <strong>@perf.PointsEarned</strong>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="ff-empty">
+            <div class="ff-empty__icon"><i class="bi bi-list-stars"></i></div>
+            <div class="ff-empty__text">Za ovo kolo nema zabilježenih nastupa.</div>
+        </div>
+    }
 }
 
 @section Scripts {
@@ -210,7 +319,7 @@ else
                     }
                 });
 
-                $filterCount.html('Showing <strong>' + visibleCount + '</strong> of <strong>' + totalCount + '</strong> performances');
+                $filterCount.html('Prikaz <strong>' + visibleCount + '</strong> od <strong>' + totalCount + '</strong> nastupa');
 
                 if (visibleCount === 0 && totalCount > 0) {
                     $emptyState.show();

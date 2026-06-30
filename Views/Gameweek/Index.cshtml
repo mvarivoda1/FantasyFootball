@@ -54,9 +54,22 @@ else
         {
             int totalGoals = gw.Performances?.Sum(p => p.Goals) ?? 0;
             int perfCount = gw.Performances?.Count ?? 0;
+            bool isPlayed = gw.Performances != null && gw.Performances.Any();
 
             <div class="col-lg-4 col-md-6 col-12 ff-gw-card-wrap" data-week="@gw.WeekNumber">
                 <div class="ff-card ff-gw-card">
+                    @if (isPlayed)
+                    {
+                        <span class="ff-gw-card__status ff-gw-status ff-gw-status--played">
+                            <i class="bi bi-check-circle-fill" aria-hidden="true"></i> Odigrano
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="ff-gw-card__status ff-gw-status ff-gw-status--pending">
+                            <i class="bi bi-hourglass-split" aria-hidden="true"></i> Čeka simulaciju
+                        </span>
+                    }
                     <a asp-controller="Gameweek" asp-action="Details" asp-route-id="@gw.Id" style="text-decoration:none; color:inherit;">
                         <div class="ff-card__title">
                             <i class="bi bi-calendar-event ff-text-accent"></i> Gameweek @gw.WeekNumber

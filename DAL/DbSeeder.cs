@@ -7,9 +7,8 @@ namespace FantasyFootball.DAL
 {
     public static class DbSeeder
     {
-        // Cjenovni raspon u koji se mapiraju TotalPoints svih igrača (FPL-style).
-        private const double MinPrice = 4.5;
-        private const double MaxPrice = 13.0;
+        // Minimalna cijena igrača (£) — koristi se u logici slaganja sastava.
+        private const double MinPrice = 4.0;
 
         public const string AdminRole = "Admin";
         public const string UserRole = "User";
@@ -38,13 +37,11 @@ namespace FantasyFootball.DAL
             var teamRepo = new FantasyTeamMockRepository(playerRepo);
             var transferRepo = new TransferMockRepository(playerRepo, teamRepo);
             var leagueRepo = new LeagueMockRepository(teamRepo, transferRepo);
-            var gameweekRepo = new GameweekMockRepository(playerRepo);
 
             var players = playerRepo.GetAll();
             var teams = teamRepo.GetAll();
             var leagues = leagueRepo.GetAll();
             var transfers = transferRepo.GetAll();
-            var gameweeks = gameweekRepo.GetAll();
 
             // Resetiraj ID-eve na 0 — neka EF/SQL dodijeli nove IDENTITY vrijednosti.
             // Navigacijska svojstva zadržavaju reference na iste objekte pa će EF
@@ -53,17 +50,22 @@ namespace FantasyFootball.DAL
             foreach (var t in teams) t.Id = 0;
             foreach (var l in leagues) l.Id = 0;
             foreach (var tr in transfers) tr.Id = 0;
-            foreach (var g in gameweeks) g.Id = 0;
-            foreach (var mp in gameweeks.SelectMany(g => g.Performances)) mp.Id = 0;
 
             // Poveži transfere s ligama (1-N) kako bi League.Transfers bio ispunjen u DB.
             foreach (var league in leagues)
                 foreach (var tr in league.Transfers)
                     tr.League = league;
 
-            // Mapiraj MarketValue u raspon [MinPrice, MaxPrice] na temelju TotalPoints
-            // prije nego objekti odu u bazu.
-            ApplyPointBasedPrices(players);
+            // Cijene (MarketValue) dolaze iz PlayerMockRepository (stvarne FPL cijene).
+            // Sezona kreće od nule: resetiraj sve akumulirane statistike igrača —
+            // bodovi/golovi/asistencije/clean-sheetovi rastu tek iz odigranih kola.
+            foreach (var p in players)
+            {
+                p.TotalPoints = 0;
+                p.Goals = 0;
+                p.Assists = 0;
+                p.CleanSheets = 0;
+            }
 
             // Svaki tim mora imati točno 15 igrača (2 GK / 5 DEF / 5 MID / 3 FWD),
             // unutar budžeta i max 3 po klubu. Mock timovi imaju 11 — dopunjavamo.
@@ -74,13 +76,16 @@ namespace FantasyFootball.DAL
             ResyncTeamPlayerBackrefs(teams, players);
 
             foreach (var t in teams)
+            {
                 t.SquadValue = Math.Round(t.Players.Sum(p => p.MarketValue), 1);
+                t.TotalPoints = 0; // sezona kreće od nule
+            }
 
             // Dovoljno je dodati "root" entitete — EF prati graf preko navigacijskih
-            // svojstava i automatski dodaje sve povezane entitete.
+            // svojstava i automatski dodaje sve povezane entitete. Kola se NE seedaju —
+            // admin ih kreira i simulira kroz UI.
             context.Players.AddRange(players);
             context.Leagues.AddRange(leagues);
-            context.Gameweeks.AddRange(gameweeks);
 
             context.SaveChanges();
 
@@ -99,20 +104,18 @@ namespace FantasyFootball.DAL
             }
         }
 
-        private static void ApplyPointBasedPrices(IEnumerable<Player> players)
+        // Osvježi MarketValue postojećih igrača iz mock repozitorija (stvarne FPL
+        // cijene iz player-prices.md). DB je seedan iz mocka pa je ključ
+        // (FirstName|LastName|Club) egzaktan i pouzdan.
+        private static void RefreshPricesFromMock(List<Player> players)
         {
-            var list = players.ToList();
-            if (list.Count == 0) return;
+            var mockPrices = new PlayerMockRepository().GetAll()
+                .GroupBy(p => $"{p.FirstName}|{p.LastName}|{p.Club}", StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().MarketValue, StringComparer.OrdinalIgnoreCase);
 
-            var minPts = list.Min(p => p.TotalPoints);
-            var maxPts = list.Max(p => p.TotalPoints);
-            var range = Math.Max(1, maxPts - minPts);
-
-            foreach (var p in list)
-            {
-                var t = (double)(p.TotalPoints - minPts) / range;
-                p.MarketValue = Math.Round(MinPrice + t * (MaxPrice - MinPrice), 1);
-            }
+            foreach (var p in players)
+                if (mockPrices.TryGetValue($"{p.FirstName}|{p.LastName}|{p.Club}", out var mv))
+                    p.MarketValue = mv;
         }
 
         // Dopuni bazu igračima iz mock repozitorija kojih još nema (npr. novododani
@@ -138,6 +141,10 @@ namespace FantasyFootball.DAL
             {
                 p.Id = 0;                // neka SQL dodijeli novi IDENTITY
                 p.FantasyTeams.Clear();  // ne diramo postojeće timove
+                p.TotalPoints = 0;       // fresh season — bodovi rastu iz odigranih kola
+                p.Goals = 0;
+                p.Assists = 0;
+                p.CleanSheets = 0;
             }
 
             context.Players.AddRange(toAdd);
@@ -149,7 +156,9 @@ namespace FantasyFootball.DAL
             var players = context.Players.ToList();
             if (players.Count == 0) return;
 
-            ApplyPointBasedPrices(players);
+            // Osvježi cijene iz mocka (stvarne FPL cijene) — tako i već-seedane baze
+            // dobiju nove cijene na sljedećem pokretanju, bez cijena u migraciji.
+            RefreshPricesFromMock(players);
 
             // Dopuni timove ispod 15 igrača (ostavi netaknute one s točno 15 — npr.
             // timove koje su korisnici sami kreirali kroz UI).
