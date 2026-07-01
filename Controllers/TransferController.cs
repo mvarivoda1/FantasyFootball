@@ -43,11 +43,16 @@ namespace FantasyFootball.Controllers
                 .FirstOrDefaultAsync(t => t.Id == user.FantasyTeamId.Value);
             if (team == null) return RedirectToAction("Build", "FantasyTeam");
 
+            var seasonStarted = await _ctx.Fixtures.AnyAsync();
+
             var vm = new TransferMarketViewModel
             {
                 TeamId = team.Id,
                 TeamName = team.Name,
                 Budget = user.Budget,
+                SeasonStarted = seasonStarted,
+                FreeTransfers = team.FreeTransfers,
+                TransferPointHits = team.TransferPointHits,
                 Squad = team.Players
                     .OrderBy(p => p.Position)
                     .ThenByDescending(p => p.TotalPoints)
@@ -192,6 +197,25 @@ namespace FantasyFootball.Controllers
             team.SquadValue = newSquad.Sum(p => p.MarketValue);
             user.Budget = budgetAfter;
 
+            // ----- Besplatni transferi i kazna (−4 po transferu preko kvote) -----
+            // Do prvog odigranog kola su transferi neograničeni (pretsezona): ne troše
+            // kvotu i ne nose kaznu. Nakon toga vrijedi kvota FreeTransfers, a svaki
+            // transfer iznad nje oduzima 4 boda od ukupnih bodova tima.
+            int transfersMade = inPlayers.Count; // == outPlayers.Count (sastav ostaje 15)
+            bool seasonStarted = await _ctx.Fixtures.AnyAsync();
+            int freeUsed = 0, paidTransfers = 0, pointsHit = 0;
+            if (seasonStarted)
+            {
+                int freeBefore = team.FreeTransfers;
+                freeUsed = Math.Min(freeBefore, transfersMade);
+                paidTransfers = transfersMade - freeUsed;
+                pointsHit = paidTransfers * 4;
+
+                team.FreeTransfers = freeBefore - freeUsed;
+                team.TransferPointHits += pointsHit;
+                team.TotalPoints -= pointsHit;
+            }
+
             // Ako je prodan igrač bio u startnoj postavi, resetiraj lineup (My Team će složiti novi default)
             if (!string.IsNullOrWhiteSpace(team.StartingLineupIds))
             {
@@ -205,8 +229,18 @@ namespace FantasyFootball.Controllers
             }
 
             await _ctx.SaveChangesAsync();
+
+            string transferNote;
+            if (!seasonStarted)
+                transferNote = "Neograničeni transferi (pretsezona).";
+            else if (pointsHit > 0)
+                transferNote = $"Iskorišteno {freeUsed} besplatnih, {paidTransfers}× kazna −4 = −{pointsHit} bodova. " +
+                               $"Preostalo besplatnih: {team.FreeTransfers}.";
+            else
+                transferNote = $"Iskorišteno {freeUsed} besplatnih transfera. Preostalo besplatnih: {team.FreeTransfers}.";
+
             TempData["TransferSuccess"] =
-                $"Transfer dovršen: {outPlayers.Count} OUT, {inPlayers.Count} IN. Novi budget: €{budgetAfter:N1}M.";
+                $"Transfer dovršen: {outPlayers.Count} OUT, {inPlayers.Count} IN. {transferNote} Novi budget: €{budgetAfter:N1}M.";
             return RedirectToRoute("TransferIndex");
         }
 

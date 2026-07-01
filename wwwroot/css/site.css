@@ -6604,6 +6604,77 @@ body:has(.ff-build) {
     color: #fff;
 }
 
+/* --- Free-transfers indikator (hero) --- */
+.ff-ft-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.95rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(123, 97, 255, 0.18), rgba(0, 255, 135, 0.06));
+    border: 1px solid rgba(123, 97, 255, 0.34);
+    box-shadow: 0 8px 20px rgba(123, 97, 255, 0.12);
+    max-width: 280px;
+    text-align: left;
+}
+.ff-ft-badge--free {
+    background: linear-gradient(135deg, rgba(0, 255, 135, 0.16), rgba(123, 97, 255, 0.1));
+    border-color: rgba(0, 255, 135, 0.34);
+    box-shadow: 0 8px 20px rgba(0, 255, 135, 0.1);
+}
+.ff-ft-badge__icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 10px;
+    background: rgba(123, 97, 255, 0.22);
+    color: var(--ff-tr-violet);
+    font-size: 1.15rem;
+}
+.ff-ft-badge--free .ff-ft-badge__icon {
+    background: rgba(0, 255, 135, 0.18);
+    color: var(--ff-tr-accent);
+}
+.ff-ft-badge__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+.ff-ft-badge__label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--ff-tr-text);
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+}
+.ff-ft-badge__count {
+    color: var(--ff-tr-accent);
+    font-variant-numeric: tabular-nums;
+    font-size: 1rem;
+    margin-left: 0.15rem;
+}
+.ff-ft-badge__note {
+    font-size: 0.68rem;
+    color: var(--ff-tr-text-dim);
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+}
+.ff-ft-badge__hits {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.2rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--ff-tr-warn);
+    letter-spacing: 0.02em;
+}
+.ff-ft-badge__hits i { font-size: 0.75rem; }
+
 /* --- Toast / alert (transfer) --- */
 .ff-transfer-alert {
     display: flex;
@@ -7349,6 +7420,16 @@ body.ff-transfer-modal-open { overflow: hidden; }
 .ff-transfer-cart__stat--budget .ff-transfer-cart__stat-value { color: var(--ff-tr-accent); }
 .ff-transfer-cart__stat-value.is-negative { color: var(--ff-tr-danger); }
 
+/* Bodovna kazna — neutralno dok je 0, upozorenje kad postoji hit */
+.ff-transfer-cart__stat--penalty .ff-transfer-cart__stat-label i { color: var(--ff-tr-text-dim); }
+.ff-transfer-cart__stat--penalty .ff-transfer-cart__stat-value { color: var(--ff-tr-text-dim); }
+.ff-transfer-cart__stat--penalty.is-hit {
+    background: rgba(255, 71, 87, 0.12);
+    border-color: rgba(255, 71, 87, 0.4);
+}
+.ff-transfer-cart__stat--penalty.is-hit .ff-transfer-cart__stat-label i,
+.ff-transfer-cart__stat--penalty.is-hit .ff-transfer-cart__stat-value { color: #ff8590; }
+
 .ff-transfer-cart__hint {
     flex: 1 1 200px;
     min-width: 0;
@@ -7538,11 +7619,13 @@ body.ff-transfer-modal-open { overflow: hidden; }
     .ff-transfer-modal__btn--cancel { flex: 1 1 100%; order: 2; }
     .ff-transfer-review { grid-template-columns: 1fr; }
     .ff-transfer-cart { gap: 0.7rem; padding: 0.75rem 0.85rem; }
-    .ff-transfer-cart__stats { flex: 1 1 100%; }
-    .ff-transfer-cart__stat { flex: 1 1 0; min-width: 0; padding: 0.4rem 0.5rem; }
+    .ff-transfer-cart__stats { flex: 1 1 100%; flex-wrap: wrap; }
+    .ff-transfer-cart__stat { flex: 1 1 40%; min-width: 0; padding: 0.4rem 0.5rem; }
     .ff-transfer-cart__hint { flex: 1 1 100%; order: 3; }
     .ff-transfer-cart__actions { flex: 1 1 100%; margin-left: 0; }
     .ff-transfer-cart__btn { flex: 1 1 0; justify-content: center; }
+    .ff-transfer .ff-ft-badge { max-width: none; width: 100%; }
+    .ff-transfer .ff-budget-badge { width: 100%; justify-content: center; }
 }
 @media (max-width: 991px) {
     .ff-transfer-cart__hint { flex-basis: 100%; order: 3; }

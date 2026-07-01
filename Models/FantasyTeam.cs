@@ -22,6 +22,15 @@ namespace FantasyFootball.Models
         public double SquadValue { get; set; }
         public int TotalPoints { get; set; }
 
+        // Broj raspoloživih besplatnih transfera. Vrijedi tek NAKON što je odigrano
+        // prvo kolo — do tada su transferi neograničeni (pretsezona). Tim dobiva +1
+        // nakon svakog odigranog (potvrđenog) kola; neiskorišteni se gomilaju
+        // (1, 2, 3, ...). Svaki transfer preko ovog broja stoji −4 boda.
+        public int FreeTransfers { get; set; }
+
+        // Ukupno oduzetih bodova zbog transfera preko besplatne kvote (sezona).
+        public int TransferPointHits { get; set; }
+
         public string? StartingLineupIds { get; set; }
 
         // Putanja do loga tima (slika uploadana preko Dropzone). null = nema loga.

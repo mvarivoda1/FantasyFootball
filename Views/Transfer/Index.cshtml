@@ -20,7 +20,11 @@
     };
 }
 
-<section class="ff-transfer ff-myteam" data-budget="@Model.Budget.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+<section class="ff-transfer ff-myteam"
+         data-budget="@Model.Budget.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+         data-season-started="@(Model.SeasonStarted ? "true" : "false")"
+         data-free-transfers="@Model.FreeTransfers"
+         data-transfer-cost="@Model.TransferCost">
 
     <header class="ff-myteam__hero">
         <div class="ff-myteam__hero-bg" aria-hidden="true"></div>
@@ -30,7 +34,14 @@
                 <p class="ff-myteam__subtitle">
                     Tržište igrača. Klikni igrača na terenu da ga <strong>prodaš</strong>,
                     pa popuni oslobođeno mjesto igračem iz popisa desno da ga <strong>kupiš</strong>.
-                    Sve transfere potvrđuješ na kraju.
+                    @if (Model.SeasonStarted)
+                    {
+                        <text>Svako kolo nosi <strong>+1 besplatan transfer</strong> koji se gomila; svaki transfer iznad kvote je <strong>&minus;@Model.TransferCost boda</strong>.</text>
+                    }
+                    else
+                    {
+                        <text>U <strong>pretsezoni</strong> su transferi neograničeni i besplatni do 1. kola.</text>
+                    }
                 </p>
             </div>
             <div class="ff-myteam__hero-meta">
@@ -39,6 +50,38 @@
                     <span>Budget:</span>
                     <span class="ff-budget-badge__amount" data-role="budget-display">@Model.Budget.ToString("N1")M</span>
                 </div>
+
+                @if (!Model.SeasonStarted)
+                {
+                    <div class="ff-ft-badge ff-ft-badge--free" role="group"
+                         aria-label="Neograničeni transferi u pretsezoni">
+                        <span class="ff-ft-badge__icon" aria-hidden="true"><i class="bi bi-infinity"></i></span>
+                        <span class="ff-ft-badge__body">
+                            <span class="ff-ft-badge__label">Neograničeni transferi</span>
+                            <span class="ff-ft-badge__note">Pretsezona &mdash; besplatno do 1. kola</span>
+                        </span>
+                    </div>
+                }
+                else
+                {
+                    <div class="ff-ft-badge" role="group" aria-label="Raspoloživi besplatni transferi">
+                        <span class="ff-ft-badge__icon" aria-hidden="true"><i class="bi bi-arrow-left-right"></i></span>
+                        <span class="ff-ft-badge__body">
+                            <span class="ff-ft-badge__label">
+                                Besplatni transferi:
+                                <strong class="ff-ft-badge__count" data-role="ft-count">@Model.FreeTransfers</strong>
+                            </span>
+                            <span class="ff-ft-badge__note">&minus;@Model.TransferCost boda po dodatnom transferu</span>
+                            @if (Model.TransferPointHits > 0)
+                            {
+                                <span class="ff-ft-badge__hits">
+                                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                                    Kazne ove sezone: &minus;@Model.TransferPointHits
+                                </span>
+                            }
+                        </span>
+                    </div>
+                }
             </div>
         </div>
     </header>
@@ -248,6 +291,10 @@
                 <span class="ff-transfer-cart__stat-label"><i class="bi bi-wallet2" aria-hidden="true"></i> Budget nakon</span>
                 <span class="ff-transfer-cart__stat-value" data-role="cart-budget">@Model.Budget.ToString("N1")M</span>
             </div>
+            <div class="ff-transfer-cart__stat ff-transfer-cart__stat--penalty" data-role="cart-penalty-stat">
+                <span class="ff-transfer-cart__stat-label"><i class="bi bi-exclamation-diamond" aria-hidden="true"></i> Bodovna kazna</span>
+                <span class="ff-transfer-cart__stat-value" data-role="cart-penalty" aria-live="polite">0 pts</span>
+            </div>
         </div>
         <div class="ff-transfer-cart__hint" data-role="cart-hint" data-tone="info">
             <i class="bi bi-info-circle" aria-hidden="true"></i>
@@ -305,6 +352,13 @@
                 <dd data-role="review-budget-now">@Model.Budget.ToString("N1")M</dd>
                 <dt>Budget nakon</dt>
                 <dd data-role="review-budget-after">@Model.Budget.ToString("N1")M</dd>
+                @if (Model.SeasonStarted)
+                {
+                    <dt data-role="review-free-row-dt">Besplatnih (iskorišteno / preostalo)</dt>
+                    <dd data-role="review-free-used">0 / @Model.FreeTransfers</dd>
+                }
+                <dt>Bodovna kazna</dt>
+                <dd data-role="review-penalty">0 pts</dd>
             </dl>
 
             <div class="ff-transfer-modal__actions">
@@ -336,6 +390,11 @@
             var baseBudget = parseFloat($section.attr('data-budget')) || 0;
             var MAX_PER_CLUB = @Model.MaxPerClub;
 
+            /* ---------- Free transfers / penalty config ---------- */
+            var seasonStarted = $section.attr('data-season-started') === 'true';
+            var freeTransfers = parseInt($section.attr('data-free-transfers'), 10) || 0;
+            var transferCost = parseInt($section.attr('data-transfer-cost'), 10) || 0;
+
             /* ---------- Market list refs ---------- */
             var $list = $('[data-role="market-list"]');
             var $cards = $list.find('[data-role="market-card"]');
@@ -358,6 +417,8 @@
             var $cartReset = $('[data-role="cart-reset"]');
             var $cartConfirm = $('[data-role="cart-confirm"]');
             var $budgetDisplay = $('[data-role="budget-display"]');
+            var $cartPenalty = $('[data-role="cart-penalty"]');
+            var $cartPenaltyStat = $('[data-role="cart-penalty-stat"]');
 
             /* ---------- State ----------
                sells: map pitchPlayerId(string) -> { id, name, value, posVar, filledBy }
@@ -399,6 +460,16 @@
                 return open;
             }
 
+            /* Number of transfers = number of buys (equal to sells on a valid confirm). */
+            function computePenalty() {
+                var inCount = Object.keys(buys).length;
+                var extra = seasonStarted ? Math.max(0, inCount - freeTransfers) : 0;
+                var pointsHit = extra * transferCost;
+                var freeUsed = seasonStarted ? Math.min(inCount, freeTransfers) : inCount;
+                var freeLeft = seasonStarted ? Math.max(0, freeTransfers - inCount) : 0;
+                return { inCount: inCount, extra: extra, pointsHit: pointsHit, freeUsed: freeUsed, freeLeft: freeLeft };
+            }
+
             function recompute() {
                 var outCount = Object.keys(sells).length;
                 var inCount = Object.keys(buys).length;
@@ -408,6 +479,11 @@
                 $cartIn.text(inCount);
                 $cartBudget.text(fmtMoney(budgetAfter)).toggleClass('is-negative', budgetAfter < 0);
                 $budgetDisplay.text(fmtMoney(budgetAfter)).toggleClass('is-negative', budgetAfter < 0);
+
+                /* Point penalty (informative only — never blocks confirm) */
+                var pen = computePenalty();
+                $cartPenalty.text((pen.pointsHit > 0 ? '−' + pen.pointsHit : '0') + ' pts');
+                $cartPenaltyStat.toggleClass('is-hit', pen.pointsHit > 0);
 
                 var open = openSlotsByPos();
                 var openTotal = open.gk + open.def + open.mid + open.fwd;
@@ -432,8 +508,17 @@
                 } else if (!budgetOk) {
                     msg = 'Nedovoljno budgeta — nedostaje ' + fmtMoney(-budgetAfter) + '.';
                     tone = 'danger';
+                } else if (pen.pointsHit > 0) {
+                    msg = 'Spremno: ' + outCount + ' OUT / ' + inCount + ' IN — kazna −' + pen.pointsHit +
+                        ' bodova (' + pen.extra + ' ' + (pen.extra === 1 ? 'transfer' : 'transfera') +
+                        ' iznad besplatne kvote).';
+                    tone = 'warn';
+                } else if (seasonStarted) {
+                    msg = 'Spremno za potvrdu: ' + outCount + ' OUT / ' + inCount + ' IN — koristiš ' +
+                        pen.freeUsed + ' od ' + freeTransfers + ' besplatnih, bez kazne.';
+                    tone = 'ok';
                 } else {
-                    msg = 'Spremno za potvrdu: ' + outCount + ' OUT, ' + inCount + ' IN.';
+                    msg = 'Spremno za potvrdu: ' + outCount + ' OUT / ' + inCount + ' IN — pretsezona, bez kazne.';
                     tone = 'ok';
                 }
                 $cartHintText.text(msg);
@@ -698,6 +783,8 @@
             var $reviewIn = $('[data-role="review-in"]');
             var $reviewBudgetNow = $('[data-role="review-budget-now"]');
             var $reviewBudgetAfter = $('[data-role="review-budget-after"]');
+            var $reviewPenalty = $('[data-role="review-penalty"]');
+            var $reviewFreeUsed = $('[data-role="review-free-used"]');
             var lastFocused = null;
 
             function reviewRow(item, dir) {
@@ -733,6 +820,11 @@
                 $reviewBudgetAfter.text(fmtMoney(budgetAfter))
                     .toggleClass('is-negative', budgetAfter < 0)
                     .toggleClass('is-positive', budgetAfter >= 0);
+
+                var pen = computePenalty();
+                $reviewFreeUsed.text(pen.freeUsed + ' / ' + pen.freeLeft);
+                $reviewPenalty.text((pen.pointsHit > 0 ? '−' + pen.pointsHit : '0') + ' pts')
+                    .toggleClass('is-negative', pen.pointsHit > 0);
             }
 
             function openConfirm() {

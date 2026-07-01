@@ -10,6 +10,21 @@ namespace FantasyFootball.Models.ViewModels
         public string TeamName { get; set; } = string.Empty;
         public double Budget { get; set; }
 
+        // ===== Besplatni transferi =====
+
+        // Je li sezona počela (odigrano barem jedno kolo). Prije toga su transferi
+        // neograničeni i besplatni; poslije vrijedi kvota + kazna.
+        public bool SeasonStarted { get; set; }
+
+        // Raspoloživi besplatni transferi (vrijedi samo kad je SeasonStarted).
+        public int FreeTransfers { get; set; }
+
+        // Kazna u bodovima za svaki transfer iznad besplatne kvote.
+        public int TransferCost { get; set; } = 4;
+
+        // Ukupno oduzetih bodova zbog transfera ove sezone (za prikaz).
+        public int TransferPointHits { get; set; }
+
         // Cijeli sastav tima — prikazuje se na terenu (lijeva strana)
         public List<Player> Squad { get; set; } = new();
 

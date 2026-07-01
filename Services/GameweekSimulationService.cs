@@ -142,6 +142,10 @@ namespace FantasyFootball.Services
                     LineupIds = string.Join(",", starterIds)
                 });
                 team.TotalPoints += teamPts;
+
+                // Kolo je odigrano => svaki tim dobiva 1 besplatan transfer za
+                // sljedeće kolo. Neiskorišteni se gomilaju (bez gornje granice).
+                team.FreeTransfers += 1;
             }
 
             await _ctx.SaveChangesAsync();
@@ -176,7 +180,11 @@ namespace FantasyFootball.Services
             var tById = teams.ToDictionary(t => t.Id);
             foreach (var s in scores)
                 if (tById.TryGetValue(s.FantasyTeamId, out var t))
+                {
                     t.TotalPoints -= s.Points;
+                    // Poništi besplatan transfer dodijeljen pri potvrdi ovog kola.
+                    t.FreeTransfers = Math.Max(0, t.FreeTransfers - 1);
+                }
 
             var fixtures = await _ctx.Fixtures.Where(f => f.GameweekId == gameweekId).ToListAsync();
             _ctx.Fixtures.RemoveRange(fixtures);
