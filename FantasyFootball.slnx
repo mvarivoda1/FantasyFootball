@@ -1,6 +1,5 @@
 <Solution>
   <Project Path="FantasyFootball.csproj" />
-  <Project Path="FantasyFootball.E2E/FantasyFootball.E2E.csproj" />
   <Project Path="FantasyFootball.Mcp/FantasyFootball.Mcp.csproj" />
   <Project Path="FantasyFootball.Tests/FantasyFootball.Tests.csproj" />
 </Solution>
