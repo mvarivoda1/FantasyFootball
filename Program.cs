@@ -113,6 +113,10 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Static assets moraju biti dostupni neprijavljenima (CSS, JS, slike) — poslužuju se
+// prije auth pipelinea, izravno s diska (bez fingerprintane/pretkomprimirane varijante).
+app.UseStaticFiles();
+
 // Serilog — strukturirani zapis svakog HTTP zahtjeva (metoda, putanja, status, trajanje).
 app.UseSerilogRequestLogging();
 
@@ -135,13 +139,9 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Static assets moraju biti dostupni neprijavljenima (CSS, JS, slike)
-app.MapStaticAssets().AllowAnonymous();
-
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
 

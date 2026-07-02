@@ -3,7 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * FantasyFootball E2E — Playwright konfiguracija.
  *
- * PREDUVJET: aplikacija je pokrenuta (default http://localhost:5263) i baza je
+ * PREDUVJET: aplikacija je pokrenuta (default http://localhost:5300 — namjerno
+ * različit od dev porta 5263 da se test-instanca i dev-instanca ne sudaraju) i baza je
  * seedana (demo račun marko@gmail.com / markopass — prvi seedani korisnik, ima
  * fantasy tim i Admin rolu). Bazni URL se mijenja env varijablom FF_BASE_URL.
  *
@@ -11,7 +12,7 @@ import { defineConfig, devices } from '@playwright/test';
  * koriste svi prijavljeni testovi. Anonimni testovi (login/registracija/zaštita
  * ruta) sami resetiraju storageState na prazno.
  */
-const baseURL = process.env.FF_BASE_URL ?? 'http://localhost:5263';
+const baseURL = process.env.FF_BASE_URL ?? 'http://localhost:5300';
 const authFile = 'playwright/.auth/user.json';
 
 export default defineConfig({

@@ -10,9 +10,14 @@ status ≥ 400 — to je "ništa se ne ruši" garancija.
 ## Preduvjeti
 
 1. **Baza** (npr. `docker compose up -d db`) — migracije i seed se izvrše pri startu aplikacije.
-2. **Aplikacija pokrenuta** na `http://localhost:5263`:
+2. **Aplikacija pokrenuta** na `http://localhost:5300` (namjerno različit od
+   dev porta 5263, da se test-instanca ne sudara s `dotnet run` dev-instancom):
    ```bash
-   ASPNETCORE_URLS=http://localhost:5263 dotnet run --project FantasyFootball.csproj --no-launch-profile
+   ASPNETCORE_URLS=http://localhost:5300 dotnet run --project FantasyFootball.csproj --no-launch-profile
+   ```
+   PowerShell varijanta:
+   ```powershell
+   $env:ASPNETCORE_URLS = 'http://localhost:5300'; dotnet run --no-launch-profile
    ```
    Drugi URL: postavi `FF_BASE_URL`.
 3. **Node.js 18+**.
@@ -27,7 +32,8 @@ cd e2e
 npm install
 npm run install:browsers          # jednokratno: preuzme Chromium
 
-FF_BASE_URL=http://localhost:5263 npm test        # svi testovi
+npm test                          # svi testovi (očekuje app na :5300)
+FF_BASE_URL=http://localhost:5263 npm test        # ili protiv druge instance
 npm run report                    # otvori HTML izvještaj (playwright-report/)
 ```
 
@@ -57,6 +63,7 @@ npx playwright show-trace         # trace viewer (za pale testove)
 | `tests/teams-transfers.spec.ts` | Ranking + row-klik, MyTeam (teren + spremanje sastava), Edit tima, transfer tržište/statistika. |
 | `tests/search.spec.ts` | Navbar live-dropdown i puna stranica rezultata. |
 | `tests/full-journey.spec.ts` | 10-koračni end-to-end scenarij. |
+| `tests/interactions.spec.ts` | **Pravi korisnički tokovi kroz UI**: swap početnog sastava + spremanje, transferi kroz košaricu i modal (i obrnuti transfer), kreiranje liga + pridruživanje šifrom, registracija novog korisnika → build momčadi. |
 
 ## API pokrivenost (25/25)
 
@@ -71,5 +78,12 @@ pa čiste za sobom.
   bazi — npr. ako još nema kreiranih kola.
 - `leagues.spec` CRUD i `MyTeam` spremanje sastava mijenjaju podatke, ali su
   idempotentni / čiste za sobom.
+- `interactions.spec` testovi demo računa vrte se serijski i vraćaju stanje
+  (obrnuti transfer, swap natrag, brisanje kreiranih liga). Demo transfer test
+  se preskače ako demo tim nema ≥ 2 besplatna transfera (da mu ne skida
+  bodove) — transfer tok je tada svejedno pokriven u testu novog korisnika,
+  čijem jednokratnom timu kazna ne smeta. Registracijski test namjerno
+  ostavlja novog korisnika u bazi. Za potpuno determinističko izvođenje uz
+  ostale specove: `npm test -- --workers=1`.
 - `console.error` (npr. 404 za CDN resurs) se ne tretira kao pad — samo
   neuhvaćena JS iznimka ruši test.
