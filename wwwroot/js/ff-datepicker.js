@@ -16,6 +16,7 @@
             today: 'Danas',
             clear: 'Obriši',
             close: 'Zatvori',
+            invalid: 'Neispravan datum ili vrijeme.',
             am: '', pm: ''
         },
         en: {
@@ -26,6 +27,7 @@
             today: 'Today',
             clear: 'Clear',
             close: 'Close',
+            invalid: 'Invalid date or time.',
             am: 'AM', pm: 'PM'
         }
     };
@@ -91,9 +93,9 @@
                 case 'yyyy': year = parseInt(val, 10); break;
                 case 'MM':   month = parseInt(val, 10) - 1; break;
                 case 'dd':   day = parseInt(val, 10); break;
-                case 'HH':   hour = parseInt(val, 10); break;
-                case 'hh':   hour = parseInt(val, 10); is12 = true; break;
-                case 'mm':   minute = parseInt(val, 10); break;
+                case 'HH':   hour = parseInt(val, 10); if (hour < 0 || hour > 23) return null; break;
+                case 'hh':   hour = parseInt(val, 10); is12 = true; if (hour < 1 || hour > 12) return null; break;
+                case 'mm':   minute = parseInt(val, 10); if (minute < 0 || minute > 59) return null; break;
                 case 'tt':   isPm = val.toUpperCase() === 'PM'; break;
             }
         }
@@ -285,7 +287,27 @@
         }, 180);
     }
 
+    function showError(state) {
+        if (!state.errorEl) return;
+        state.errorEl.textContent = LOCALES[state.locale].invalid;
+        state.errorEl.hidden = false;
+        state.root.classList.add('ff-dp--invalid');
+        state.visibleInput.setAttribute('aria-invalid', 'true');
+        state.visibleInput.setAttribute('aria-describedby', state.errorId);
+    }
+
+    function clearError(state) {
+        if (!state.errorEl) return;
+        if (!state.root.classList.contains('ff-dp--invalid')) return;
+        state.errorEl.hidden = true;
+        state.errorEl.textContent = '';
+        state.root.classList.remove('ff-dp--invalid');
+        state.visibleInput.removeAttribute('aria-invalid');
+        state.visibleInput.removeAttribute('aria-describedby');
+    }
+
     function commitSelection(state, d) {
+        clearError(state);
         state.selected = d;
         if (d) {
             state.hiddenInput.value = toIso(d, state.includeTime);
@@ -309,10 +331,11 @@
         if (parsed) {
             commitSelection(state, parsed);
         } else {
-            // Revert to last valid
-            state.visibleInput.value = state.selected
-                ? formatDate(state.selected, state.format, state.locale)
-                : '';
+            // Invalid input: keep the user's text so they can fix it, but
+            // ensure no stale/alternative value is submitted, and show an error.
+            state.hiddenInput.value = '';
+            state.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+            showError(state);
         }
     }
 
@@ -335,13 +358,25 @@
             selected: fromIso(hiddenInput.value),
             viewYear: 0,
             viewMonth: 0,
-            popup: null
+            popup: null,
+            errorEl: null,
+            errorId: null
         };
 
         // Build popup
         state.popup = buildPopup(state);
         root.appendChild(state.popup);
         state.popup.hidden = true;
+
+        // Inline error element (below the field)
+        state.errorId = (root.id || 'ffdp') + '_error';
+        var errorEl = document.createElement('div');
+        errorEl.className = 'ff-dp__error';
+        errorEl.id = state.errorId;
+        errorEl.setAttribute('role', 'alert');
+        errorEl.hidden = true;
+        root.appendChild(errorEl);
+        state.errorEl = errorEl;
 
         // Toggle button
         var toggleBtn = root.querySelector('[data-ff-dp-toggle]');
@@ -353,7 +388,8 @@
         }
 
         // Visible input handling
-        visibleInput.addEventListener('focus', function () { openPopup(state); });
+        visibleInput.addEventListener('focus', function () { clearError(state); openPopup(state); });
+        visibleInput.addEventListener('input', function () { clearError(state); });
         visibleInput.addEventListener('blur', function () {
             setTimeout(function () { attemptParseFromVisible(state); }, 50);
         });
