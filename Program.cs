@@ -84,7 +84,7 @@ builder.Services.AddScoped<LeagueRepository>();
 builder.Services.AddScoped<GameweekRepository>();
 builder.Services.AddScoped<GameweekSimulationService>();
 
-// AI integracija — parser igrača (Claude / Anthropic)
+// AI integracija — parser igrača (GPT-4o mini / OpenAI)
 builder.Services.AddScoped<AiPlayerParser>();
 
 var app = builder.Build();
