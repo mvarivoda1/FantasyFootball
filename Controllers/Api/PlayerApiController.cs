@@ -23,7 +23,7 @@ namespace FantasyFootball.Controllers.Api
         [AllowAnonymous]
         public ActionResult<IEnumerable<PlayerDTO>> GetAll([FromQuery] string? q = null)
         {
-            var query = _ctx.Players.AsNoTracking();
+            var query = _ctx.Players.AsNoTracking().Where(p => !p.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(q))
             {
@@ -113,7 +113,12 @@ namespace FantasyFootball.Controllers.Api
             if (player == null) return NotFound();
 
             if (player.FantasyTeams.Any())
-                return Conflict($"Igrač je u {player.FantasyTeams.Count} timova i ne može se obrisati.");
+            {
+                // Soft delete: igrač ostaje u timovima (zasivljen) dok ga vlasnici ne prodaju.
+                player.IsDeleted = true;
+                _ctx.SaveChanges();
+                return NoContent();
+            }
 
             _ctx.Players.Remove(player);
             _ctx.SaveChanges();

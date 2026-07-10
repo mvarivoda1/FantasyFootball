@@ -23,10 +23,16 @@
     var clubShort = string.IsNullOrEmpty(Model.Club)
         ? string.Empty
         : new string(Model.Club.Where(char.IsLetterOrDigit).Take(3).ToArray()).ToUpperInvariant();
+
+    // Soft-deleted player: ostaje u ekipi (zasivljen) dok ga vlasnik ne proda.
+    // NE dodavati "disabled" — na Transfers stranici gumb mora ostati klikabilan.
+    var isRemoved = Model.IsDeleted;
+    var pitchTitle = $"{Model.FullName} — {displayPoints} pts"
+        + (isRemoved ? " — obrisan iz lige, prodaj ga" : "");
 }
 
 <button type="button"
-        class="ff-pitch-player ff-totw-player ff-pitch-player--@(isStarter ? "starter" : "bench")@(showGw ? " ff-totw-player--gw" : "")"
+        class="ff-pitch-player ff-totw-player ff-pitch-player--@(isStarter ? "starter" : "bench")@(showGw ? " ff-totw-player--gw" : "")@(isRemoved ? " ff-pitch-player--removed" : "")"
         data-player-id="@Model.Id"
         data-position="@posCode"
         data-starter="@(isStarter ? "true" : "false")"
@@ -36,9 +42,14 @@
         data-points="@displayPoints"
         data-goals="@Model.Goals"
         data-assists="@Model.Assists"
+        data-removed="@(isRemoved ? "true" : null)"
         aria-pressed="false"
-        title="@Model.FullName — @displayPoints pts">
+        title="@pitchTitle">
     <span class="ff-pitch-player__pos-tag ff-pitch-player__pos-tag--@shirtVariant" aria-hidden="true">@posCode</span>
+    @if (isRemoved)
+    {
+        <span class="ff-totw-player__out-tag" aria-hidden="true">OUT</span>
+    }
     <div class="ff-totw-player__shirt ff-totw-player__shirt--@shirtVariant">
         <span class="ff-totw-player__points">@displayPoints</span>
     </div>

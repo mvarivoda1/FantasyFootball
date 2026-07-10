@@ -3012,7 +3012,7 @@ body.ff-locker-modal-open {
 }
 
 /* Responsive tweaks */
-@@media (max-width: 576px) {
+@media (max-width: 576px) {
     .ff-ranking-table thead th,
     .ff-ranking-table tbody td {
         padding: 0.6rem 0.5rem;
@@ -3995,7 +3995,7 @@ body.ff-locker-modal-open {
 }
 
 /* Responsive tweaks */
-@@media (max-width: 480px) {
+@media (max-width: 480px) {
     .ff-auth-card {
         padding: 1.75rem 1.25rem 1.5rem;
         border-radius: var(--fpl-radius);
@@ -5128,6 +5128,65 @@ body:has(.ff-build) {
     40% { transform: translateX(5px); }
     60% { transform: translateX(-4px); }
     80% { transform: translateX(4px); }
+}
+
+/* ============================================
+   Removed player (soft-delete) — "zasivljen"
+   Igrač je obrisan iz lige, ali ostaje u ekipi dok
+   ga vlasnik ne proda. Prikazuje se prigušeno
+   (desaturirano) uz "OUT" oznaku kako se colorblind
+   korisnici ne bi oslanjali samo na sivilo.
+   Vrijedi za: My Team pitch, Team Details squad, Transfers.
+   ============================================ */
+[data-removed="true"] {
+    position: relative;
+}
+[data-removed="true"] .ff-totw-player__shirt {
+    filter: grayscale(1) brightness(0.82);
+    opacity: 0.6;
+    transition: filter 0.18s ease, opacity 0.18s ease;
+}
+[data-removed="true"] .ff-totw-player__name {
+    /* Ime ostaje čitljivo (WCAG AA) — samo blago prigušeno. */
+    color: #c8d2e0;
+    background: rgba(0, 0, 0, 0.6);
+}
+[data-removed="true"] .ff-totw-player__stat {
+    color: rgba(226, 232, 240, 0.5);
+}
+[data-removed="true"] .ff-pitch-player__pos-tag {
+    filter: grayscale(1) brightness(0.8);
+    opacity: 0.55;
+}
+
+/* "OUT" oznaka — dodatni signal koji ne ovisi samo o boji */
+.ff-totw-player__out-tag {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    z-index: 2;
+    font-size: 0.5rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    padding: 2px 5px;
+    border-radius: 999px;
+    color: #ffffff;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--ff-myteam-danger, #ff4757), #b91c1c);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+}
+
+/* Transfers pitch: obrisani igrač je i dalje klikabilan (proda ga se),
+   pa hover mora blago podignuti i osvijetliti karticu. */
+.ff-pitch-player--removed { cursor: pointer; }
+.ff-pitch-player--removed:hover .ff-totw-player__shirt {
+    filter: grayscale(0.45) brightness(1);
+    opacity: 0.9;
+}
+.ff-pitch-player--removed:hover .ff-totw-player__name {
+    color: #eef3f9;
 }
 
 /* --- Bench ---

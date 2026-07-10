@@ -198,8 +198,13 @@ namespace FantasyFootball.Controllers
 
             if (player.FantasyTeams.Any())
             {
-                TempData["PlayerError"] = $"Nije moguće obrisati {player.FullName} — igrač je u {player.FantasyTeams.Count} timova.";
-                return RedirectToAction(nameof(Delete), new { id });
+                // Soft delete: igrač ostaje u timovima (zasivljen) dok ga vlasnici
+                // ne prodaju; više se ne pojavljuje na tržištu i ne dobiva bodove.
+                player.IsDeleted = true;
+                await _ctx.SaveChangesAsync();
+
+                TempData["PlayerInfo"] = $"Igrač {player.FullName} je obrisan. U {player.FantasyTeams.Count} timova ostaje zasivljen dok ga vlasnici ne prodaju.";
+                return RedirectToRoute("PlayerIndex");
             }
 
             _ctx.Players.Remove(player);
@@ -215,7 +220,7 @@ namespace FantasyFootball.Controllers
         public async Task<IActionResult> Search(string? q, string? position, string? club, int take = 10)
         {
             take = Math.Clamp(take, 1, 50);
-            var query = _ctx.Players.AsNoTracking();
+            var query = _ctx.Players.AsNoTracking().Where(p => !p.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(q))
             {
@@ -258,7 +263,7 @@ namespace FantasyFootball.Controllers
         public async Task<IActionResult> Clubs(string? q, int take = 10)
         {
             take = Math.Clamp(take, 1, 30);
-            var query = _ctx.Players.AsNoTracking().Select(p => p.Club).Distinct();
+            var query = _ctx.Players.AsNoTracking().Where(p => !p.IsDeleted).Select(p => p.Club).Distinct();
 
             if (!string.IsNullOrWhiteSpace(q))
             {

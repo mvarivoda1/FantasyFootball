@@ -8,10 +8,21 @@
         Position.Forward => "fwd",
         _ => "def"
     };
+
+    // Soft-deleted igrač: ostaje u ekipi (zasivljen) dok ga vlasnik ne proda.
+    var isRemoved = Model.IsDeleted;
+    var squadTitle = $"{Model.FullName} - {Model.TotalPoints} points"
+        + (isRemoved ? " — obrisan iz lige" : "");
 }
 
 <a asp-controller="Player" asp-action="Details" asp-route-id="@Model.Id"
-   class="ff-totw-player" title="@Model.FullName - @Model.TotalPoints points">
+   class="ff-totw-player@(isRemoved ? " ff-totw-player--removed" : "")"
+   data-removed="@(isRemoved ? "true" : null)"
+   title="@squadTitle">
+    @if (isRemoved)
+    {
+        <span class="ff-totw-player__out-tag" aria-hidden="true">OUT</span>
+    }
     <div class="ff-totw-player__shirt ff-totw-player__shirt--@shirtVariant">
         <span class="ff-totw-player__points">@Model.TotalPoints</span>
     </div>

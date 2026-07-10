@@ -62,7 +62,7 @@ namespace FantasyFootball.Services
         {
             var gw = await _ctx.Gameweeks.AsNoTracking().FirstOrDefaultAsync(g => g.Id == gameweekId)
                      ?? throw new InvalidOperationException($"Kolo {gameweekId} ne postoji.");
-            var players = await _ctx.Players.AsNoTracking().ToListAsync();
+            var players = await _ctx.Players.AsNoTracking().Where(p => !p.IsDeleted).ToListAsync();
             return BuildDraft(seed, players, gw.StartDate);
         }
 
@@ -80,7 +80,7 @@ namespace FantasyFootball.Services
                 return;
             }
 
-            var players = await _ctx.Players.ToListAsync();
+            var players = await _ctx.Players.Where(p => !p.IsDeleted).ToListAsync();
             var draft = BuildDraft(seed, players, gw.StartDate);
             var byId = players.ToDictionary(p => p.Id);
 

@@ -13,10 +13,13 @@ namespace FantasyFootball.Repositories
             _ctx = ctx;
         }
 
+        // Vraća samo aktivne igrače — soft-deleted igrači ostaju vidljivi jedino
+        // unutar timova koji ih još drže (dohvat kroz FantasyTeam.Players).
         public List<Player> GetAll() =>
             _ctx.Players
                 .Include(p => p.FantasyTeams)
                 .AsNoTracking()
+                .Where(p => !p.IsDeleted)
                 .ToList();
 
         public Player? GetById(int id) =>
@@ -33,6 +36,7 @@ namespace FantasyFootball.Repositories
 
             return _ctx.Players
                 .AsNoTracking()
+                .Where(p => !p.IsDeleted)
                 .Where(p =>
                     p.FirstName.Contains(term) ||
                     p.LastName.Contains(term) ||

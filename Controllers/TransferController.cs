@@ -110,8 +110,8 @@ namespace FantasyFootball.Controllers
                 return RedirectToRoute("TransferIndex");
             }
 
-            // IN igrači moraju postojati, ne smiju već biti u sastavu i ne smiju se preklapati s OUT
-            var inPlayers = await _ctx.Players.Where(p => inIds.Contains(p.Id)).ToListAsync();
+            // IN igrači moraju postojati (i ne biti obrisani), ne smiju već biti u sastavu i ne smiju se preklapati s OUT
+            var inPlayers = await _ctx.Players.Where(p => inIds.Contains(p.Id) && !p.IsDeleted).ToListAsync();
             if (inPlayers.Count != inIds.Count)
             {
                 TempData["TransferError"] = "Neki igrači označeni za kupnju ne postoje.";

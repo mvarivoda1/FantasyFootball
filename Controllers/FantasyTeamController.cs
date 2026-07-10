@@ -87,7 +87,7 @@ namespace FantasyFootball.Controllers
             if (selectedIds.Count != SquadSize)
                 ModelState.AddModelError(string.Empty, $"Tim mora imati točno {SquadSize} igrača (odabrano: {selectedIds.Count}).");
 
-            var players = _ctx.Players.Where(p => selectedIds.Contains(p.Id)).ToList();
+            var players = _ctx.Players.Where(p => selectedIds.Contains(p.Id) && !p.IsDeleted).ToList();
             if (players.Count != selectedIds.Count)
                 ModelState.AddModelError(string.Empty, "Neki odabrani igrači ne postoje u bazi.");
 

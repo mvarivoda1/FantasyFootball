@@ -56,6 +56,10 @@ namespace FantasyFootball.Models
         [Display(Name = "Ukupni bodovi")]
         public int TotalPoints { get; set; }
 
+        // Soft delete: igrač obrisan od strane admina ostaje u fantasy timovima
+        // (zasivljen) dok ga vlasnici ne prodaju; ne može se kupiti niti dobiva bodove.
+        public bool IsDeleted { get; set; }
+
         public virtual ICollection<FantasyTeam> FantasyTeams { get; set; }
 
         public Player()
