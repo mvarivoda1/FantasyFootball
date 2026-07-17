@@ -26,6 +26,11 @@
     }
 
     string placeholder = string.IsNullOrEmpty(Model.Placeholder) ? displayFormat : Model.Placeholder;
+
+    // ISO minimalni datum (samo dan); null izostavlja atribut u renderu.
+    string minDateIso = Model.MinDate.HasValue
+        ? Model.MinDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+        : null;
 }
 
 <div class="ff-dp @Model.CssClass"
@@ -34,6 +39,7 @@
      data-locale="@localeCode"
      data-format="@displayFormat"
      data-include-time="@(Model.IncludeTime ? "true" : "false")"
+     data-min-date="@minDateIso"
      data-target-name="@Model.Name">
 
     @if (!string.IsNullOrEmpty(Model.LabelText))

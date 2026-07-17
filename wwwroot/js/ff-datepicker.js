@@ -17,6 +17,7 @@
             clear: 'Obriši',
             close: 'Zatvori',
             invalid: 'Neispravan datum ili vrijeme.',
+            minDate: 'Najraniji dopušteni datum je {0}.',
             am: '', pm: ''
         },
         en: {
@@ -28,6 +29,7 @@
             clear: 'Clear',
             close: 'Close',
             invalid: 'Invalid date or time.',
+            minDate: 'Earliest allowed date is {0}.',
             am: 'AM', pm: 'PM'
         }
     };
@@ -138,6 +140,13 @@
             && a.getDate() === b.getDate();
     }
 
+    // Je li dan a prije dana b (ignorira vrijeme).
+    function isBeforeDay(a, b) {
+        var da = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+        var db = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+        return da.getTime() < db.getTime();
+    }
+
     function buildPopup(state) {
         var loc = LOCALES[state.locale];
         var popup = document.createElement('div');
@@ -196,6 +205,15 @@
             '<button type="button" class="ff-dp__action" data-action="clear">' + loc.clear + '</button>';
         popup.appendChild(footer);
 
+        // "Danas" nema smisla ako je današnji dan prije najranijeg dopuštenog datuma.
+        if (state.minDate) {
+            var todayBtn = footer.querySelector('[data-action="today"]');
+            if (todayBtn && isBeforeDay(new Date(), state.minDate)) {
+                todayBtn.disabled = true;
+                todayBtn.setAttribute('aria-disabled', 'true');
+            }
+        }
+
         return popup;
     }
 
@@ -242,6 +260,11 @@
                 btn.classList.add('ff-dp__day--selected');
                 btn.setAttribute('aria-selected', 'true');
             }
+            if (state.minDate && isBeforeDay(cellDate, state.minDate)) {
+                btn.classList.add('ff-dp__day--disabled');
+                btn.disabled = true;
+                btn.setAttribute('aria-disabled', 'true');
+            }
             btn.textContent = dayNum;
             btn.setAttribute('data-date', cellDate.getFullYear() + '-' + (cellDate.getMonth() + 1) + '-' + cellDate.getDate());
             btn.setAttribute('aria-label', formatDate(cellDate, state.format.split(' ')[0], state.locale));
@@ -287,9 +310,9 @@
         }, 180);
     }
 
-    function showError(state) {
+    function showError(state, msg) {
         if (!state.errorEl) return;
-        state.errorEl.textContent = LOCALES[state.locale].invalid;
+        state.errorEl.textContent = msg || LOCALES[state.locale].invalid;
         state.errorEl.hidden = false;
         state.root.classList.add('ff-dp--invalid');
         state.visibleInput.setAttribute('aria-invalid', 'true');
@@ -321,6 +344,12 @@
         state.hiddenInput.dispatchEvent(ev);
     }
 
+    // Poruka za datum raniji od najranijeg dopuštenog (samo dan iz formata).
+    function minDateMessage(state) {
+        var dateOnly = formatDate(state.minDate, state.format.split(' ')[0], state.locale);
+        return LOCALES[state.locale].minDate.replace('{0}', dateOnly);
+    }
+
     function attemptParseFromVisible(state) {
         var text = state.visibleInput.value.trim();
         if (!text) {
@@ -328,7 +357,12 @@
             return;
         }
         var parsed = parseDate(text, state.format, state.includeTime);
-        if (parsed) {
+        if (parsed && state.minDate && isBeforeDay(parsed, state.minDate)) {
+            // Prije najranijeg dopuštenog datuma: tretiraj kao neispravan unos.
+            state.hiddenInput.value = '';
+            state.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+            showError(state, minDateMessage(state));
+        } else if (parsed) {
             commitSelection(state, parsed);
         } else {
             // Invalid input: keep the user's text so they can fix it, but
@@ -354,6 +388,7 @@
             locale: detectLocale(root),
             format: root.getAttribute('data-format') || 'dd.MM.yyyy',
             includeTime: root.getAttribute('data-include-time') === 'true',
+            minDate: fromIso(root.getAttribute('data-min-date')),
             isOpen: false,
             selected: fromIso(hiddenInput.value),
             viewYear: 0,
@@ -448,6 +483,7 @@
             if (action) {
                 e.preventDefault();
                 if (action.getAttribute('data-action') === 'today') {
+                    if (state.minDate && isBeforeDay(new Date(), state.minDate)) return;
                     var t = new Date();
                     if (!state.includeTime) { t.setHours(0,0,0,0); }
                     commitSelection(state, t);

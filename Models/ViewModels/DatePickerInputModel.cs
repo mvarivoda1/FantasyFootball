@@ -18,6 +18,9 @@ namespace FantasyFootball.Models.ViewModels
         /// <summary>Uključuje i izbor sati/minuta. Hidden value će tada biti ISO datetime.</summary>
         public bool IncludeTime { get; set; } = false;
 
+        /// <summary>Najraniji datum koji se može odabrati; raniji dani su onemogućeni u kalendaru.</summary>
+        public DateTime? MinDate { get; set; }
+
         /// <summary>Označava polje kao obavezno (sprječava prazno slanje na strani klijenta).</summary>
         public bool Required { get; set; } = true;
 

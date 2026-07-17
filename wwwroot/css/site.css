@@ -6202,6 +6202,17 @@ body:has(.ff-build) {
     color: var(--fpl-green);
 }
 
+/* Dani prije najranijeg dopuštenog datuma: prigušeni, bez interakcije. */
+.ff-dp__day--disabled,
+.ff-dp__day--disabled:hover,
+.ff-dp__day--disabled:focus-visible {
+    color: var(--fpl-text-muted);
+    opacity: 0.32;
+    background: transparent;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .ff-dp__time {
     display: flex;
     align-items: center;
@@ -6273,6 +6284,13 @@ body:has(.ff-build) {
 .ff-dp__action:hover {
     background: var(--fpl-purple);
     color: var(--fpl-green);
+}
+
+.ff-dp__action:disabled {
+    background: rgba(55, 0, 60, 0.06);
+    color: var(--fpl-text-muted);
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 @media (max-width: 575.98px) {

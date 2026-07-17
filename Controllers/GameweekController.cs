@@ -95,16 +95,30 @@ namespace FantasyFootball.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        // Novo kolo smije početi tek dan nakon završetka zadnjeg postojećeg kola.
+        private DateTime? GetMinStartDate()
+        {
+            var lastEnd = _ctx.Gameweeks.Max(g => (DateTime?)g.EndDate);
+            return lastEnd?.Date.AddDays(1);
+        }
+
         [HttpGet]
         [Authorize(Roles = DbSeeder.AdminRole)]
         public IActionResult Create()
         {
             var nextWeekNumber = (_ctx.Gameweeks.Max(g => (int?)g.WeekNumber) ?? 0) + 1;
+            var minStart = GetMinStartDate();
+
+            var start = DateTime.Today.AddDays(1);
+            if (minStart.HasValue && start < minStart.Value)
+                start = minStart.Value;
+
             return View(new GameweekFormViewModel
             {
                 WeekNumber = nextWeekNumber,
-                StartDate = DateTime.Today.AddDays(1),
-                EndDate = DateTime.Today.AddDays(8)
+                StartDate = start,
+                EndDate = start.AddDays(7),
+                MinStartDate = minStart
             });
         }
 
@@ -119,8 +133,18 @@ namespace FantasyFootball.Controllers
                     $"Kolo broj {model.WeekNumber} već postoji.");
             }
 
+            var minStart = GetMinStartDate();
+            if (minStart.HasValue && model.StartDate.Date < minStart.Value)
+            {
+                ModelState.AddModelError(nameof(model.StartDate),
+                    $"Novo kolo mora početi {minStart.Value:dd.MM.yyyy} ili kasnije (nakon završetka zadnjeg kola).");
+            }
+
             if (!ModelState.IsValid)
+            {
+                model.MinStartDate = minStart;
                 return View(model);
+            }
 
             var gw = new Gameweek
             {

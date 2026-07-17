@@ -21,6 +21,9 @@ namespace FantasyFootball.Models.ViewModels
         [Display(Name = "Datum završetka")]
         public DateTime EndDate { get; set; } = DateTime.Today.AddDays(7);
 
+        /// <summary>Najraniji dopušteni datum početka (dan nakon završetka zadnjeg kola). Samo za prikaz u datepickeru.</summary>
+        public DateTime? MinStartDate { get; set; }
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (EndDate <= StartDate)
