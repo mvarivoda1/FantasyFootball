@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FantasyFootball.csproj" />
+    <ProjectReference Include="..\FantasyFootball.Api\FantasyFootball.Api.csproj" />
   </ItemGroup>
 
 </Project>

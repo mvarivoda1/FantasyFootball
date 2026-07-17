@@ -5,6 +5,7 @@ using FantasyFootball.Models;
 using FantasyFootball.Repositories;
 using FantasyFootball.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +58,15 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
     options.SlidingExpiration = true;
 });
+
+// Data Protection — isti ApplicationName kao Api da Api može čitati cookie koji je
+// izdao Web. U kontejnerima se ključevi dijele kroz volume (DataProtection__KeysPath);
+// lokalno oba procesa koriste isti user-profile key ring.
+var dataProtection = builder.Services.AddDataProtection()
+    .SetApplicationName("FantasyFootball");
+var keysPath = builder.Configuration["DataProtection:KeysPath"];
+if (!string.IsNullOrWhiteSpace(keysPath))
+    dataProtection.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 
 // 3rd-party autentikacija — Google. Tajne se čitaju iz konfiguracije / user-secrets;
 // placeholder vrijednosti omogućuju da se aplikacija pokrene i bez stvarnih kredencijala.

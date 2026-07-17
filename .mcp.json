@@ -6,7 +6,7 @@
         "FantasyFootball.Mcp/bin/Debug/net9.0/FantasyFootball.Mcp.dll"
       ],
       "env": {
-        "FF_BASE_URL": "http://localhost:5263"
+        "FF_BASE_URL": "http://localhost:5264"
       }
     }
   }

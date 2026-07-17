@@ -1,41 +1,27 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FantasyFootball</RootNamespace>
     <UserSecretsId>b17f19ca-9146-4be0-80f3-4c3683cdedaa</UserSecretsId>
   </PropertyGroup>
 
-  <!-- Pod-projekti u poddirektorijima; isključi ih iz web projekta da ne globa njihove .cs datoteke -->
   <ItemGroup>
-    <Compile Remove="FantasyFootball.Tests/**/*.cs" />
-    <Content Remove="FantasyFootball.Tests/**" />
-    <None Remove="FantasyFootball.Tests/**" />
-    <EmbeddedResource Remove="FantasyFootball.Tests/**" />
-    <Compile Remove="FantasyFootball.Mcp/**/*.cs" />
-    <Content Remove="FantasyFootball.Mcp/**" />
-    <None Remove="FantasyFootball.Mcp/**" />
-    <EmbeddedResource Remove="FantasyFootball.Mcp/**" />
-    <Compile Remove="FantasyFootball.E2E/**/*.cs" />
-    <Content Remove="FantasyFootball.E2E/**" />
-    <None Remove="FantasyFootball.E2E/**" />
-    <EmbeddedResource Remove="FantasyFootball.E2E/**" />
+    <ProjectReference Include="..\FantasyFootball.Core\FantasyFootball.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="OpenAI" Version="2.12.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
