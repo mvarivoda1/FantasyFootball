@@ -2,14 +2,14 @@
 
 ## Context
 
-Aplikacija je danas jedan ASP.NET Core MVC projekt (`FantasyFootball.csproj`, net10.0) koji sadrži i Razor UI (45 viewova, 8 MVC controllera) i REST API (5 controllera u `Controllers/Api/`). Cilj:
+Aplikacija je danas jedan ASP.NET Core MVC projekt (`FantasyFootball.csproj`, net9.0) koji sadrži i Razor UI (45 viewova, 8 MVC controllera) i REST API (5 controllera u `Controllers/Api/`). Cilj:
 
 1. **Razdvojiti** solution na zasebno deployabilni Web (Razor UI) i Api (REST) projekt — bez rewrite-a UI-ja u SPA (potvrđeno: opcija "Split na Web + API (.NET)").
 2. **Automatizirati build i deploy** kroz GitLab CI: runner na Ubuntu VM-u, aplikacija živi u Docker kontejnerima na istom VM-u.
 3. Pipeline: **build → test → deploy → e2e** (xUnit + Playwright).
 
 Zatečeno stanje bitno za plan:
-- `Dockerfile` + `docker-compose.yml` (web + SQL Server) **već postoje**, ali Dockerfile koristi .NET **9** image-e dok csproj cilja **net10.0** → docker build trenutno pada. Popravlja se usput.
+- `Dockerfile` + `docker-compose.yml` (web + SQL Server) **već postoje**; Dockerfile koristi .NET **9** image-e i csproj cilja **net9.0** → verzije se poklapaju, novi Dockerfile-i rade se po istom uzoru.
 - Migracije + seed se automatski izvršavaju na startu (`Program.cs`: `Database.Migrate()` + `DbSeeder`).
 - e2e testovi (`e2e/`, Playwright): prijava kroz UI (`auth.setup.ts`, admin marko@gmail.com), a `api.spec.ts` gađa `/api/*` na **istom baseURL-u** kao UI → web i api u produkciji moraju dijeliti origin (reverse proxy) i auth cookie.
 - Svi xUnit testovi u `FantasyFootball.Tests/` su **API integracijski testovi** (`WebApplicationFactory<Program>` + InMemory DB + TestAuthHandler) → nakon splita referenciraju Api projekt.
@@ -53,7 +53,7 @@ Novi raspored (siblings postojećim `FantasyFootball.Tests/` i `FantasyFootball.
 | root `FantasyFootball.csproj` | briše se (nestaju i `Compile Remove` hackovi) |
 
 **Projekti:**
-- `FantasyFootball.Core` (classlib, net10.0): paketi `Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.EntityFrameworkCore.SqlServer`, `OpenAI`. Migracije ostaju uz DbContext (default MigrationsAssembly = Core ✓).
+- `FantasyFootball.Core` (classlib, net9.0): paketi `Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.EntityFrameworkCore.SqlServer`, `OpenAI`. Migracije ostaju uz DbContext (default MigrationsAssembly = Core ✓).
 - `FantasyFootball.Web` (Sdk.Web): postojeći `Program.cs` gotovo netaknut (Identity, Google, lokalizacija, Serilog, filter, repozitoriji, AiPlayerParser). `launchSettings.json` ostaje isti → **lokalni dev i FF_BASE_URL=https://localhost:7031 rade kao i do sada**. Paketi: Google auth, Serilog.*, EF Design/Tools.
 - `FantasyFootball.Api` (Sdk.Web, novi `Program.cs` + `public partial class Program`): Serilog, DbContext, **isti** `AddIdentity` + `ConfigureApplicationCookie` blok kao Web (cookie se validira, redirect na login ide kroz proxy na Web — ponašanje identično današnjem), isti fallback authorization policy, `AddControllers`, `/health` endpoint (`MapHealthChecks`). Novi `launchSettings.json` s vlastitim portom (npr. http 5264). Bez Google/lokalizacije/static files.
 - **Data Protection** (nužno da Api može čitati cookie koji je izdao Web): u oba `Program.cs` — `AddDataProtection().SetApplicationName("FantasyFootball")` + `PersistKeysToFileSystem` kada je zadan `DataProtection__KeysPath` (env u kontejnerima; lokalno oba procesa dijele isti user-profile keys path — provjeriti, po potrebi zadati zajednički lokalni path).
@@ -64,7 +64,7 @@ Novi raspored (siblings postojećim `FantasyFootball.Tests/` i `FantasyFootball.
 
 ## Faza 2 — Docker (2 image-a + nginx + compose)
 
-- `FantasyFootball.Web/Dockerfile` i `FantasyFootball.Api/Dockerfile`: multi-stage po uzoru na postojeći, ali **`sdk:10.0` / `aspnet:10.0`** (fix buga), context = repo root, kopira Core + dotični projekt.
+- `FantasyFootball.Web/Dockerfile` i `FantasyFootball.Api/Dockerfile`: multi-stage po uzoru na postojeći (**`sdk:9.0` / `aspnet:9.0`**), context = repo root, kopira Core + dotični projekt.
 - `deploy/nginx.conf`: `location /api/ → proxy_pass http://api:8080;`, `location / → proxy_pass http://web:8080;` + `X-Forwarded-*` headeri; u Web/Api dodati `UseForwardedHeaders`.
 - `docker-compose.yml` (lokalni smoke-test, `up --build`) i `docker-compose.prod.yml` (VM: `image:` iz GitLab registryja + `pull`): servisi `db` (postojeći, healthcheck; port 1433 bind na 127.0.0.1), `api` (healthcheck `/health`, čeka db), `web` (čeka api healthy), `proxy` (nginx, port 80). Volumes: `sqldata`, `dpkeys` (mount u web+api, `DataProtection__KeysPath=/keys`), `uploads` (mount na `FantasyFootball.Web/wwwroot/uploads` — bez toga se uploadi timova gube na redeploy).
 - Secrets kroz env (compose ih čita iz okoline/`.env` na VM-u): `MSSQL_SA_PASSWORD`, `ConnectionStrings__FantasyFootballDbContext`, `OPENAI_API_KEY`, opcionalno Google OAuth.
@@ -73,7 +73,7 @@ Novi raspored (siblings postojećim `FantasyFootball.Tests/` i `FantasyFootball.
 
 ```yaml
 stages: [build, test, package, deploy, e2e]
-build:    # mcr.microsoft.com/dotnet/sdk:10.0 — dotnet restore + build cijelog slnx
+build:    # mcr.microsoft.com/dotnet/sdk:9.0 — dotnet restore + build cijelog slnx
 test:     # isti image — dotnet test FantasyFootball.Tests (InMemory → ne treba baza)
 package:  # docker:cli — build + push web/api image-a u $CI_REGISTRY, tag $CI_COMMIT_SHORT_SHA + latest (samo main)
 deploy:   # docker:cli s compose pluginom — docker compose -f docker-compose.prod.yml pull && up -d (samo main; runner na VM-u → socket = host daemon)
