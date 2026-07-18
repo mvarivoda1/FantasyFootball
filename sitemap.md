@@ -164,4 +164,4 @@ Resursi: `api/player` ([PlayerApiController](FantasyFootball.Api/Controllers/Pla
 `api/gameweek` ([GameweekApiController](FantasyFootball.Api/Controllers/GameweekApiController.cs)),
 `api/transfer` ([TransferApiController](FantasyFootball.Api/Controllers/TransferApiController.cs)).
 
-Uz njih, `GET /health` je health-check endpoint dostupan bez prijave.
+Uz njih, `GET /health` je health-check endpoint dostupan bez prijave
