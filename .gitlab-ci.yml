@@ -5,7 +5,6 @@ stages:
 
 build-web:
   stage: build
-  image: docker:28-cli
   script:
     - docker compose build web
   tags:
@@ -14,7 +13,6 @@ build-web:
 
 build-api:
   stage: build
-  image: docker:28-cli
   script:
     - docker compose build api
   tags:
@@ -23,18 +21,21 @@ build-api:
 
 integration-tests:
   stage: test
-  image: mcr.microsoft.com/dotnet/sdk:9.0
   needs: []
-  variables:
-    NUGET_PACKAGES: $CI_PROJECT_DIR/.nuget/packages
   cache:
     key: nuget
     paths:
       - .nuget/packages
   script:
-    - dotnet test FantasyFootball.Tests/FantasyFootball.Tests.csproj
+    - docker run --rm
+      --user "$(id -u):$(id -g)"
+      -e HOME=/tmp -e DOTNET_NOLOGO=1 -e DOTNET_CLI_TELEMETRY_OPTOUT=1
+      -e NUGET_PACKAGES=/src/.nuget/packages
+      -v "$CI_PROJECT_DIR:/src" -w /src
+      mcr.microsoft.com/dotnet/sdk:9.0
+      dotnet test FantasyFootball.Tests/FantasyFootball.Tests.csproj
       -c Release
-      --logger "junit;LogFilePath=$CI_PROJECT_DIR/TestResults/junit.xml"
+      --logger "junit;LogFilePath=/src/TestResults/junit.xml"
   artifacts:
     when: always
     reports:
@@ -45,7 +46,6 @@ integration-tests:
 
 e2e-tests:
   stage: e2e
-  image: docker:28-cli
   resource_group: e2e-stack
   script:
     - docker rm -f ff-e2e-run 2>/dev/null || true
