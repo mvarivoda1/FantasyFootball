@@ -1,0 +1,14 @@
+services:
+  db:
+    restart: unless-stopped
+
+  api:
+    restart: unless-stopped
+
+  web:
+    restart: unless-stopped
+
+  proxy:
+    restart: unless-stopped
+    ports:
+      - "80:80"

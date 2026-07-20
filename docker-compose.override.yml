@@ -1,6 +1,3 @@
-# Lokalni development override — docker compose ga automatski učitava uz
-# docker-compose.yml. CI ga NE koristi (eksplicitni -f docker-compose.yml),
-# pa host portovi postoje samo lokalno.
 services:
   proxy:
     ports:

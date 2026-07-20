@@ -2,6 +2,7 @@ stages:
   - build
   - test
   - e2e
+  - deploy
 
 build-web:
   stage: build
@@ -63,6 +64,21 @@ e2e-tests:
       - playwright-report/
       - compose-logs.txt
     expire_in: 1 week
+  tags:
+    - ubuntu
+    - docker
+
+    
+deploy:
+  stage: deploy
+  needs:
+    - build-web
+    - build-api
+  script:
+    - docker compose -p ff-prod -f docker-compose.yml -f docker-compose.prod.yml up -d --wait --wait-timeout 300 db api web proxy
+  environment:
+    name: production
+    url: http://$CI_SERVER_HOST
   tags:
     - ubuntu
     - docker
