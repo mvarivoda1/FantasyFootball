@@ -1,0 +1,11 @@
+# Lokalni development override — docker compose ga automatski učitava uz
+# docker-compose.yml. CI ga NE koristi (eksplicitni -f docker-compose.yml),
+# pa host portovi postoje samo lokalno.
+services:
+  proxy:
+    ports:
+      - 80:80
+
+  db:
+    ports:
+      - 1433:1433

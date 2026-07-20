@@ -1,15 +1,11 @@
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2025-latest
-    container_name: ff_database
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "ffPass123!"
-    ports:
-      - 1433:1433
     volumes:
       - sqldata:/var/opt/mssql
-    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"ffPass123!\" -No -Q \"SELECT 1\" || exit 1"]
       interval: 10s
@@ -17,22 +13,71 @@ services:
       retries: 12
       start_period: 30s
 
-  # Web aplikacija (build iz Dockerfile-a). Za lokalni smoke-test cijelog stacka:
-  #   docker compose up --build
-  web:
+  api:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: ff_web
+      dockerfile: FantasyFootball.Api/Dockerfile
+    image: ff-api:latest
     depends_on:
       db:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
       ConnectionStrings__FantasyFootballDbContext: "Data Source=db,1433;Initial Catalog=FantasyFootball_;User ID=sa;Password=ffPass123!;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;"
-    ports:
-      - 8080:8080
-    restart: unless-stopped
+      DataProtection__KeysPath: "/keys"
+    volumes:
+      - dpkeys:/keys
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 90s
+
+  web:
+    build:
+      context: .
+      dockerfile: FantasyFootball.Web/Dockerfile
+    image: ff-web:latest
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__FantasyFootballDbContext: "Data Source=db,1433;Initial Catalog=FantasyFootball_;User ID=sa;Password=ffPass123!;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=True;"
+      DataProtection__KeysPath: "/keys"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+    volumes:
+      - dpkeys:/keys
+      - uploads:/app/wwwroot/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  proxy:
+    build:
+      context: deploy/nginx
+    image: ff-proxy:latest
+    depends_on:
+      web:
+        condition: service_healthy
+
+  e2e:
+    build:
+      context: e2e
+    image: ff-e2e:latest
+    profiles: ["e2e"]
+    depends_on:
+      proxy:
+        condition: service_started
+    environment:
+      FF_BASE_URL: "http://proxy"
+      CI: "true"
 
 volumes:
   sqldata:
+  dpkeys:
+  uploads:

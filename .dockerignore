@@ -1,12 +1,7 @@
-# Build artefakti
+# Build artefakti (Dockerfile-i kopiraju cijele projektne direktorije)
 **/bin
 **/obj
 logs
-
-# Pod-projekti koji nisu dio web image-a
-FantasyFootball.Tests
-FantasyFootball.E2E
-FantasyFootball.Mcp
 
 # Razno
 .git
@@ -14,7 +9,4 @@ FantasyFootball.Mcp
 .vs
 .github
 **/*.user
-docker-compose.yml
-Dockerfile
-.dockerignore
 **/.claude

@@ -1,0 +1,68 @@
+stages:
+  - build
+  - test
+  - e2e
+
+build-web:
+  stage: build
+  image: docker:28-cli
+  script:
+    - docker compose build web
+  tags:
+    - ubuntu
+    - docker
+
+build-api:
+  stage: build
+  image: docker:28-cli
+  script:
+    - docker compose build api
+  tags:
+    - ubuntu
+    - docker
+
+integration-tests:
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  needs: []
+  variables:
+    NUGET_PACKAGES: $CI_PROJECT_DIR/.nuget/packages
+  cache:
+    key: nuget
+    paths:
+      - .nuget/packages
+  script:
+    - dotnet test FantasyFootball.Tests/FantasyFootball.Tests.csproj
+      -c Release
+      --logger "junit;LogFilePath=$CI_PROJECT_DIR/TestResults/junit.xml"
+  artifacts:
+    when: always
+    reports:
+      junit: TestResults/junit.xml
+  tags:
+    - ubuntu
+    - docker
+
+e2e-tests:
+  stage: e2e
+  image: docker:28-cli
+  resource_group: e2e-stack
+  script:
+    - docker rm -f ff-e2e-run 2>/dev/null || true
+    - docker compose up -d --build --wait --wait-timeout 300 db api web proxy
+    - docker compose --profile e2e build e2e
+    - docker compose --profile e2e run --name ff-e2e-run e2e
+  after_script:
+    - docker cp "ff-e2e-run:/e2e/playwright-report" ./playwright-report || true
+    - docker rm -f ff-e2e-run || true
+    - docker compose logs --no-color --tail 200 > compose-logs.txt || true
+    - docker compose --profile e2e down -v --remove-orphans || true
+  artifacts:
+    when: always
+    paths:
+      - playwright-report/
+      - compose-logs.txt
+    expire_in: 1 week
+  tags:
+    - ubuntu
+    - docker
