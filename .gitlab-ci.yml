@@ -36,7 +36,9 @@ deploy:
 
 integration-tests:
   stage: test
-  needs: []
+  needs:
+    - build-web
+    - build-api
   cache:
     key: nuget
     paths:
